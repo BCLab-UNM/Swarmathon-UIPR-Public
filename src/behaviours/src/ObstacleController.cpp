@@ -18,11 +18,18 @@ void ObstacleController::Reset() {
   delay = current_time;
 }
 
+bool ObstacleController::getObstacleInfo()
+{
+  return obstacleDetected;
+}
+
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
-  
+
     //always turn left to avoid obstacles
     if (right < 0.8 || center < 0.8 || left < 0.8) {
+      cout << "Pared encontrada en (" << currentLocation.x << "," << currentLocation.y << ")";
+      obstacleDetected = true;
       result.type = precisionDriving;
 
       result.pd.cmdAngular = -K_angular;
@@ -36,7 +43,8 @@ void ObstacleController::avoidObstacle() {
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone() {
-  
+
+    cout << "Base detected" << endl;
     result.type = precisionDriving;
 
     result.pd.cmdVel = 0.0;
@@ -76,7 +84,7 @@ Result ObstacleController::DoWork() {
     set_waypoint = false;
     clearWaypoints = false;
 
-    result.type = waypoint; 
+    result.type = waypoint;
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;            //waypoint is directly ahead of current heading
     forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
@@ -119,7 +127,7 @@ void ObstacleController::ProcessData() {
 
   //If we are ignoring the center sonar
   if(ignore_center_sonar){
-    //If the center distance is longer than the reactivation threshold 
+    //If the center distance is longer than the reactivation threshold
     if(center > reactivate_center_sonar_threshold){
       //currently do not re-enable the center sonar instead ignore it till the block is dropped off
       //ignore_center_sonar = false; //look at sonar again beacuse center ultrasound has gone long
@@ -164,7 +172,7 @@ void ObstacleController::ProcessData() {
 // the collection zone
 // Added relative pose information so we know whether the
 // top of the AprilTag is pointing towards the rover or away.
-// If the top of the tags are away from the rover then treat them as obstacles. 
+// If the top of the tags are away from the rover then treat them as obstacles.
 void ObstacleController::setTagData(vector<Tag> tags){
   collection_zone_seen = false;
   count_left_collection_zone_tags = 0;
@@ -184,22 +192,22 @@ void ObstacleController::setTagData(vector<Tag> tags){
 
 bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags ) {
 
-  for ( auto & tag : tags ) { 
+  for ( auto & tag : tags ) {
 
-    // Check the orientation of the tag. If we are outside the collection zone the yaw will be positive so treat the collection zone as an obstacle. 
-    //If the yaw is negative the robot is inside the collection zone and the boundary should not be treated as an obstacle. 
+    // Check the orientation of the tag. If we are outside the collection zone the yaw will be positive so treat the collection zone as an obstacle.
+    //If the yaw is negative the robot is inside the collection zone and the boundary should not be treated as an obstacle.
     //This allows the robot to leave the collection zone after dropping off a target.
-    if ( tag.calcYaw() > 0 ) 
+    if ( tag.calcYaw() > 0 )
       {
 	// checks if tag is on the right or left side of the image
 	if (tag.getPositionX() + camera_offset_correction > 0) {
 	  count_right_collection_zone_tags++;
-	  
+
 	} else {
 	  count_left_collection_zone_tags++;
 	}
       }
-    
+
   }
 
 
@@ -242,7 +250,7 @@ bool ObstacleController::HasWork() {
 
 //ignore center ultrasound
 void ObstacleController::setIgnoreCenterSonar(){
-  ignore_center_sonar = true; 
+  ignore_center_sonar = true;
 }
 
 void ObstacleController::setCurrentTimeInMilliSecs( long int time )

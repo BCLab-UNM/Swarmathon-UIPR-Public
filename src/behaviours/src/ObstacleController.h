@@ -22,6 +22,9 @@ public:
   void setCurrentTimeInMilliSecs( long int time );
   void setTargetHeld ();
 
+  //EDITED
+  bool getObstacleInfo();
+
   // Checks if a target is held and if so resets the state of the obestacle controller otherwise does nothing
   void setTargetHeldClear();
   //Asked by logiccontroller to determine if drive controller should have its waypoints cleared
@@ -42,7 +45,7 @@ private:
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );
-  
+
   const float K_angular = 1.0; //radians a second turn rate to avoid obstacles
   const float reactivate_center_sonar_threshold = 0.8; //reactive center sonar if it goes back above this distance, assuming it is deactivated
   const int targetCountPivot = 6; ///unused variable
@@ -80,7 +83,7 @@ private:
 
   bool phys = false; // Physical obstacle
   bool collection_zone_seen = false; // The obstacle is the collection zone
-  
+
   bool set_waypoint = false;
   bool can_set_waypoint = false;
 
