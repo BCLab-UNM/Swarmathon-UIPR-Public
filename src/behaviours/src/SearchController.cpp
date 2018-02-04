@@ -81,7 +81,7 @@ void SearchController::smartRandomSearch(int wallLocation, int myId){
   cout << "Publishing visited point: (" << currentLocation.x << "," << currentLocation.y << ")" << endl;
   setVisitedPoint(currentLocation);
   setVisitedPointFlag(true);
-/*
+/*Commented Search
   if(visitedPoints.size() == 0)
   {
     cout << "-There are no Published Visited Locations-" << endl;
