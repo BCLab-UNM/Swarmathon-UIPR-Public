@@ -22,7 +22,6 @@ bool ObstacleController::getObstacleInfo()
 {
   return obstacleDetected;
 }
-//Test Comment
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
 
