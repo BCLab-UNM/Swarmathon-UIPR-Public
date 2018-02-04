@@ -33,6 +33,7 @@ public:
 protected:
 
   void ProcessData();
+  std::vector<Point> blackListedWP;
 
 private:
 
@@ -41,6 +42,7 @@ private:
 
   // Try not to run into a physical object
   void avoidObstacle();
+  void follow_Wall();
 
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
