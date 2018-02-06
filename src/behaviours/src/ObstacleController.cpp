@@ -8,7 +8,7 @@ ObstacleController::ObstacleController()
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
 }
 
-
+//hola
 //note, not a full reset as this could cause a bad state
 //resets the interupt and knowledge of an obstacle or obstacle avoidance only.
 void ObstacleController::Reset() {
