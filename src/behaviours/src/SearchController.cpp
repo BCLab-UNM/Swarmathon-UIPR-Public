@@ -81,7 +81,7 @@ void SearchController::smartRandomSearch(int wallLocation, int myId){
   cout << "Publishing visited point: (" << currentLocation.x << "," << currentLocation.y << ")" << endl;
   setVisitedPoint(currentLocation);
   setVisitedPointFlag(true);
-/*Commented Search
+
   if(visitedPoints.size() == 0)
   {
     cout << "-There are no Published Visited Locations-" << endl;
@@ -96,7 +96,7 @@ void SearchController::smartRandomSearch(int wallLocation, int myId){
      }
     cout << "------------------------------------------" << endl;
   }
-*/
+
 if(first_waypoint)
 {
   first_waypoint = false;
@@ -107,7 +107,6 @@ if(first_waypoint)
 }
 else{
   number = rng->uniformReal(0,-6.5);
-  /*
   while(xAccepted == false)
   {
 
@@ -132,10 +131,10 @@ else{
       xAccepted = true;
       }
     }
-    */
+
     searchLocation.x = number;
-    /*
     shield = false;
+
     while(yAccepted == false)
     {
       number = rng->uniformReal(0,-6.5);
@@ -159,12 +158,11 @@ else{
         yAccepted = true;
       }
     }
-    */
     number = rng->uniformReal(0,-6.5);
     searchLocation.y = number;
     cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y <<")" << endl;
   }
-  //this->visitedPoints.push_back(searchLocation);
+  this->visitedPoints.push_back(searchLocation);
 }
 
 void SearchController::lawnMowerSearch(int wallLocation,int myId){
