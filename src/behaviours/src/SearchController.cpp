@@ -106,11 +106,10 @@ if(first_waypoint)
   searchLocation.y = -.1;
 }
 else{
-  number = rng->uniformReal(0,-6.5);
+ 
   while(xAccepted == false)
   {
-
-
+    number = rng->uniformReal(0,-6.5);
     for(int i = 0; i <= (this->visitedPoints.size() - 1); i++)
     {
       cout <<"Verifying numbers" << endl;
