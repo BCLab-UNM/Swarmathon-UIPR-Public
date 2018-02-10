@@ -28,7 +28,7 @@ void DriveController::Reset()
 
 Result DriveController::DoWork()
 {
-  
+
   ///WARNING waypoint input must use FAST_PID at this point in time failure to set fast pid will result in no movment
 
   if(result.type == behavior)
@@ -99,7 +99,7 @@ Result DriveController::DoWork()
         tooClose = false;
       }
     }
-    
+
     //if we are out of waypoints then interupt and return to logic controller
     if (waypoints.empty())
     {
@@ -217,6 +217,8 @@ Result DriveController::DoWork()
 
 }
 
+
+
 bool DriveController::ShouldInterrupt()
 {
   if (interupt)
@@ -238,7 +240,7 @@ void DriveController::ProcessData()
 {
   //determine if the drive commands are waypoint or precision driving
   if (result.type == waypoint) {
-    
+
     //sets logic controller into stand by mode while drive controller works
     result.type = behavior;
     result.b = noChange;
@@ -297,7 +299,7 @@ void DriveController::fastPID(float errorVel, float errorYaw , float setPointVel
   int right = velOut + yawOut; //left and right are the same for vel output but opposite for yaw output
 
   //prevent combine output from going over tihs value
-  int sat = 180; 
+  int sat = 180;
   if (left  >  sat) {left  =  sat;}
   if (left  < -sat) {left  = -sat;}
   if (right >  sat) {right =  sat;}

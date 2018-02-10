@@ -15,7 +15,6 @@ public:
   void SetTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
-
   bool SetSonarData(float rangeCenter);
 
   float getDistance() {return blockDistance;}
@@ -24,6 +23,25 @@ public:
 
   bool GetIgnoreCenter() {return ignoreCenterSonar;}
   bool GetTargetHeld() {return targetHeld;}
+
+  //------------------------------------------------// Jomar-------------------------------------------------------------
+
+  // Getters
+  bool getCantSeeTargetDontRepeat() { return cantSeeTargetDontRepeat; }
+  bool getDontRepeatSeeTarget() { return dontRepeatSeeTarget; }
+
+  // Setters
+  void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
+  void setDontRepeatSeeTarget(bool dontRepeatSeeTarget) { this->dontRepeatSeeTarget = dontRepeatSeeTarget; }
+
+  bool TagDetected() {return seeTarget;}
+
+  //------------------------------------------------// Jomar-------------------------------------------------------------
+
+
+
+
+
 
   void SetCurrentTimeInMilliSecs( long int time );
 
@@ -39,6 +57,7 @@ private:
 
   bool targetFound;
   bool targetHeld;
+
 
   // Failsafe state. No legitimate behavior state. If in this state for too long return to searching as default behavior.
   bool timeOut;
@@ -76,6 +95,16 @@ private:
 
   //this controller has control~
   bool has_control = false;
+
+  //------------------------------------------------// Jomar-------------------------------------------------------------
+
+  bool seeTarget;
+  bool cantSeeTargetDontRepeat;
+  bool dontRepeatSeeTarget = true;
+
+  //------------------------------------------------// Jomar-------------------------------------------------------------
+
+
 };
 
 #endif // end header define

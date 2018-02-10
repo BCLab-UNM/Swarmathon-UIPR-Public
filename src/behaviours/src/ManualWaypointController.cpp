@@ -50,7 +50,7 @@ void ManualWaypointController::SetCurrentLocation(Point currentLocation)
 }
 
 void ManualWaypointController::ProcessData()
-{   
+{
 }
 
 void ManualWaypointController::AddManualWaypoint(Point wpt, int id)
@@ -62,6 +62,8 @@ void ManualWaypointController::RemoveManualWaypoint(int id)
 {
   waypoints.erase(id);
 }
+
+
 
 std::vector<int> ManualWaypointController::ReachedWaypoints() {
   std::vector<int> cleared = cleared_waypoints;

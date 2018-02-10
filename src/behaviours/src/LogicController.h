@@ -47,30 +47,31 @@ public:
   void SetCenterLocationOdom(Point centerLocationOdom);
   void SetCenterLocationMap(Point centerLocationMap);
 
-  
+
+
   // Passthrough for providing new waypoints to the
   // ManualWaypointController.
   void AddManualWaypoint(Point wpt, int waypoint_id);
 
-  
+
   // Passthrough for removing waypoints from the
   // ManualWaypointController.
   void RemoveManualWaypoint(int waypoint_id);
 
-  
+
   // Passthrough for getting the list of manual waypoints that have
-  // been visited. 
+  // been visited.
   std::vector<int> GetClearedWaypoints();
 
-  
+
   // Put the logic controller into manual mode. Changes process state
   // to PROCESS_STATE_MANUAL and logic state to LOGIC_STATE_INTERRUPT.
-  
+
   // If the logic controller is already in manual mode this has no
   // effect.
   void SetModeManual();
 
-  
+
   // Put the logic controller into autonomous mode. Resets the logic
   // controller and clears all manual waypoints.
   //
@@ -109,6 +110,7 @@ private:
   LogicState logicState;
   ProcessState processState;
 
+
   PickUpController pickUpController;
   DropOffController dropOffController;
   SearchController searchController;
@@ -119,6 +121,8 @@ private:
 
   std::vector<PrioritizedController> prioritizedControllers;
   priority_queue<PrioritizedController> control_queue;
+
+  bool dontRepeatSeeTarget;
 
   void controllerInterconnect();
 
