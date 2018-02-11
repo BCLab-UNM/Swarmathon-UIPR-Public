@@ -54,6 +54,29 @@ public:
   const bool getVisitedFlag(){return this->publishVisitedPointFlag;}
   //**
   //
+  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
+
+  void aTagDetected();
+  void droppedOFF();
+  void cantSeeTarget();
+  void FidelityImprovement();
+
+  // Getters
+	bool getSdropped() { return Sdropped; }
+  bool getDeleteVector() { return deleteVector; }
+  bool getCantSeeTargetDontRepeat() { return cantSeeTargetDontRepeat; }
+  bool getTagDetectedCatched(){ return TagDetectedCatched; }
+
+  // Setters
+  void setSdropped(bool Sdropped) { this->Sdropped = Sdropped; }
+  void setDeleteVector(bool deleteVector) { this->deleteVector = deleteVector; }
+  void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
+  void setTagDetectedCatched(bool TagDetectedCatched){ this->TagDetectedCatched = TagDetectedCatched; }
+
+
+  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
 
 protected:
 
@@ -76,9 +99,18 @@ private:
   bool rightAdjust;
   int mapSize = 15;
 
+
   // Search state
   // Flag to allow special behaviour for the first waypoint
-  bool first_waypoint = true;
+
+  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
+  Point searchLocSaved;
+  vector<Point> SavedPointsVector;
+
+  int arrayCounter = 0;
+  int searchProcess = 0;
+
   bool succesfullPickup = false;
 
   // EDIT
@@ -97,6 +129,21 @@ private:
 
   //**
   //
+  bool x_first_waypoint = true;
+  bool x_front_pared = false;
+  bool x_front_giro_pared = false;
+  bool x_front_pared_finish = false;
+
+
+  bool Sdropped = false;
+  bool cantSeeTargetDontRepeat = false;
+  bool arrives = false;
+  bool deleteVector = false;
+  bool fidImprovement = false;
+  bool TagDetectedCatched = true;
+
+// --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
 
 };
 

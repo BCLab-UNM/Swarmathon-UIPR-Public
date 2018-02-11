@@ -21,7 +21,7 @@ RangeCircle::RangeCircle( Point center, float radius )
 }
 
 bool RangeCircle::isInside( Point coords)
-{  
+{
   // Return whether the coordinates given are within the
   // radius of the circle. The mathematical expression is just the Euclidean norm.
   return sqrt((center.x-coords.x)*(center.x-coords.x) + (center.y-coords.y)*(center.y-coords.y)) < radius;
@@ -38,16 +38,16 @@ RangeRectangle::RangeRectangle( Point center, float width, float height )
 }
 
 bool RangeRectangle::isInside( Point coords )
-{  
-  if ( coords.x < center.x+width/2.0 
-       && coords.x > center.x-width/2.0 
-       && coords.y < center.y+height/2.0 
+{
+  if ( coords.x < center.x+width/2.0
+       && coords.x > center.x-width/2.0
+       && coords.y < center.y+height/2.0
        && coords.y > center.y-height/2.0)
-    {    
+    {
       // Return whether the coordinates given are within the area of the square.
       return true;
     }
-  
+
 return false;
 }
 
@@ -72,51 +72,51 @@ void RangeController::Reset()
   // Leaving empty until we decide on what reset to defaults really means.
 }
 
-Result RangeController::DoWork() 
+Result RangeController::DoWork()
 {
- 
+
   Result result;
 
-  // Move the rover a parameterised distance towards the origin 
-  // of the rovers coordinate system. To accomplish this we set a waypoint 
+  // Move the rover a parameterised distance towards the origin
+  // of the rovers coordinate system. To accomplish this we set a waypoint
   // between the current location and the origin, store it in the result object,
   // and return it to the logic controller.
-  
+
   Point point_in_range = distAlongLineSegment(current_location, range->getCenter(), backtrack_distance);
 
   result.type = waypoint;
   result.wpts.waypoints.clear();
   result.wpts.waypoints.push_back( point_in_range );
   result.PIDMode = FAST_PID;
-  
-  cout << "Range controller doing work: moving to (" << point_in_range.x << ", " << point_in_range.y << ")" << endl;  
+
+  cout << "Range controller doing work: moving to (" << point_in_range.x << ", " << point_in_range.y << ")" << endl;
 
   return result;
-  
+
 }
 
-bool RangeController::ShouldInterrupt() 
+bool RangeController::ShouldInterrupt()
 {
   // Cause an interrupt if the rover leaves the specified foraging range
   // Note use of shortcircuiting "and"
   bool should_interrupt = false;
-  if (enabled 
+  if (enabled
       && range != NULL
-      && !range->isInside(current_location) 
+      && !range->isInside(current_location)
       && !requested_return_to_valid_range)
     {
       cout << "Range controller interrupt" << endl;
       requested_return_to_valid_range = true;
       should_interrupt = true;
     }
-  
-  return should_interrupt;    
+
+  return should_interrupt;
 }
 
-bool RangeController::HasWork() 
+bool RangeController::HasWork()
 {
   bool has_work = false;
-  if (enabled && range != NULL && !range->isInside(current_location)) 
+  if (enabled && range != NULL && !range->isInside(current_location))
     {
       cout << "Range controller has work:  current location (" << current_location.x << ", " << current_location.y << ")" << endl;
       has_work = true;
@@ -124,7 +124,7 @@ bool RangeController::HasWork()
       // Note use of shortcircuiting "and"
     }
   else
-    { 
+    {
       requested_return_to_valid_range = false;
       enabled && range != NULL && !range->isInside(current_location);
       has_work = false;
@@ -133,7 +133,7 @@ bool RangeController::HasWork()
   return has_work;
 }
 
-void RangeController::setCurrentLocation( Point current ) 
+void RangeController::setCurrentLocation( Point current )
 {
   current_location = current;
 }
@@ -156,7 +156,7 @@ void RangeController::setRangeShape( RangeShape* range )
 // that is a distance, dist, away from start along L
 Point RangeController::distAlongLineSegment(Point start, Point end, float dist)
 {
-  Point V; // Create a vector at the origin in the same direction 
+  Point V; // Create a vector at the origin in the same direction
            // as the line segment between the start and end
   V.x = end.x - start.x;
   V.y = end.y - start.y;
@@ -167,7 +167,7 @@ Point RangeController::distAlongLineSegment(Point start, Point end, float dist)
   Point U; // A unit vector in the direction of V
   U.x = V.x/V_mag;
   U.y = V.y/V_mag;
-  
+
   Point P; // The point we want. The length is the distance requied times the unit vector.
   P.x = dist*U.x + start.x;
   P.y = dist*U.y + start.y;
@@ -178,13 +178,13 @@ Point RangeController::distAlongLineSegment(Point start, Point end, float dist)
 void RangeController::setEnabled( bool enabled )
 {
   this->enabled = enabled;
-} 
+}
 
-void RangeController::ProcessData() 
+void RangeController::ProcessData()
 {
 }
 
-RangeController::~RangeController() 
+RangeController::~RangeController()
 {
   if ( range != NULL ) delete range;
 }

@@ -48,6 +48,7 @@
 
 using namespace std;
 
+
 // Define Exceptions
 // Define an exception to be thrown if the user tries to create
 // a RangeShape using invalid dimensions
@@ -74,6 +75,8 @@ random_numbers::RandomNumberGenerator* rng;
 // Create logic controller
 
 LogicController logicController;
+
+
 
 void humanTime();
 
@@ -595,6 +598,17 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
   if (message->detections.size() > 0) {
     vector<Tag> tags;
+
+
+    if (message->detections.size() > 2){
+      //std::cout << "There is a cluster. tag.size: " << message->detections.size() << '\n';
+      //realCluster == true;
+    }
+    else{
+      //std::cout << "Simple Tag" << '\n';
+    }
+
+
 
     for (int i = 0; i < message->detections.size(); i++) {
 

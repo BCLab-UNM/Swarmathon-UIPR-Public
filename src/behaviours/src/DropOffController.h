@@ -24,6 +24,8 @@ public:
   void SetBlockBlockingUltrasound(bool blockBlock);
   void SetTargetData(vector<Tag> tags);
   bool HasTarget() {return targetHeld;}
+  
+  bool NotHasTag() {return notHasTag;} // Jomar
 
   float GetSpinner() {return spinner;}
 
@@ -119,6 +121,11 @@ private:
   bool precisionInterrupt = false;
   bool finalInterrupt = false;
   bool first_center = true;
+
+  bool notHasTag = false; // Jomar
+
+
+
 
 };
 #endif // end header define

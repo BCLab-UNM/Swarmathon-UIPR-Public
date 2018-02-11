@@ -30,6 +30,9 @@ void LogicController::Reset() {
 Result LogicController::DoWork() {
   Result result;
 
+  
+
+
   //first a loop runs through all the controllers who have a priority of 0 or above witht he largest number being
   //most important. A priority of less than 0 is an ignored controller use -1 for standards sake.
   //if any controller needs and interrupt the logic state is changed to interrupt
@@ -73,6 +76,7 @@ Result LogicController::DoWork() {
     }
 
     //take the top member of the priority queue and run their do work function.
+
     result = control_queue.top().controller->DoWork();
 
     //anaylyze the result that was returned and do state changes accordingly
@@ -90,11 +94,16 @@ Result LogicController::DoWork() {
       if(result.b == nextProcess) {
         if (processState == _LAST - 1) {
           processState = _FIRST;
+
+          searchController.setTagDetectedCatched(true); // Jomar
+          pickUpController.setDontRepeatSeeTarget(true); // Jomar
         }
         else {
           processState = (ProcessState)((int)processState + 1);
         }
       }
+
+
       //ask for the procces state to change to the previouse state or loop around to the end
       else if(result.b == prevProcess) {
         if (processState == _FIRST) {
@@ -292,13 +301,54 @@ void LogicController::controllerInterconnect()
       obstacleController.setTargetHeld();
       searchController.SetSuccesfullPickup();
     }
+
+    // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
+    if(pickUpController.TagDetected()){
+      searchController.aTagDetected();
+    }
+
+
+    if (pickUpController.getCantSeeTargetDontRepeat()) {
+      searchController.setCantSeeTargetDontRepeat(true);
+    }
+
+    else{
+      searchController.setCantSeeTargetDontRepeat(false);
+    }
+
+    if (searchController.getCantSeeTargetDontRepeat()) {
+      pickUpController.setCantSeeTargetDontRepeat(true);
+    }
+
+    else{
+      pickUpController.setCantSeeTargetDontRepeat(false);
+    }
+
+    // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
   }
+
+
+// --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+  if (processState == PROCCESS_STATE_DROP_OFF)
+  {
+    if (dropOffController.NotHasTag()) {
+      searchController.droppedOFF();
+    }
+  }
+
+// --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
 
   //ask if drop off has released the target from the claws yet
   if (!dropOffController.HasTarget())
   {
+
     obstacleController.setTargetHeldClear();
   }
+
+
 
   //obstacle controller is running driveController needs to clear its waypoints
   if(obstacleController.getShouldClearWaypoints())
@@ -384,6 +434,7 @@ void LogicController::SetCenterLocationMap(Point centerLocationMap)
 {
 
 }
+
 
 void LogicController::SetCurrentTimeInMilliSecs( long int time )
 {

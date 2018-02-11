@@ -1,5 +1,6 @@
 #include "DropOffController.h"
 
+
 DropOffController::DropOffController() {
 
   reachedCollectionPoint = false;
@@ -31,7 +32,7 @@ DropOffController::~DropOffController() {
 
 Result DropOffController::DoWork() {
 
-  cout << "8" << endl;
+  //cout << "8" << endl;
 
   int count = countLeft + countRight;
 
@@ -45,7 +46,7 @@ Result DropOffController::DoWork() {
   //to resart our search.
   if(reachedCollectionPoint)
   {
-    cout << "2" << endl;
+    //cout << "2" << endl;
     if (timerTimeElapsed >= 5)
     {
       if (finalInterrupt)
@@ -53,12 +54,13 @@ Result DropOffController::DoWork() {
         result.type = behavior;
         result.b = nextProcess;
         result.reset = true;
+        notHasTag = true; // Jomar
         return result;
       }
       else
       {
         finalInterrupt = true;
-        cout << "1" << endl;
+        //cout << "1" << endl;
       }
     }
     else if (timerTimeElapsed >= 0.1)
@@ -77,6 +79,8 @@ Result DropOffController::DoWork() {
   }
 
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
+
+
 
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
@@ -135,7 +139,7 @@ Result DropOffController::DoWork() {
   if (count > 0 || seenEnoughCenterTags || prevCount > 0) //if we have a target and the center is located drive towards it.
   {
 
-    cout << "9" << endl;
+    //cout << "9" << endl;
     centerSeen = true;
 
     if (first_center && isPrecisionDriving)
@@ -189,6 +193,7 @@ Result DropOffController::DoWork() {
     //must see greater than this many tags before assuming we are driving into the center and not along an edge.
     if (count > centerTagThreshold)
     {
+
       seenEnoughCenterTags = true; //we have driven far enough forward to be in and aligned with the circle.
       lastCenterTagThresholdTime = current_time;
     }
@@ -257,6 +262,8 @@ Result DropOffController::DoWork() {
 }
 
 void DropOffController::Reset() {
+
+  //cout << "DropOffController::Reset()" << endl;
   result.type = behavior;
   result.b = wait;
   result.pd.cmdVel = 0;
@@ -272,7 +279,7 @@ void DropOffController::Reset() {
 
   countLeft = 0;
   countRight = 0;
-
+  notHasTag = false; // Jomar
 
   //reset flags
   reachedCollectionPoint = false;
@@ -285,6 +292,8 @@ void DropOffController::Reset() {
   startWaypoint = false;
   first_center = true;
   cout << "6" << endl;
+
+
 
 }
 
@@ -337,6 +346,8 @@ bool DropOffController::ShouldInterrupt() {
     return true;
   }
 }
+
+
 
 bool DropOffController::HasWork() {
 

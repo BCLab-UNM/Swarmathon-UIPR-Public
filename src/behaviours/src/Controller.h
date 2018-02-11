@@ -21,12 +21,12 @@ public:
   //Determines what action should be taken based on current
   //internal state and data
   virtual Result DoWork() = 0;
-
   //Returns whether or not an interrupt must be thrown
   virtual bool ShouldInterrupt() = 0;
 
   //Returns whether or not a controller should be polled for a Result
   virtual bool HasWork() = 0;
+
 
 protected:
 

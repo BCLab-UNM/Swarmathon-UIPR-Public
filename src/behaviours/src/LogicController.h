@@ -126,6 +126,7 @@ private:
   LogicState logicState;
   ProcessState processState;
 
+
   PickUpController pickUpController;
   DropOffController dropOffController;
   SearchController searchController;
@@ -136,6 +137,8 @@ private:
 
   std::vector<PrioritizedController> prioritizedControllers;
   priority_queue<PrioritizedController> control_queue;
+
+  bool dontRepeatSeeTarget;
 
   void controllerInterconnect();
 
