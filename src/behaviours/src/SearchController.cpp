@@ -64,13 +64,13 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             searchLocation = setSearchLocation(1,.5);
             first_waypoint = false;
           }
-           magnitude = rng->uniformReal(0,9.1);
-           angle = rng->uniformReal(0,45);
 
-           searchLocation.x = magnitude * cos(angle);
-           searchLocation.y = magnitude * sin(angle);
+          else{
+            magnitude = rng->uniformReal(0,9.1);
+            angle = rng->uniformReal(0,45);
 
-           cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
+            searchLocation = setSearchLocation(magnitude * cos(angle), magnitude * sin(angle));
+            cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
         }
       default:
         {
