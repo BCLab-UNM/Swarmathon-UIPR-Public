@@ -53,6 +53,7 @@ Result SearchController::DoWork() {
 
 void SearchController::triangleSearch(int myId,int triangularSection)
 {
+  result.type = waypoint;
     //Developing code for first traingular section
     switch(triangularSection)
     {
@@ -69,7 +70,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
           else{
             magnitude = rng->uniformReal(0,9.1);
             angle = rng->uniformReal(0,45);
-
+            cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
             this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
             cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
             break;
