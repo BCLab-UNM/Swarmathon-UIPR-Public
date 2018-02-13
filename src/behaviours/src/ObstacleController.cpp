@@ -22,20 +22,49 @@ bool ObstacleController::getObstacleInfo()
   return obstacleDetected;
 }
 
+//Return true if the rover can move to desired location
+bool ObstacleController::rfree() {
+  if (right > 0.8){
+    return true;
+  }
+  return false;
+}
+
+bool ObstacleController::lfree() {
+  if (left > 0.8){
+    return true;
+  }
+  return false;
+}
 // Avoid crashing into objects detected by the ultraound
-void ObstacleController::avoidObstacle() {
+// void ObstacleController::avoidObstacle() {
+
+//     //always turn right to avoid obstacles
+//     if (right < 0.8 || center < 0.8 || left < 0.8) {
+//       cout << "Pared encontrada en (" << currentLocation.x << "," << currentLocation.y << ")";
+//       obstacleDetected = true;
+//       result.type = precisionDriving;
+
+//       result.pd.cmdAngular = -K_angular;
+
+//       result.pd.setPointVel = 0.0;
+//       result.pd.cmdVel = 0.0;
+//       result.pd.setPointYaw = 0;
+//     }
+// }
+
+void ObstacleController::follow_Wall() {
 
     //always turn right to avoid obstacles
     if (right < 0.8 || center < 0.8 || left < 0.8) {
-      cout << "Pared encontrada en (" << currentLocation.x << "," << currentLocation.y << ")";
       obstacleDetected = true;
       result.type = precisionDriving;
-
-      result.pd.cmdAngular = -K_angular;
-
-      result.pd.setPointVel = 0.0;
-      result.pd.cmdVel = 0.0;
-      result.pd.setPointYaw = 0;
+      if (rfree()){
+        result.pd.cmdAngular = -K_angular;
+      }
+      if (lfree()){
+        result.pd.cmdAngular = K_angular;
+      }
     }
 }
 
@@ -83,20 +112,12 @@ Result ObstacleController::DoWork() {
     set_waypoint = false;
     clearWaypoints = false;
     
-    //set heading to previous state
-    // result.type = precisionDriving;
-    // result.pd.cmdAngular = -K_angular;
-    // result.pd.setPointVel = 0.0;
-    // result.pd.cmdVel = 0.0;
-    // result.pd.setPointYaw = 0;
-
     result.type = waypoint;
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward; 
     //waypoint is directly ahead of current heading
-
-    forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));  
+    forward.x = currentLocation.x + (1 * cos(currentLocation.theta));
+    forward.y = currentLocation.y + (1 * sin(currentLocation.theta));  
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
 
@@ -106,9 +127,14 @@ Result ObstacleController::DoWork() {
     result.pd.setPointVel = 0.0;
     result.pd.cmdVel = 0.0;
     result.pd.setPointYaw = 0;
+    
 
     result.type = waypoint;
     result.PIDMode = FAST_PID;
+    forward.x = currentLocation.x + (2 * cos(currentLocation.theta));
+    forward.y = currentLocation.y + (2 * sin(currentLocation.theta));  
+    result.wpts.waypoints.clear();
+    result.wpts.waypoints.push_back(forward);
   }
 
   return result;
