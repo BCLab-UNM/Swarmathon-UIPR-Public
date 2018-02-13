@@ -34,7 +34,7 @@ Result SearchController::DoWork() {
 
     if(myId == 1)
     {
-        triangularSearch(myId,triangularSection);
+        triangleSearch(myId,triangularSection);
     }
 
     else if(myId == 2)
@@ -61,20 +61,24 @@ void SearchController::triangleSearch(int myId,int triangularSection)
           if(first_waypoint)
           {
             cout << "--Looking for first given location.--" << endl;
-            searchLocation = setSearchLocation(1,.5);
+            this->searchLocation = setSearchLocation(1,.5);
             first_waypoint = false;
+            break;
           }
 
           else{
             magnitude = rng->uniformReal(0,9.1);
             angle = rng->uniformReal(0,45);
 
-            searchLocation = setSearchLocation(magnitude * cos(angle), magnitude * sin(angle));
+            this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
             cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
-        }
+            break;
+          } 
+        } 
       default:
         {
           cout << "Error in Triangular Section!!" << endl;
+          break;
         }
     }
 }
