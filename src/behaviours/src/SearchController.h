@@ -60,6 +60,7 @@ protected:
   void ProcessData();
   void lawnMowerSearch(int wallLocation, int myId);
   void smartRandomSearch(int wallLocation, int myId);
+  void triangleSearch(int myId);
 
 private:
 
@@ -75,6 +76,7 @@ private:
   bool leftAdjust;
   bool rightAdjust;
   int mapSize = 15;
+  int triangularSection = 1;
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
