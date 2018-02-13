@@ -61,6 +61,7 @@ protected:
   void lawnMowerSearch(int wallLocation, int myId);
   void smartRandomSearch(int wallLocation, int myId);
   void triangleSearch(int myId);
+  Point SearchController::setSearchLocation(float x, float y)
 
 private:
 
