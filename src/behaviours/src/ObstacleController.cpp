@@ -102,7 +102,8 @@ Result ObstacleController::DoWork() {
     avoidCollectionZone();
   }
   else {
-    avoidObstacle();
+    //avoidObstacle();
+    follow_Wall();
   }
 
   //if an obstacle has been avoided
@@ -116,25 +117,25 @@ Result ObstacleController::DoWork() {
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward; 
     //waypoint is directly ahead of current heading
-    forward.x = currentLocation.x + (1 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (1 * sin(currentLocation.theta));  
+    forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
+    forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));  
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
 
-    //set heading to previous state
-    result.type = precisionDriving;
-    result.pd.cmdAngular = K_angular;
-    result.pd.setPointVel = 0.0;
-    result.pd.cmdVel = 0.0;
-    result.pd.setPointYaw = 0;
+    // //set heading to previous state
+    // result.type = precisionDriving;
+    // result.pd.cmdAngular = K_angular;
+    // result.pd.setPointVel = 0.0;
+    // result.pd.cmdVel = 0.0;
+    // result.pd.setPointYaw = 0;
     
 
-    result.type = waypoint;
-    result.PIDMode = FAST_PID;
-    forward.x = currentLocation.x + (2 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (2 * sin(currentLocation.theta));  
-    result.wpts.waypoints.clear();
-    result.wpts.waypoints.push_back(forward);
+    // result.type = waypoint;
+    // result.PIDMode = FAST_PID;
+    // forward.x = currentLocation.x + (2 * cos(currentLocation.theta));
+    // forward.y = currentLocation.y + (2 * sin(currentLocation.theta));  
+    // result.wpts.waypoints.clear();
+    // result.wpts.waypoints.push_back(forward);
   }
 
   return result;
