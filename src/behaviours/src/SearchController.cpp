@@ -59,7 +59,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
     {
       case 1: //This section is from degrees 0->45
         {
-          if(first_waypoint)
+          if(first_waypoint) 
           {
             cout << "--Looking for first given location.--" << endl;
             this->searchLocation = setSearchLocation(1,.5);
@@ -69,7 +69,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
 
           else{
             magnitude = rng->uniformReal(0,9.1);
-            angle = rng->uniformReal(0,45);
+            angle = rng->uniformReal(0,M_PI/4);
             cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
             this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
             cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
