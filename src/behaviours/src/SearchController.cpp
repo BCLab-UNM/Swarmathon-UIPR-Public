@@ -18,6 +18,8 @@ SearchController::SearchController() {
   leftAdjust = false;
   rightAdjust = false;
   triangularSection = 1;
+  magnitude = 0;
+  angle = 0;
 
 }
 
@@ -56,7 +58,13 @@ void SearchController::triangleSearch(int myId,int triangularSection)
     {
       case 1: //This section is from degrees 0->45
         {
-          
+           magnitude = rng->uniformReal(0,9.1);
+           angle = rng->uniformReal(0,45);
+
+           searchLocation.x = magnitude * cos(angle);
+           searchLocation.y = magnitude * sin(angle);
+
+           cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
         }
       default:
         {

@@ -77,6 +77,8 @@ private:
   bool rightAdjust;
   int mapSize = 15;
   int triangularSection = 1;
+  float magnitude;
+  float angle;
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
