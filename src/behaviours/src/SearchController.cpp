@@ -18,6 +18,7 @@ SearchController::SearchController() {
   leftAdjust = false;
   rightAdjust = false;
 
+  first_waypoint = true;
 
 }
 
@@ -29,35 +30,13 @@ Result SearchController::DoWork() {
     result.type = waypoint;
     Point searchLocation;
 
-  // if (x_first_waypoint) {
-  //   cout << "SearchController::DoWork()" << "\n\n";
-  //   result.type = waypoint;
-  //   Point searchLocation;
-  //   //cout << "Sdropped = " << Sdropped << "\n\n";
-  //
-  //
-  //   searchLocation.x = -2;
-  //   searchLocation.y = 0;
-  //   result.wpts.waypoints.clear();
-  //   result.wpts.waypoints.push_back(searchLocation);
-  //   x_first_waypoint = true;
-  // }
-  //
-  // else{
-  //   result.type = behavior;
-  //   result.b = wait;
-  // }
-
-
-
-
   if (fidImprovement) {
     FidelityImprovement();
   }
 
-
-    cout << "Total IDs " << totalIds << endl;
-
+  else{
+    //cout << "Total IDs " << totalIds << endl;
+    
     if(myId == 1)
     {
       //smartRandomSearch(6.8,myId);
@@ -73,9 +52,11 @@ Result SearchController::DoWork() {
     {
       smartRandomSearch(-6.8,myId);
     }
+
+  
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
-
+  }
     return result;
 }
 

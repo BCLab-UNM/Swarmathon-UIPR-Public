@@ -118,6 +118,7 @@ private:
   int myId;
   int totalIds;
   bool publishVisitedPointFlag = true;
+  bool first_waypoint;
 
   //This Struct is used to share a Visited point with Logic Controller.
   Point latestVisitedPoint;
