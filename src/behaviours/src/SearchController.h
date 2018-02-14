@@ -62,6 +62,8 @@ protected:
   void smartRandomSearch(int wallLocation, int myId);
   void triangleSearch(int myId, int triangularSection);
   Point setSearchLocation(float x, float y);
+  float degToRad(float deg);
+  float radToDeg(float rad);
 
 private:
 
