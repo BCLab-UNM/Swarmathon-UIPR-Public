@@ -76,7 +76,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
 
             magnitude = rng->uniformReal(0,(sin(M_PI/2) * 7)/sin(unknownAngle));
 
-
+            angle = angle * M_PI/180;
             //magnitude = rng->uniformReal(0,9.1);
             cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
             this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
