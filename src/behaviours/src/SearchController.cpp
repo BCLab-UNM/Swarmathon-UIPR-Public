@@ -74,7 +74,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle + 90);
             unknownAngle = unknownAngle * M_PI/180;
 
-            magnitude = rng->uniformReal(0,(sin(M_PI/2) * 7)/sin(unknownAngle));
+            magnitude = rng->uniformReal(0,(sin(M_PI/2) * 4.5)/sin(unknownAngle));
 
             angle = angle * M_PI/180;
             //magnitude = rng->uniformReal(0,9.1);
