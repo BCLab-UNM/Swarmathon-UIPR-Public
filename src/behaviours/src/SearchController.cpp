@@ -69,6 +69,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
 
           else{
             angle = rng->uniformReal(0,M_PI/4);
+
             
             magnitude = rng->uniformReal(0,9.1);
             cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
