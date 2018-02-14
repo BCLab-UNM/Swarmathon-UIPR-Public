@@ -79,7 +79,7 @@ private:
   int mapSize = 15;
   int triangularSection = 1;
   float magnitude;
-  float angle;
+  float angle, unknownAngle;
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
