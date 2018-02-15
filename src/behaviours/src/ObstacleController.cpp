@@ -27,7 +27,7 @@ bool ObstacleController::getObstacleInfo()
 void ObstacleController::avoidObstacle() {
 
     //always turn left to avoid obstacles
-    if (right < 0.8 || center < 0.8 || left < 0.8) {
+    if (right < 0.1 || center < 0.1 || left < 0.1) {
       cout << "Pared encontrada en (" << currentLocation.x << "," << currentLocation.y << ")";
       obstacleDetected = true;
       result.type = precisionDriving;

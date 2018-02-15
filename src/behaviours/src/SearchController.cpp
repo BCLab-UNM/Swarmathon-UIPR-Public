@@ -17,7 +17,7 @@ SearchController::SearchController() {
   searchObstacle = false;
   leftAdjust = false;
   rightAdjust = false;
-  triangularSection = 1;
+  //triangularSection = 2;
   magnitude = 0;
   angle = 0;
   unknownAngle = 0;
@@ -35,11 +35,12 @@ Result SearchController::DoWork() {
 
     if(myId == 1)
     {
-        triangleSearch(myId,triangularSection);
+        triangleSearch(myId,1);
     }
 
     else if(myId == 2)
     {
+      triangleSearch(myId,2);
     }
 
     else if(myId == 3)
@@ -75,7 +76,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(0,(sin(M_PI/2) * 4.5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);
@@ -86,6 +87,35 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             break;
           } 
         } 
+
+        case 2: //This section is from degrees 45->90
+        {
+          if(first_waypoint) 
+          {
+            cout << "--Looking for first given location.--" << endl;
+            this->searchLocation = setSearchLocation(.5,1);
+            first_waypoint = false;
+            break;
+          }
+
+          else{
+            angle = rng->uniformReal(M_PI/4,M_PI/2);
+            angle = radToDeg(angle);
+
+            unknownAngle = 180 - (angle -45 + 90);
+            unknownAngle = degToRad(unknownAngle);
+
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+
+            
+            //magnitude = rng->uniformReal(0,9.1);
+            cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
+            angle = degToRad(angle);
+            this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+            cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
+            break;
+          } 
+        }
       default:
         {
           cout << "Error in Triangular Section!!" << endl;
