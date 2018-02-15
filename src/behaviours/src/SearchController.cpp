@@ -35,12 +35,12 @@ Result SearchController::DoWork() {
 
     if(myId == 1)
     {
-        triangleSearch(myId,1);
+        triangleSearch(myId,4);
     }
 
     else if(myId == 2)
     {
-      triangleSearch(myId,2);
+      //triangleSearch(myId,2);
     }
 
     else if(myId == 3)
@@ -103,6 +103,63 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             angle = radToDeg(angle);
 
             unknownAngle = 180 - (angle -45 + 90);
+            unknownAngle = degToRad(unknownAngle);
+
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+
+            
+            //magnitude = rng->uniformReal(0,9.1);
+            cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
+            angle = degToRad(angle);
+            this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+            cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
+            break;
+          } 
+        }
+
+        case 3: //This section is from degrees 90->135
+        {
+          if(first_waypoint) 
+          {
+            cout << "--Looking for first given location.--" << endl;
+            this->searchLocation = setSearchLocation(-.5,1);
+            first_waypoint = false;
+            break;
+          }
+
+          else{
+            angle = rng->uniformReal(M_PI/2,3*M_PI/4);
+            angle = radToDeg(angle);
+
+            unknownAngle = 180 - (angle - 90 + 90);
+            unknownAngle = degToRad(unknownAngle);
+
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+
+            
+            //magnitude = rng->uniformReal(0,9.1);
+            cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
+            angle = degToRad(angle);
+            this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+            cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
+            break;
+          } 
+        } 
+         case 4: //This section is from degrees 135->180
+        {
+          if(first_waypoint) 
+          {
+            cout << "--Looking for first given location.--" << endl;
+            this->searchLocation = setSearchLocation(-1,.5);
+            first_waypoint = false;
+            break;
+          }
+
+          else{
+            angle = rng->uniformReal(3*M_PI/4,M_PI);
+            angle = radToDeg(angle);
+
+            unknownAngle = 180 - (angle - 135 + 90);
             unknownAngle = degToRad(unknownAngle);
 
             magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
