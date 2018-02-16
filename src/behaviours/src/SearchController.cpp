@@ -17,7 +17,8 @@ SearchController::SearchController() {
   searchObstacle = false;
   leftAdjust = false;
   rightAdjust = false;
-
+  searchLocation.x = 0;
+  searchLocation.y =0;
   first_waypoint = true;
 
 }
@@ -27,8 +28,7 @@ void SearchController::Reset() {
 }
 
 Result SearchController::DoWork() {
-    result.type = waypoint;
-    Point searchLocation;
+
 
   if (fidImprovement) {
     FidelityImprovement();
@@ -50,13 +50,11 @@ Result SearchController::DoWork() {
 
     else if(myId == 3)
     {
-      smartRandomSearch(-6.8,myId);
+      //smartRandomSearch(-6.8,myId);
     }
-
-  
+  }
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
-  }
     return result;
 }
 
@@ -108,7 +106,7 @@ void SearchController::smartRandomSearch(int wallLocation, int myId){
     cout << "------------------------------------------" << endl;
   }
 */
-if(first_waypoint)
+  if(first_waypoint)
 {
   first_waypoint = false;
   cout << "Searching for first given location!!" << endl;
