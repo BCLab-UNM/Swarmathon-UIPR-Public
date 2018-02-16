@@ -1,6 +1,7 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
-
+#include "Point.h"
+#include "Controller.h"
 class Triangle
 {
 public:
@@ -15,11 +16,17 @@ public:
   
   int getId() const{
       return this->id;
-  }
+  } 
 
-  vector<Point> getVisitedPointList(){
+  void setId(int id)
+  {
+      this->id = id;
+  }
+  
+  vector<Point> getVisitedPointList() const{
       return this->visitedPointsList;
   }
+
 
 private:
     std::vector<Point> visitedPointsList;
