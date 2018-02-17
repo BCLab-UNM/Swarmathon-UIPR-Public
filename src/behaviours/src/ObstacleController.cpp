@@ -1,4 +1,5 @@
 #include "ObstacleController.h"
+#include <cmath>
 
 ObstacleController::ObstacleController()
 {
@@ -54,17 +55,57 @@ bool ObstacleController::lfree() {
 // }
 
 void ObstacleController::follow_Wall() {
+  
 
     //always turn right to avoid obstacles
     if (right < 0.8 || center < 0.8 || left < 0.8) {
       obstacleDetected = true;
-      result.type = precisionDriving;
-      if (rfree()){
-        result.pd.cmdAngular = -K_angular;
+      //result.type = precisionDriving;
+      result.type = waypoint;
+      result.PIDMode = FAST_PID;
+      Point V1, V2, V3;
+
+      if (right < 0.8 && center < 0.8){
+        V1.x = right * cos(currentLocation.theta*2*3.1416);
+        V1.y = right * sin(currentLocation.theta*2*3.1416);
+        V2.x = center * cos(currentLocation.theta*2*3.1416);
+        V2.y = right * sin(currentLocation.theta*2*3.1416);
+
+        V3.x = V1.x + V2.x + currentLocation.x;
+        V3.y = V1.y + V2.y + currentLocation.y;
+        result.wpts.waypoints.clear();
+        result.wpts.waypoints.push_back(V3);
       }
-      if (lfree()){
-        result.pd.cmdAngular = K_angular;
+      else if (left < 0.8 && center < 0.8){
+        V1.x = right * cos(currentLocation.theta*-2*3.1416);
+        V1.y = right * sin(currentLocation.theta*-2*3.1416);
+        V2.x = right * cos(currentLocation.theta*-2*3.1416);
+        V2.y = right * sin(currentLocation.theta*-2*3.1416);
+
+        V3.x = V1.x + V2.x + currentLocation.x;
+        V3.y = V1.y + V2.y + currentLocation.y;
+        result.wpts.waypoints.clear();
+        result.wpts.waypoints.push_back(V3);
       }
+      else if (right < 0.8){
+        V1.x = right * cos(currentLocation.theta*2*3.1416);
+        V1.y = right * sin(currentLocation.theta*2*3.1416);
+
+        V2.x = V1.x + currentLocation.x;
+        V2.y = V1.y + currentLocation.y;
+        result.wpts.waypoints.clear();
+        result.wpts.waypoints.push_back(V2);
+      }
+      else if (left < 0.8){
+        V1.x = right * cos(currentLocation.theta*-2*3.1416);
+        V1.y = right * sin(currentLocation.theta*-2*3.1416);
+
+        V2.x = V1.x + currentLocation.x;
+        V2.y = V1.y + currentLocation.y;
+        result.wpts.waypoints.clear();
+        result.wpts.waypoints.push_back(V2);
+      }
+
     }
 }
 
@@ -112,15 +153,15 @@ Result ObstacleController::DoWork() {
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
-    
-    result.type = waypoint;
-    result.PIDMode = FAST_PID; //use fast pid for waypoints
-    Point forward; 
-    //waypoint is directly ahead of current heading
-    forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));  
-    result.wpts.waypoints.clear();
-    result.wpts.waypoints.push_back(forward);
+    obstacleDetected = false;
+    // result.type = waypoint;
+    // result.PIDMode = FAST_PID; //use fast pid for waypoints
+    // Point forward; 
+    // //waypoint is directly ahead of current heading
+    // forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
+    // forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));  
+    // result.wpts.waypoints.clear();
+    // result.wpts.waypoints.push_back(forward);
 
     // //set heading to previous state
     // result.type = precisionDriving;
