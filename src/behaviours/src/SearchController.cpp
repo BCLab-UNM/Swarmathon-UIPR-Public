@@ -27,10 +27,10 @@ void SearchController::Reset() {
 }
 
 Result SearchController::DoWork() {
-    result.type = waypoint;
-    Point searchLocation;
+    result.type = waypoint;    
 
   if (fidImprovement) {
+    cout << "Using Fidelity" << endl;
     FidelityImprovement();
   }
 
@@ -39,6 +39,7 @@ Result SearchController::DoWork() {
     
     if(myId == 1)
     {
+      cout << "Lawnmower running" << endl;
       //smartRandomSearch(6.8,myId);
       lawnMowerSearch(-6.8,myId);
     }
@@ -55,6 +56,7 @@ Result SearchController::DoWork() {
 
   
     result.wpts.waypoints.clear();
+    cout << "FW: ("<< searchLocation.x << "," << searchLocation.y << ")" << endl;
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
   }
     return result;
@@ -108,6 +110,7 @@ void SearchController::smartRandomSearch(int wallLocation, int myId){
     cout << "------------------------------------------" << endl;
   }
 */
+
 if(first_waypoint)
 {
   first_waypoint = false;
@@ -222,6 +225,9 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
    }
    */
 // first location of each robot
+
+  cout << "First WP: "<< first_waypoint << endl;
+
   if (first_waypoint)
   {
     first_waypoint = false;
