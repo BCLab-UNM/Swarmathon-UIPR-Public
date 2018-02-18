@@ -399,9 +399,25 @@ void LogicController::SetSonarData(float left, float center, float right)
 
 // Called once by RosAdapter in guarded init
 void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
-{
-  searchController.SetCenterLocation(centerLocationOdom);
-  dropOffController.SetCenterLocation(centerLocationOdom);
+{  
+
+  centerAvg.x += centerLocationOdom.x;
+  centerAvg.y += centerLocationOdom.y;
+
+  centerCounter++;
+  if (centerCounter == 30)
+  {
+    centerAvg.x = centerAvg.x/30;
+    centerAvg.y = centerAvg.y/30;
+    
+    cout << "CLO: (" << centerAvg.x << "," << centerAvg.y << ")" << endl;
+    searchController.SetCenterLocation(centerAvg);
+    dropOffController.SetCenterLocation(centerAvg);
+    
+    centerAvg.x = 0;
+    centerAvg.y = 0;
+    centerCounter = 0;
+  }
 }
 
 void LogicController::AddManualWaypoint(Point manualWaypoint, int waypoint_id)

@@ -143,6 +143,17 @@ private:
   void controllerInterconnect();
 
   long int current_time = 0;
+
+  // EDIT
+  //** Variables
+  int centerCounter = 0;
+  Point centerAvg;
+  //**
+
+  //** Functions
+
+  //**
+  //
 };
 
 #endif // LOGICCONTROLLER_H
