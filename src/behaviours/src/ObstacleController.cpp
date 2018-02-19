@@ -36,19 +36,19 @@ int ObstacleController::getDirection(){
   return direction;
 }
 
-void ObstacleController::calcMinIndex(){
-  int size = distRead.size();
-  int direction = getDirection();
+// void ObstacleController::calcMinIndex(){
+//   int size = distRead.size();
+//   int direction = getDirection();
   
-  minIndex = size*(direction+1)/4;
-  maxIndex = size*(direction+3)/4;
+//   minIndex = size*(direction+1)/4;
+//   maxIndex = size*(direction+3)/4;
 
-  for (int i = minIndex; i < maxIndex; i++){
-    if (distRead[link](#i) < distRead[link](#minIndex) && distRead[link](#i) < 0){
-      minIndex = i;
-    }
-  }
-}
+//   for (int i = minIndex; i < maxIndex; i++){
+//     if (distRead[link](#i) < distRead[link](#minIndex) && distRead[link](#i) < 0){
+//       minIndex = i;
+//     }
+//   }
+// }
 // Avoid crashing into objects detected by the ultraound
 // void ObstacleController::avoidObstacle() {
 
@@ -132,19 +132,19 @@ void ObstacleController::follow_Wall() {
     cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
       
     //Add distances read to vector so min and max index can be calculated.
-    distRead[0] = left;
-    distRead[1] = center;
-    distRead[2] = right;
+    distRead.push_back(left);
+    distRead.push_back(center);
+    distRead.push_back(right);
 
     // Calculate min index
-    int size = 3;
+    int size = distRead.size();
     int direction = getDirection();
   
     minIndex = size*(direction+1)/4;
     maxIndex = size*(direction+3)/4;
 
     for (int i = minIndex; i < maxIndex; i++){
-      if (distRead[i] < distRead[minIndex] && distRead[i] > 0){
+      if (distRead[i] < distRead[i+1] && distRead[i] > 0.0){
         minIndex = i;
       }
     }

@@ -42,7 +42,7 @@ private:
   // Try not to run into a physical object
   void avoidObstacle();
   void follow_Wall();
-  double distRead[3];
+  float32[] distRead;
   int getDirection();
   void calcMinIndex();
   int direction;
