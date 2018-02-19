@@ -23,7 +23,8 @@ SearchController::SearchController() {
   magnitude = 0;
   angle = 0;
   unknownAngle = 0;
-
+  first_side_waypoint = true;
+  //triangleSquare = mapSize/2 - 2.5;
 }
 
 void SearchController::Reset() {
@@ -34,10 +35,20 @@ Result SearchController::DoWork() {
 
 
     cout << "Total IDs " << totalIds << endl;
+    if(totalIds <=3)
+    {
+      triangleSquare = mapSize/2 - 2.5; // Triangle square in semi should be 5mts. 
+    }
 
+    else
+    {
+      //Put here the size of the triangle square boundarie. 
+    }
     if(myId == 1)
     {
-        triangleSearch(myId,8);
+      //Before of deciding where to search check the public list of triangles to know their state. 
+        //triangleSearch(myId,8,triangleSquare);
+        sideSearch(myId,1,triangleSquare);
     }
 
     else if(myId == 2)
@@ -55,7 +66,61 @@ Result SearchController::DoWork() {
     return result;
   }
 
-void SearchController::triangleSearch(int myId,int triangularSection)
+void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
+{
+  result.type = waypoint;
+
+  switch(sideSection)
+  {
+    case 1:
+    {
+      cout << "Looking for side section # 1" << endl;
+
+      if(first_side_waypoint)
+      {
+        cout << "Looking for first location" << endl;
+        first_side_waypoint = false; 
+        searchLocation = setSearchLocation(mapSize/2 - .5, mapSize/2 - .5);
+        movingLeft = true;
+        break;
+      }
+
+      else
+      {
+        cout << "Calculating new position." << endl;
+        if(movingLeft)
+        {
+          cout << "Moving Left" << endl;
+
+          //angle = 5*M_PI/4;
+          angle = M_PI/4;
+          magnitude = sqrt(pow((mapSize/2 - .5) - triangleSquare,2) + pow((mapSize/2 - .5)- triangleSquare,2));
+
+          this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+          movingLeft = false;
+          movingRight = true;
+          break;
+        }
+
+        else if(movingRight)
+        {
+          cout << "Moving Right" << endl;
+          movingLeft =true;
+          movingRight = false;
+          break;
+        }
+        
+
+      }
+    }
+
+    default:
+    {
+
+    }
+  }
+}
+void SearchController::triangleSearch(int myId,int triangularSection, float triangleSquare)
 {
   result.type = waypoint;
     //Developing code for first traingular section
@@ -78,7 +143,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);
@@ -107,7 +172,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle -45 + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);
@@ -136,7 +201,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle - 90 + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);
@@ -164,7 +229,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle - 135 + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);
@@ -192,7 +257,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle - 180 + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);
@@ -220,7 +285,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle - 225 + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);
@@ -248,7 +313,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle - 270 + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);
@@ -276,7 +341,7 @@ void SearchController::triangleSearch(int myId,int triangularSection)
             unknownAngle = 180 - (angle - 315 + 90);
             unknownAngle = degToRad(unknownAngle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * 5)/sin(unknownAngle));
+            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
 
             
             //magnitude = rng->uniformReal(0,9.1);

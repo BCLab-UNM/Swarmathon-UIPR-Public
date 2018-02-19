@@ -60,7 +60,8 @@ protected:
   void ProcessData();
   void lawnMowerSearch(int wallLocation, int myId);
   void smartRandomSearch(int wallLocation, int myId);
-  void triangleSearch(int myId, int triangularSection);
+  void triangleSearch(int myId, int triangularSection,float triangleSquare);
+  void sideSearch(int myId, int sideSection,float triangleSquare);
   Point setSearchLocation(float x, float y);
   float degToRad(float deg);
   float radToDeg(float rad);
@@ -82,10 +83,13 @@ private:
   int triangularSection = 1;
   float magnitude;
   float angle, unknownAngle;
+  float triangleSquare;
+  bool movingLeft, movingRight = false;
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
   bool first_waypoint = true;
+  bool first_side_waypoint = true;
   bool succesfullPickup = false;
 
   // EDIT
