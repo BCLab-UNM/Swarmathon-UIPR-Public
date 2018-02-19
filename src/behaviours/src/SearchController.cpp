@@ -92,11 +92,15 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
         {
           cout << "Moving Left" << endl;
 
-          //angle = 5*M_PI/4;
+          /*angle = 5*M_PI/4;
           angle = M_PI/4;
           magnitude = sqrt(pow((mapSize/2 - .5) - triangleSquare,2) + pow((mapSize/2 - .5)- triangleSquare,2));
+          cout << "Magnitude: " << magnitude << endl;
+          //this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+          this->searchLocation.theta = 5*M_PI/4;
+          */
 
-          this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+          this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y - 1.5);
           movingLeft = false;
           movingRight = true;
           break;
@@ -105,6 +109,8 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
         else if(movingRight)
         {
           cout << "Moving Right" << endl;
+         // this->searchLocation.theta = 3*M_PI/4;
+         this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y + 1.5);
           movingLeft =true;
           movingRight = false;
           break;
