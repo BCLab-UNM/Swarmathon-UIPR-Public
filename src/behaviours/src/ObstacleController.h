@@ -43,6 +43,7 @@ private:
   // Try not to run into a physical object
   void avoidObstacle();
   void follow_Wall();
+  int caseVar;
   Point nextPoint;
   int turns;
   int entry[2];

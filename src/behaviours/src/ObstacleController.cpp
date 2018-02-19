@@ -1,5 +1,6 @@
 #include "ObstacleController.h"
 #include <cmath>
+#include <iostream>
 
 ObstacleController::ObstacleController()
 {
@@ -58,55 +59,33 @@ void ObstacleController::follow_Wall() {
   
 
     //always turn right to avoid obstacles
-    if (right < 0.8 || center < 0.8 || left < 0.8) {
+    //if (right < 0.8 || center < 0.8 || left < 0.8) {
       obstacleDetected = true;
-      //result.type = precisionDriving;
-      result.type = waypoint;
-      result.PIDMode = FAST_PID;
-      Point V1, V2, V3;
+      // result.type = precisionDriving;
+      //result.pd.cmdAngular = -K_angular;
+
+      // result.pd.setPointVel = 0.0;
+      // result.pd.cmdVel = 0.0;
+      // result.pd.setPointYaw = 0;
 
       if (right < 0.8 && center < 0.8){
-        V1.x = right * cos(currentLocation.theta*2*3.1416);
-        V1.y = right * sin(currentLocation.theta*2*3.1416);
-        V2.x = center * cos(currentLocation.theta*2*3.1416);
-        V2.y = right * sin(currentLocation.theta*2*3.1416);
-
-        V3.x = V1.x + V2.x + currentLocation.x;
-        V3.y = V1.y + V2.y + currentLocation.y;
-        result.wpts.waypoints.clear();
-        result.wpts.waypoints.push_back(V3);
+        caseVar = 1;
+        cout <<  "Im in Case 1!" << endl;
       }
-      else if (left < 0.8 && center < 0.8){
-        V1.x = right * cos(currentLocation.theta*-2*3.1416);
-        V1.y = right * sin(currentLocation.theta*-2*3.1416);
-        V2.x = right * cos(currentLocation.theta*-2*3.1416);
-        V2.y = right * sin(currentLocation.theta*-2*3.1416);
+       else if (left < 0.8 && center < 0.8){
+        caseVar = 2;
+        cout <<  "Im in Case 2!" << endl;
+       }
+       else if (right < 0.8){
+        caseVar = 3;
+        cout <<  "Im in Case 3!" << endl;
+       }
+       else if (left < 0.8){
+        caseVar = 4;
+        cout <<  "Im in Case 4!" << endl;
+       }
 
-        V3.x = V1.x + V2.x + currentLocation.x;
-        V3.y = V1.y + V2.y + currentLocation.y;
-        result.wpts.waypoints.clear();
-        result.wpts.waypoints.push_back(V3);
-      }
-      else if (right < 0.8){
-        V1.x = right * cos(currentLocation.theta*2*3.1416);
-        V1.y = right * sin(currentLocation.theta*2*3.1416);
-
-        V2.x = V1.x + currentLocation.x;
-        V2.y = V1.y + currentLocation.y;
-        result.wpts.waypoints.clear();
-        result.wpts.waypoints.push_back(V2);
-      }
-      else if (left < 0.8){
-        V1.x = right * cos(currentLocation.theta*-2*3.1416);
-        V1.y = right * sin(currentLocation.theta*-2*3.1416);
-
-        V2.x = V1.x + currentLocation.x;
-        V2.y = V1.y + currentLocation.y;
-        result.wpts.waypoints.clear();
-        result.wpts.waypoints.push_back(V2);
-      }
-
-    }
+    //}
 }
 
 // A collection zone was seen in front of the rover and we are not carrying a target
@@ -133,7 +112,8 @@ void ObstacleController::avoidCollectionZone() {
 
 
 Result ObstacleController::DoWork() {
-
+  double rightAngle = ((int(currentLocation.theta) - 30) + 180) % 360;
+  double leftAngle = ((int(currentLocation.theta) + 30) + 180) % 360;
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
@@ -154,8 +134,59 @@ Result ObstacleController::DoWork() {
     set_waypoint = false;
     clearWaypoints = false;
     obstacleDetected = false;
-    // result.type = waypoint;
-    // result.PIDMode = FAST_PID; //use fast pid for waypoints
+    result.type = waypoint;
+    result.PIDMode = FAST_PID; //use fast pid for waypoints
+    Point V1, V2, V3;
+    
+    switch (caseVar) {
+      case 1:
+      //while (right < 0.8 && center < 0.8){
+        V1.x = right * cos(rightAngle);
+        V1.y = right * sin(rightAngle);
+        V2.x = center * cos(rightAngle);
+        V2.y = center * sin(rightAngle);
+
+        V3.x = currentLocation.x + V1.x + V2.x;
+        V3.y = currentLocation.y + V1.y + V2.y;
+
+        cout << "X value for new vector = " << V3.x << endl;
+        cout << "Y value for new vector = " << V3.y << endl;
+
+        result.wpts.waypoints.clear();
+        result.wpts.waypoints.push_back(V3);
+      //}
+      break;
+    
+      case 2:
+      V1.x = left * cos(leftAngle);
+      V1.y = left * sin(leftAngle);
+      V2.x = center * cos(leftAngle);
+      V2.y = center * sin(leftAngle);
+
+      V3.x = V1.x + V2.x + currentLocation.x;
+      V3.y = V1.y + V2.y + currentLocation.y;
+      result.wpts.waypoints.clear();
+      result.wpts.waypoints.push_back(V3);
+      break;
+
+    // else if (right < 0.8){
+    //   V1.x = right * cos(rightAngle);
+    //   V1.y = right * sin(rightAngle);
+
+    //   V2.x = V1.x + currentLocation.x;
+    //   V2.y = V1.y + currentLocation.y;
+    //   result.wpts.waypoints.clear();
+    //   result.wpts.waypoints.push_back(V2);
+    // }
+    // else if (left < 0.8){
+    //   V1.x = left * cos(leftAngle);
+    //   V1.y = left * sin(leftAngle);
+
+    //   V2.x = V1.x + currentLocation.x;
+    //   V2.y = V1.y + currentLocation.y;
+    //   result.wpts.waypoints.clear();
+    //   result.wpts.waypoints.push_back(V2);
+    // }
     // Point forward; 
     // //waypoint is directly ahead of current heading
     // forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
@@ -177,7 +208,9 @@ Result ObstacleController::DoWork() {
     // forward.y = currentLocation.y + (2 * sin(currentLocation.theta));  
     // result.wpts.waypoints.clear();
     // result.wpts.waypoints.push_back(forward);
+    }
   }
+
 
   return result;
 }
