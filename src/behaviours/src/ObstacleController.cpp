@@ -1,4 +1,5 @@
 #include "ObstacleController.h"
+#include "PID.h"
 #include <cmath>
 #include <iostream>
 
@@ -8,6 +9,7 @@ ObstacleController::ObstacleController()
   obstacleDetected = false;
   obstacleInterrupt = false;
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
+  direction = 0;
 }
 
 //note, not a full reset as this could cause a bad state
@@ -17,6 +19,7 @@ void ObstacleController::Reset() {
   obstacleDetected = false;
   obstacleInterrupt = false;
   delay = current_time;
+  direction = 0;
 }
 
 bool ObstacleController::getObstacleInfo()
@@ -24,19 +27,27 @@ bool ObstacleController::getObstacleInfo()
   return obstacleDetected;
 }
 
-//Return true if the rover can move to desired location
-bool ObstacleController::rfree() {
-  if (right > 0.8){
-    return true;
+int ObstacleController::getDirection(){
+  if (right < left){
+    direction = 1;
   }
-  return false;
+    direction = -1;
+
+  return direction;
 }
 
-bool ObstacleController::lfree() {
-  if (left > 0.8){
-    return true;
+void ObstacleController::calcMinIndex(){
+  int size = distRead.size();
+  int direction = getDirection();
+  
+  minIndex = size*(direction+1)/4;
+  maxIndex = size*(direction+3)/4;
+
+  for (int i = minIndex; i < maxIndex; i++){
+    if (distRead[link](#i) < distRead[link](#minIndex) && distRead[link](#i) < 0){
+      minIndex = i;
+    }
   }
-  return false;
 }
 // Avoid crashing into objects detected by the ultraound
 // void ObstacleController::avoidObstacle() {
@@ -55,37 +66,93 @@ bool ObstacleController::lfree() {
 //     }
 // }
 
+// void ObstacleController::follow_Wall() {
+//   Point V1, V2, V3;
+//   double rightAngle = ((currentLocation.theta - 3.1416/2) + 3.1416);
+//   double leftAngle = ((currentLocation.theta + 3.1416/2) + 3.1416);
+//     //always turn right to avoid obstacles
+//     //if (right < 0.8 || center < 0.8 || left < 0.8) {
+//       obstacleDetected = true;
+//       result.type = waypoint;
+//       result.PIDMode = FAST_PID; //use fast pid for waypoints
+//       // result.type = precisionDriving;
+//       //result.pd.cmdAngular = -K_angular;
+
+//       // result.pd.setPointVel = 0.0;
+//       // result.pd.cmdVel = 0.0;
+//       // result.pd.setPointYaw = 0;
+//       cout << "Current: x: " << currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
+//       if (right < 0.8 && center < 0.8) {
+//         cout <<  "Im in Case 1!" << endl;
+//         cout << "rightAngle = " << rightAngle << endl;
+//         V1.x = right * cos(rightAngle);
+//         V1.y = right * sin(rightAngle);
+//         V2.x = center * cos(rightAngle);
+//         V2.y = center * sin(rightAngle);
+
+//         V3.x = currentLocation.x + V1.x + V2.x;
+//         V3.y = currentLocation.y + V1.y + V2.y;
+
+//         cout << "X value for new vector = " << V3.x << endl;
+//         cout << "Y value for new vector = " << V3.y << endl;
+
+//         result.wpts.waypoints.clear();
+//         result.wpts.waypoints.push_back(V3);
+//       //   caseVar = 1;
+        
+//       }
+//       //  if (left < 0.8 && center < 0.8){
+//       //   caseVar = 2;
+//       //   cout <<  "Im in Case 2!" << endl;
+//       //  }
+//       //  else if (right < 0.8){
+//       //    result.type = precisionDriving;
+//       //    result.pd.cmdAngular = 0.0;
+
+//       //   result.pd.setPointVel = 0.0;
+//       //   result.pd.cmdVel = 0.0;
+//       //   result.pd.setPointYaw = 0;
+//       //   caseVar = 3;
+//       //   cout <<  "Im in Case 3!" << endl;
+//       //  }
+//       //  else if (left < 0.8){
+//       //   caseVar = 4;
+//       //   cout <<  "Im in Case 4!" << endl;
+//       //  }
+//       //  else {
+//       //    cout << "I'm sorronded!!" << endl;
+//       //    caseVar = 1;
+//       //  }
+
+//     //}
+// }
+
 void ObstacleController::follow_Wall() {
+    obstacleDetected = true;
+    cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
+      
+    //Add distances read to vector so min and max index can be calculated.
+    distRead[0] = left;
+    distRead[1] = center;
+    distRead[2] = right;
+
+    // Calculate min index
+    int size = 3;
+    int direction = getDirection();
   
+    minIndex = size*(direction+1)/4;
+    maxIndex = size*(direction+3)/4;
 
-    //always turn right to avoid obstacles
-    //if (right < 0.8 || center < 0.8 || left < 0.8) {
-      obstacleDetected = true;
-      // result.type = precisionDriving;
-      //result.pd.cmdAngular = -K_angular;
-
-      // result.pd.setPointVel = 0.0;
-      // result.pd.cmdVel = 0.0;
-      // result.pd.setPointYaw = 0;
-
-      if (right < 0.8 && center < 0.8){
-        caseVar = 1;
-        cout <<  "Im in Case 1!" << endl;
+    for (int i = minIndex; i < maxIndex; i++){
+      if (distRead[i] < distRead[minIndex] && distRead[i] > 0){
+        minIndex = i;
       }
-       else if (left < 0.8 && center < 0.8){
-        caseVar = 2;
-        cout <<  "Im in Case 2!" << endl;
-       }
-       else if (right < 0.8){
-        caseVar = 3;
-        cout <<  "Im in Case 3!" << endl;
-       }
-       else if (left < 0.8){
-        caseVar = 4;
-        cout <<  "Im in Case 4!" << endl;
-       }
+    }
 
-    //}
+    angleMin = (minIndex - size/2)*currentLocation.theta;
+    distMin = distRead[minIndex];
+    diffE = (distMin - triggerDistance) - e;
+    e = distMin - triggerDistance;
 }
 
 // A collection zone was seen in front of the rover and we are not carrying a target
@@ -112,12 +179,12 @@ void ObstacleController::avoidCollectionZone() {
 
 
 Result ObstacleController::DoWork() {
-  double rightAngle = ((int(currentLocation.theta) - 30) + 180) % 360;
-  double leftAngle = ((int(currentLocation.theta) + 30) + 180) % 360;
+
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
-
+  double rightAngle = ((int(currentLocation.theta) - 30) + 180) % 360;
+  double leftAngle = ((int(currentLocation.theta) + 30) + 180) % 360;
   // The obstacle is an april tag marking the collection zone
   if(collection_zone_seen){
     avoidCollectionZone();
@@ -129,46 +196,50 @@ Result ObstacleController::DoWork() {
 
   //if an obstacle has been avoided
   if (can_set_waypoint) {
-
+    cout << "Im inside new waypoint if!"  << endl;
+    
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
-    obstacleDetected = false;
-    result.type = waypoint;
-    result.PIDMode = FAST_PID; //use fast pid for waypoints
-    Point V1, V2, V3;
+    //obstacleDetected = false;
+    // result.type = waypoint;
+    // result.PIDMode = FAST_PID; //use fast pid for waypoints
+    // Point V1, V2, V3;
     
-    switch (caseVar) {
-      case 1:
-      //while (right < 0.8 && center < 0.8){
-        V1.x = right * cos(rightAngle);
-        V1.y = right * sin(rightAngle);
-        V2.x = center * cos(rightAngle);
-        V2.y = center * sin(rightAngle);
+    // switch (caseVar) {
+    //   case 1 :
+    //   //while (right < 0.8 && center < 0.8){
+    //     V1.x = right * cos(rightAngle);
+    //     V1.y = right * sin(rightAngle);
+    //     V2.x = center * cos(rightAngle);
+    //     V2.y = center * sin(rightAngle);
 
-        V3.x = currentLocation.x + V1.x + V2.x;
-        V3.y = currentLocation.y + V1.y + V2.y;
+    //     V3.x = currentLocation.x + V1.x + V2.x;
+    //     V3.y = currentLocation.y + V1.y + V2.y;
 
-        cout << "X value for new vector = " << V3.x << endl;
-        cout << "Y value for new vector = " << V3.y << endl;
+    //     cout << "X value for new vector = " << V3.x << endl;
+    //     cout << "Y value for new vector = " << V3.y << endl;
 
-        result.wpts.waypoints.clear();
-        result.wpts.waypoints.push_back(V3);
-      //}
-      break;
+    //     result.wpts.waypoints.clear();
+    //     result.wpts.waypoints.push_back(V3);
+    //   //}
+    //   break;
     
-      case 2:
-      V1.x = left * cos(leftAngle);
-      V1.y = left * sin(leftAngle);
-      V2.x = center * cos(leftAngle);
-      V2.y = center * sin(leftAngle);
+    //   case 2 :
+    //   V1.x = left * cos(leftAngle);
+    //   V1.y = left * sin(leftAngle);
+    //   V2.x = center * cos(leftAngle);
+    //   V2.y = center * sin(leftAngle);
 
-      V3.x = V1.x + V2.x + currentLocation.x;
-      V3.y = V1.y + V2.y + currentLocation.y;
-      result.wpts.waypoints.clear();
-      result.wpts.waypoints.push_back(V3);
-      break;
-
+    //   V3.x = V1.x + V2.x + currentLocation.x;
+    //   V3.y = V1.y + V2.y + currentLocation.y;
+    //   result.wpts.waypoints.clear();
+    //   result.wpts.waypoints.push_back(V3);
+    //   break;
+      
+    //   default : 
+    //   cout << "Volé!!" << endl;
+    //   break;
     // else if (right < 0.8){
     //   V1.x = right * cos(rightAngle);
     //   V1.y = right * sin(rightAngle);
@@ -208,10 +279,8 @@ Result ObstacleController::DoWork() {
     // forward.y = currentLocation.y + (2 * sin(currentLocation.theta));  
     // result.wpts.waypoints.clear();
     // result.wpts.waypoints.push_back(forward);
-    }
+    //}
   }
-
-
   return result;
 }
 
