@@ -3,6 +3,7 @@
         "*.ipp": "cpp",
         "slist": "cpp",
         "system_error": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "cmath": "cpp"
     }
 }

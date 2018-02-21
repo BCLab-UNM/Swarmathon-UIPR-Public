@@ -1,6 +1,7 @@
 #ifndef OBSTACLECONTOLLER_H
 #define OBSTACLECONTOLLER_H
 
+#include "PID.h"
 #include "Controller.h"
 #include "Tag.h"
 
@@ -42,7 +43,7 @@ private:
   // Try not to run into a physical object
   void avoidObstacle();
   void follow_Wall();
-  float32[] distRead;
+  double distRead[3];
   int getDirection();
   void calcMinIndex();
   int direction;
@@ -50,6 +51,7 @@ private:
   int maxIndex;
   double angleMin, distMin;
   double e, diffE;
+  PIDConfig config;
   
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.

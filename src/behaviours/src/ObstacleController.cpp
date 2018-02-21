@@ -1,5 +1,4 @@
 #include "ObstacleController.h"
-#include "PID.h"
 #include <cmath>
 #include <iostream>
 
@@ -130,14 +129,19 @@ int ObstacleController::getDirection(){
 void ObstacleController::follow_Wall() {
     obstacleDetected = true;
     cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
-      
+    
+    result.type = precisionDriving;
+
     //Add distances read to vector so min and max index can be calculated.
-    distRead.push_back(left);
-    distRead.push_back(center);
-    distRead.push_back(right);
+    // distRead.push_back(left);
+    // distRead.push_back(center);
+    // distRead.push_back(right);
+    distRead[0] = left;
+    distRead[1] = center;
+    distRead[3] = right;
 
     // Calculate min index
-    int size = distRead.size();
+    int size = 3;
     int direction = getDirection();
   
     minIndex = size*(direction+1)/4;
@@ -151,8 +155,27 @@ void ObstacleController::follow_Wall() {
 
     angleMin = (minIndex - size/2)*currentLocation.theta;
     distMin = distRead[minIndex];
-    diffE = (distMin - triggerDistance) - e;
+    result.pd.cmdAngularError = diffE = (distMin - triggerDistance) - e;
     e = distMin - triggerDistance;
+
+    
+    result.pd.cmdAngular = direction*(config.Kp*e + config.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2);
+     cout << "My Angular Vel is: " << result.pd.cmdAngular << endl;
+    if (right < triggerDistance || center < triggerDistance || left < triggerDistance){
+      result.pd.cmdVel = 0;
+    }
+     else if (right < triggerDistance * 2 || center  triggerDistance * 2 || left < triggerDistance * 2){
+      result.pd.cmdVel = 0.5 * 255;
+      cout << "Found Obstacle, my Vel is: " << result.pd.cmdVel << endl;
+    }
+    else if (fabs(angleMin) > 1.75){
+      result.pd.cmdVel = 0.4 * 255;
+       cout << "Angle min case, my Vel is: " << result.pd.cmdVel << endl;
+    }
+    else {
+      result.pd.cmdVel = 255;
+       cout << "No obstacle, my Vel is: " << result.pd.cmdVel << endl;
+    }    
 }
 
 // A collection zone was seen in front of the rover and we are not carrying a target
