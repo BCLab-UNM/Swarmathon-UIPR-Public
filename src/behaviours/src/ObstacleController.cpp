@@ -135,9 +135,6 @@ void ObstacleController::follow_Wall() {
     distRead.push_back(left);
     distRead.push_back(center);
     distRead.push_back(right);
-    // distRead[0] = left;
-    // distRead[1] = center;
-    // distRead[3] = right;
 
     // Calculate min index
     int size = distRead.size();
@@ -166,18 +163,21 @@ void ObstacleController::follow_Wall() {
     if (right < triggerDistance || center < triggerDistance || left < triggerDistance){
       result.pd.cmdVel = 0;
       distRead.empty();
+      ProcessData();
       //follow_Wall();
     }
      else if (right < triggerDistance * 2 || center  < triggerDistance * 2 || left < triggerDistance * 2){
       result.pd.cmdVel = 0.5 * 255;
       cout << "Found Obstacle, my Vel is: " << result.pd.cmdVel << endl;
       distRead.empty();
+      ProcessData();
       //follow_Wall();
     }
     else if (fabs(angleMin) > 1.75){
       result.pd.cmdVel = 0.4 * 255;
       cout << "Angle min case, my Vel is: " << result.pd.cmdVel << endl;
       distRead.empty();
+      ProcessData();
       //follow_Wall();
     }
     else {
