@@ -11,7 +11,7 @@ PID::PID(PIDConfig config)
 float PID::PIDOut(float calculatedError, float setPoint)
 {
 
-  cout << "ErrorSize:  " << Error.size() << endl;
+  //cout << "ErrorSize:  " << Error.size() << endl;
 
   if (Error.size() >= config.errorHistLength)
   {
@@ -88,6 +88,7 @@ float PID::PIDOut(float calculatedError, float setPoint)
 
   //Proportional
   P = config.Kp * (avgError);  //this is the proportional output
+  cout << "Kp = " << config.Kp << endl; 
   if (P > config.satUpper) //limit the max and minimum output of proportional
     P = config.satUpper;
   if (P < config.satLower)
@@ -157,14 +158,15 @@ float PID::PIDOut(float calculatedError, float setPoint)
 
 
     D = config.Kd * ((Error[0]+Error[1])/2 - (Error[2]+Error[3])/2) * hz;
+    cout << "Kd = " << config.Kd << endl;
 
-    cout << "PID Error[0]:  " << Error[0] << ", Error[1]:  " << Error[1] << ", Error[2]:  " << Error[2] << ", Error[3]:  " << Error[3] << endl;
+    //cout << "PID Error[0]:  " << Error[0] << ", Error[1]:  " << Error[1] << ", Error[2]:  " << Error[2] << ", Error[3]:  " << Error[3] << endl;
 
   }
 
   float PIDOut = P + I + D + FF;
 
-  cout << "PID P:  " << P << ",  I:  " << I << ", D:  " << D << ", FF:  " << FF << endl;
+  //cout << "PID P:  " << P << ",  I:  " << I << ", D:  " << D << ", FF:  " << FF << endl;
 
   if (PIDOut > config.satUpper) //cap vel command
   {

@@ -127,21 +127,20 @@ int ObstacleController::getDirection(){
 // }
 
 void ObstacleController::follow_Wall() {
-    obstacleDetected = true;
-    cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
+  result.type = precisionDriving;
+  //slowVelConfig();
+    //cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
     
-    result.type = precisionDriving;
-
     //Add distances read to vector so min and max index can be calculated.
-    // distRead.push_back(left);
-    // distRead.push_back(center);
-    // distRead.push_back(right);
-    distRead[0] = left;
-    distRead[1] = center;
-    distRead[3] = right;
+    distRead.push_back(left);
+    distRead.push_back(center);
+    distRead.push_back(right);
+    // distRead[0] = left;
+    // distRead[1] = center;
+    // distRead[3] = right;
 
     // Calculate min index
-    int size = 3;
+    int size = distRead.size();
     int direction = getDirection();
   
     minIndex = size*(direction+1)/4;
@@ -153,29 +152,40 @@ void ObstacleController::follow_Wall() {
       }
     }
 
-    angleMin = (minIndex - size/2)*currentLocation.theta;
+    angleMin = (minIndex - size/2)*M_PI/16;
     distMin = distRead[minIndex];
-    result.pd.cmdAngularError = diffE = (distMin - triggerDistance) - e;
+    diffE = (distMin - triggerDistance) - e;
     e = distMin - triggerDistance;
 
     
-    result.pd.cmdAngular = direction*(config.Kp*e + config.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2);
-     cout << "My Angular Vel is: " << result.pd.cmdAngular << endl;
+    result.pd.cmdAngular = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
+    //result.pd. cmdVel = 127.5;
+    cout <<"direction is = " << direction << endl;
+    cout << "My Angular Vel is: " << result.pd.cmdAngular << endl;
+
     if (right < triggerDistance || center < triggerDistance || left < triggerDistance){
       result.pd.cmdVel = 0;
+      distRead.empty();
+      //follow_Wall();
     }
-     else if (right < triggerDistance * 2 || center  triggerDistance * 2 || left < triggerDistance * 2){
+     else if (right < triggerDistance * 2 || center  < triggerDistance * 2 || left < triggerDistance * 2){
       result.pd.cmdVel = 0.5 * 255;
       cout << "Found Obstacle, my Vel is: " << result.pd.cmdVel << endl;
+      distRead.empty();
+      //follow_Wall();
     }
     else if (fabs(angleMin) > 1.75){
       result.pd.cmdVel = 0.4 * 255;
-       cout << "Angle min case, my Vel is: " << result.pd.cmdVel << endl;
+      cout << "Angle min case, my Vel is: " << result.pd.cmdVel << endl;
+      distRead.empty();
+      //follow_Wall();
     }
     else {
       result.pd.cmdVel = 255;
-       cout << "No obstacle, my Vel is: " << result.pd.cmdVel << endl;
-    }    
+      distRead.empty();
+      cout << "No obstacle, my Vel is: " << result.pd.cmdVel << endl;
+    }
+      
 }
 
 // A collection zone was seen in front of the rover and we are not carrying a target

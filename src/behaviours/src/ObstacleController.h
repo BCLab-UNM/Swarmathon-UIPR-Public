@@ -1,9 +1,10 @@
 #ifndef OBSTACLECONTOLLER_H
 #define OBSTACLECONTOLLER_H
 
-#include "PID.h"
 #include "Controller.h"
 #include "Tag.h"
+#include "PID.h"
+#include "DriveController.h"
 
 class ObstacleController : virtual Controller
 {
@@ -43,7 +44,7 @@ private:
   // Try not to run into a physical object
   void avoidObstacle();
   void follow_Wall();
-  double distRead[3];
+  vector<double> distRead;
   int getDirection();
   void calcMinIndex();
   int direction;
