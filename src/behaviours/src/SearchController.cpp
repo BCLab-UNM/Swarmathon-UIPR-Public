@@ -320,6 +320,19 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
     {
       case 1: //This section is from degrees 0->45
         {
+          if(visitedLoc.size() == 0)
+            {
+              cout << "-There are no Published Visited Locations-" << endl;
+            }
+          else{
+              cout << "------------------------------------------" << endl;
+              for(int i = 0; i <= visitedLoc.size() - 1; i++)
+              {
+                cout << "Location #" << i + 1 << "(" << visitedLoc.at(i).x << "," << visitedLoc.at(i).y << ")" << endl;
+              }
+              cout << "------------------------------------------" << endl;
+            }
+
           if(first_waypoint) 
           {
             cout << "--Looking for first given location.--" << endl;
@@ -329,7 +342,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
           }
 
           else{
-            this->visitedPoints.push_back(currentLocation);
+            this->visitedLoc.push_back(currentLocation);
             while(pointAccepted == false)
             {
               angle = rng->uniformReal(0,M_PI/4);
@@ -345,10 +358,10 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
 
               cout <<"Current Location: (" << currentLocation.x <<"," << currentLocation.y << ")" << endl;
 
-              for(int i = 0; i <= this->visitedPoints.size()-1; i++)
+              for(int i = 0; i <= this->visitedLoc.size()-1; i++)
               {
                 cout << "Validating new location" << endl;
-                if(((xLoc >= this->visitedPoints.at(i).x - .5) && (xLoc <= this->visitedPoints.at(i).x + .5)) && ((yLoc >= this->visitedPoints.at(i).y - .5)  && (yLoc <= this->visitedPoints.at(i).y + .5)))
+                if(((xLoc >= this->visitedLoc.at(i).x - .5) && (xLoc <= this->visitedLoc.at(i).x + .5)) && ((yLoc >= this->visitedPoints.at(i).y - .5)  && (yLoc <= this->visitedPoints.at(i).y + .5)))
                 {
                   pointAccepted = false;
                   break;

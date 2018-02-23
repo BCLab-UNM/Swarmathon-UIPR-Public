@@ -105,6 +105,7 @@ private:
   Point latestVisitedPoint;
   //This Vector is used to know all the points that were published into Master.
   std::vector<Point> visitedPoints;
+  vector<Point> visitedLoc;
   //**
 
   //** Functions
