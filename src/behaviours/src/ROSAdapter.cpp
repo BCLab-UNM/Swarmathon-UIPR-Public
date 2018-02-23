@@ -26,7 +26,6 @@
 // Include Controllers
 #include "LogicController.h"
 #include <vector>
-#include "Triangle.h"
 #include "Point.h"
 #include "Tag.h"
 

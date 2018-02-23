@@ -15,16 +15,16 @@ SearchController::SearchController() {
   result.PIDMode = FAST_PID;
   result.fingerAngle = M_PI/2;
   result.wristAngle = M_PI/4;
-  outTravel = true;
+
   searchObstacle = false;
   leftAdjust = false;
   rightAdjust = false;
-  //triangularSection = 2;
+  sideSel = 1;
+  pointCounter =0;
   magnitude = 0;
   angle = 0;
   unknownAngle = 0;
   first_side_waypoint = true;
-  //triangleSquare = mapSize/2 - 2.5;
 }
 
 void SearchController::Reset() {
@@ -45,17 +45,47 @@ Result SearchController::DoWork() {
       triangleSquare = mapSize/2 - 2.5;
       //Put here the size of the triangle square boundarie. 
     }
+
     if(myId == 1)
     {
+      if(pointCounter == 9)
+      {
+        pointCounter = 0;
+        sideSel++;
+      }
+      else{
+        pointCounter++;
+      }
+      sideSearch(myId,sideSel,triangleSquare);
+      /*
       //Before of deciding where to search check the public list of triangles to know their state. 
-        //triangleSearch(myId,8,triangleSquare);
-        sideSearch(myId,4,triangleSquare);
+        if(pointCounter == 8)
+        {
+          pointCounter = 0;
+          //Look for triangle availability. 
+          cout << "Limited Point search reached!!" << endl;
+          triangleSel++;
+        }
+        else{
+          pointCounter++;
+        }
+        triangleSearch(myId,triangleSel,triangleSquare);
+        */
     }
 
     else if(myId == 2)
     {
-      //triangleSearch(myId,2);
-      sideSearch(myId,2,triangleSquare);
+      if(pointCounter == 8)
+        {
+          pointCounter = 0;
+          //Look for triangle availability. 
+          cout << "Limited Point search reached!!" << endl;
+          triangleSel++;
+        }
+        else{
+            pointCounter++;
+        }
+        triangleSearch(myId,triangleSel,triangleSquare);
     }
 
     else if(myId == 3)
@@ -75,7 +105,7 @@ Result SearchController::DoWork() {
 void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
 {
   result.type = waypoint;
-
+  float sideBoundary = mapSize/2 - triangleSquare; //Variable to set maximum size of zig zag search. 
   switch(sideSection)
   {
     case 1:
@@ -86,7 +116,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
       {
         cout << "Looking for first location" << endl;
         first_side_waypoint = false; 
-        searchLocation = setSearchLocation(mapSize/2 - .5, mapSize/2 - .5);
+        searchLocation = setSearchLocation(mapSize/2 - .8, mapSize/2 - .8);
         movingLeft = true;
         break;
       }
@@ -106,7 +136,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
           this->searchLocation.theta = 5*M_PI/4;
           */
 
-          this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y - 1.5);
+          this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y - sideBoundary);
           movingLeft = false;
           movingRight = true;
           break;
@@ -116,7 +146,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
         {
           cout << "Moving Right" << endl;
          // this->searchLocation.theta = 3*M_PI/4;
-         this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y + 1.5);
+         this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y + sideBoundary);
           movingLeft =true;
           movingRight = false;
           break;
@@ -129,54 +159,6 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
   case 2:
     {
       cout << "Looking for side section # 2" << endl;
-
-      if(first_side_waypoint)
-      {
-        cout << "Looking for first location" << endl;
-        first_side_waypoint = false; 
-        searchLocation = setSearchLocation(mapSize/2 - .5, (mapSize/2 - .5) * -1);
-        movingRight = true;
-        break;
-      }
-
-      else
-      {
-        cout << "Calculating new position." << endl;
-        if(movingLeft)
-        {
-          cout << "Moving Left" << endl;
-
-          /*angle = 5*M_PI/4;
-          angle = M_PI/4;
-          magnitude = sqrt(pow((mapSize/2 - .5) - triangleSquare,2) + pow((mapSize/2 - .5)- triangleSquare,2));
-          cout << "Magnitude: " << magnitude << endl;
-          //this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
-          this->searchLocation.theta = 5*M_PI/4;
-          */
-
-          this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y - 1.5);
-          movingLeft = false;
-          movingRight = true;
-          break;
-        }
-
-        else if(movingRight)
-        {
-          cout << "Moving Right" << endl;
-         // this->searchLocation.theta = 3*M_PI/4;
-         this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y + 1.5);
-          movingLeft =true;
-          movingRight = false;
-          break;
-        }
-        
-
-      }
-    }
-
-    case 3:
-    {
-      cout << "Looking for side section # 3" << endl;
 
       if(first_side_waypoint)
       {
@@ -202,7 +184,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
           this->searchLocation.theta = 5*M_PI/4;
           */
 
-          this->searchLocation = setSearchLocation(currentLocation.x + 1.5,currentLocation.y - 1.5);
+          this->searchLocation = setSearchLocation(currentLocation.x + sideBoundary,currentLocation.y - 1.5);
           movingLeft = false;
           movingRight = true;
           break;
@@ -212,7 +194,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
         {
           cout << "Moving Right" << endl;
          // this->searchLocation.theta = 3*M_PI/4;
-         this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y - 1.5);
+         this->searchLocation = setSearchLocation(currentLocation.x - sideBoundary,currentLocation.y - 1.5);
           movingLeft =true;
           movingRight = false;
           break;
@@ -221,6 +203,56 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
 
       }
     }
+
+  case 3:
+    {
+      cout << "Looking for side section # 3" << endl;
+    
+      if(first_side_waypoint)
+      {
+        cout << "Looking for first location" << endl;
+        first_side_waypoint = false; 
+        searchLocation = setSearchLocation(mapSize/2 - .5, (mapSize/2 - .5) * -1);
+        movingRight = true;
+        break;
+      }
+
+      else
+      {
+        cout << "Calculating new position." << endl;
+        if(movingLeft)
+        {
+          cout << "Moving Left" << endl;
+
+          /*angle = 5*M_PI/4;
+          angle = M_PI/4;
+          magnitude = sqrt(pow((mapSize/2 - .5) - triangleSquare,2) + pow((mapSize/2 - .5)- triangleSquare,2));
+          cout << "Magnitude: " << magnitude << endl;
+          //this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+          this->searchLocation.theta = 5*M_PI/4;
+          */
+
+          this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y - sideBoundary);
+          movingLeft = false;
+          movingRight = true;
+          break;
+        }
+
+        else if(movingRight)
+        {
+          cout << "Moving Right" << endl;
+         // this->searchLocation.theta = 3*M_PI/4;
+         this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y + sideBoundary);
+          movingLeft =true;
+          movingRight = false;
+          break;
+        }
+        
+
+      }
+    }
+
+    
 
     case 4:
     {
@@ -250,7 +282,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
           this->searchLocation.theta = 5*M_PI/4;
           */
 
-          this->searchLocation = setSearchLocation(currentLocation.x + 1.5,currentLocation.y - 1.5);
+          this->searchLocation = setSearchLocation(currentLocation.x + sideBoundary,currentLocation.y - 1.5);
           movingLeft = false;
           movingRight = true;
           break;
@@ -260,7 +292,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
         {
           cout << "Moving Right" << endl;
          // this->searchLocation.theta = 3*M_PI/4;
-         this->searchLocation = setSearchLocation(currentLocation.x - 1.5,currentLocation.y - 1.5);
+         this->searchLocation = setSearchLocation(currentLocation.x - sideBoundary,currentLocation.y - 1.5);
           movingLeft =true;
           movingRight = false;
           break;

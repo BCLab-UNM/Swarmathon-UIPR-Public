@@ -3,6 +3,7 @@
 
 #include <random_numbers/random_numbers.h>
 #include "Controller.h"
+#include "Triangle.h"
 
 /**
  * This class implements the search control algorithm for the rovers. The code
@@ -69,7 +70,9 @@ protected:
 private:
 
   Result result;
-
+  
+  int pointCounter, triangleSel,sideSel;
+  bool changeSide = false;
   random_numbers::RandomNumberGenerator* rng;
   Point currentLocation;
   Point centerLocation;
