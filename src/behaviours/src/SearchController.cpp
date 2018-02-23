@@ -24,6 +24,7 @@ SearchController::SearchController() {
   magnitude = 0;
   angle = 0;
   unknownAngle = 0;
+  triangleSel = 1;
   first_side_waypoint = true;
 }
 
@@ -48,6 +49,7 @@ Result SearchController::DoWork() {
 
     if(myId == 1)
     {
+      /*
       if(pointCounter == 9)
       {
         pointCounter = 0;
@@ -57,7 +59,7 @@ Result SearchController::DoWork() {
         pointCounter++;
       }
       sideSearch(myId,sideSel,triangleSquare);
-      /*
+      */
       //Before of deciding where to search check the public list of triangles to know their state. 
         if(pointCounter == 8)
         {
@@ -70,7 +72,6 @@ Result SearchController::DoWork() {
           pointCounter++;
         }
         triangleSearch(myId,triangleSel,triangleSquare);
-        */
     }
 
     else if(myId == 2)
@@ -89,6 +90,7 @@ Result SearchController::DoWork() {
     }
 
     else if(myId == 3)
+    
     {
       sideSearch(myId,3,triangleSquare);
     }
@@ -309,6 +311,9 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
 }
 void SearchController::triangleSearch(int myId,int triangularSection, float triangleSquare)
 {
+  float xLoc = 0;
+  float yLoc = 0;
+  bool pointAccepted = false;
   result.type = waypoint;
     //Developing code for first traingular section
     switch(triangularSection)
@@ -324,20 +329,46 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
           }
 
           else{
-            angle = rng->uniformReal(0,M_PI/4);
-            angle = radToDeg(angle);
+            this->visitedPoints.push_back(currentLocation);
+            while(pointAccepted == false)
+            {
+              angle = rng->uniformReal(0,M_PI/4);
+              angle = radToDeg(angle);
 
-            unknownAngle = 180 - (angle + 90);
-            unknownAngle = degToRad(unknownAngle);
+              unknownAngle = 180 - (angle + 90);
+              unknownAngle = degToRad(unknownAngle);
+              magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
+              cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
+              angle = degToRad(angle); 
+              xLoc = magnitude * cos(angle);
+              yLoc = magnitude * sin(angle);
 
-            magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
+              cout <<"Current Location: (" << currentLocation.x <<"," << currentLocation.y << ")" << endl;
 
+              for(int i = 0; i <= this->visitedPoints.size()-1; i++)
+              {
+                cout << "Validating new location" << endl;
+                if(((xLoc >= this->visitedPoints.at(i).x - .5) && (xLoc <= this->visitedPoints.at(i).x + .5)) && ((yLoc >= this->visitedPoints.at(i).y - .5)  && (yLoc <= this->visitedPoints.at(i).y + .5)))
+                {
+                  pointAccepted = false;
+                  break;
+                }
+                else{
+                  pointAccepted = true;
+                }
+              }
+              if(pointAccepted)
+              {
+                cout << "Point accepted!" << endl;
+                this->searchLocation = setSearchLocation(xLoc,yLoc);
+              }
+              else{
+                cout << "Point not accepted. Generating other location!!" << endl;
+                cout << "Rejected location: (" << xLoc << "," << yLoc << ")" << endl;
+              }
+              
+            }
             
-            //magnitude = rng->uniformReal(0,9.1);
-            cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-            angle = degToRad(angle);
-            this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
-            cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
             break;
           } 
         } 
