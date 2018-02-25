@@ -138,13 +138,13 @@ void ObstacleController::follow_Wall() {
 
     cout <<"minIndex is = " << minIndex << endl;
 
-    angleMin = (minIndex - size/2)*M_PI/12;
+    angleMin = (minIndex - size/2)*M_PI/8;
     distMin = distRead[minIndex];
     diffE = (distMin - triggerDistance) - e;
     e = distMin - triggerDistance;
 
     cout <<"angleMin is = " << angleMin << endl;
-    
+
     result.type = precisionDriving;
     result.pd.cmdAngular = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
     //cout <<"direction is = " << direction << endl;
@@ -152,14 +152,14 @@ void ObstacleController::follow_Wall() {
 
     if (right < triggerDistance || center < triggerDistance || left < triggerDistance){
       result.pd.cmdVel = 0.0;
-      result.pd.setPointYaw = currentLocation.theta;
+      //result.pd.setPointYaw = currentLocation.theta;
       //result.pd.cmdAngular = ;
       //distRead.clear();
     }
     else if (right < triggerDistance * 2 || center < triggerDistance * 2 || left < triggerDistance * 2){
       result.pd.cmdVel = 0.5 * 255;
       //result.pd.cmdAngular = 0.0;
-      result.pd.setPointYaw = currentLocation.theta;
+      //result.pd.setPointYaw = currentLocation.theta;
       cout << "Found Obstacle!, my Vel is: " << result.pd.cmdVel <<  " my anglar vel is: " << result.pd.cmdAngular << " my current heading is: " << 
            currentLocation.theta << endl;
       //distRead.clear();
@@ -167,10 +167,10 @@ void ObstacleController::follow_Wall() {
     else if (fabs(angleMin) > 1.57){
        result.pd.cmdVel = 0.4 * 255;
        if (direction == 1){
-         result.pd.cmdAngular = 0.0;
+         result.pd.cmdAngular = -0.5;
        }
        else{
-         result.pd.cmdAngular = 0.0;
+         result.pd.cmdAngular = 0.5;
        }
        //result.pd.setPointYaw = currentLocation.theta;
        cout << "Angle min case!" << endl;
