@@ -28,26 +28,14 @@ bool ObstacleController::getObstacleInfo()
 
 int ObstacleController::getDirection(){
   if (right < left){
-    direction = 1;
-  }
     direction = -1;
-
+  }
+   else {
+     direction = 1;
+   } 
   return direction;
 }
 
-// void ObstacleController::calcMinIndex(){
-//   int size = distRead.size();
-//   int direction = getDirection();
-  
-//   minIndex = size*(direction+1)/4;
-//   maxIndex = size*(direction+3)/4;
-
-//   for (int i = minIndex; i < maxIndex; i++){
-//     if (distRead[link](#i) < distRead[link](#minIndex) && distRead[link](#i) < 0){
-//       minIndex = i;
-//     }
-//   }
-// }
 // Avoid crashing into objects detected by the ultraound
 // void ObstacleController::avoidObstacle() {
 
@@ -127,15 +115,14 @@ int ObstacleController::getDirection(){
 // }
 
 void ObstacleController::follow_Wall() {
-  result.type = precisionDriving;
-  //slowVelConfig();
     //cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
     
     //Add distances read to vector so min and max index can be calculated.
     distRead.push_back(left);
     distRead.push_back(center);
     distRead.push_back(right);
-
+    cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
+  
     // Calculate min index
     int size = distRead.size();
     int direction = getDirection();
@@ -144,47 +131,48 @@ void ObstacleController::follow_Wall() {
     maxIndex = size*(direction+3)/4;
 
     for (int i = minIndex; i < maxIndex; i++){
-      if (distRead[i] < distRead[i+1] && distRead[i] > 0.0){
+      if (distRead[i] < distRead[i+1] && distRead[i] > 0.1){
         minIndex = i;
       }
     }
 
-    angleMin = (minIndex - size/2)*M_PI/16;
+    angleMin = (minIndex - size/2)*M_PI/12;
     distMin = distRead[minIndex];
+    //distFront = distRead[size/2];
     diffE = (distMin - triggerDistance) - e;
     e = distMin - triggerDistance;
 
-    
-    result.pd.cmdAngular = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
-    //result.pd. cmdVel = 127.5;
-    cout <<"direction is = " << direction << endl;
-    cout << "My Angular Vel is: " << result.pd.cmdAngular << endl;
+    result.type = precisionDriving;
+    result.pd.setPointYaw = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
+    result.pd.cmdAngular = K_angular;
+    //cout <<"direction is = " << direction << endl;
+    //cout << "My Angular Vel is: " << result.pd.cmdAngular << endl;
 
     if (right < triggerDistance || center < triggerDistance || left < triggerDistance){
-      result.pd.cmdVel = 0;
-      distRead.empty();
-      ProcessData();
-      //follow_Wall();
+      result.pd.cmdVel = 0.0;
+      //result.pd.cmdAngular = ;
+      //distRead.empty();
     }
-     else if (right < triggerDistance * 2 || center  < triggerDistance * 2 || left < triggerDistance * 2){
+     else if (right < triggerDistance * 2 || center < triggerDistance * 2 || left < triggerDistance * 2){
       result.pd.cmdVel = 0.5 * 255;
-      cout << "Found Obstacle, my Vel is: " << result.pd.cmdVel << endl;
-      distRead.empty();
-      ProcessData();
-      //follow_Wall();
+      //result.pd.cmdAngular = 0.0;
+      cout << "Found Obstacle (2 case), my Vel is: " << result.pd.setPointVel << endl;
+      //distRead.empty();
     }
     else if (fabs(angleMin) > 1.75){
-      result.pd.cmdVel = 0.4 * 255;
-      cout << "Angle min case, my Vel is: " << result.pd.cmdVel << endl;
-      distRead.empty();
-      ProcessData();
-      //follow_Wall();
-    }
-    else {
-      result.pd.cmdVel = 255;
-      distRead.empty();
+       result.pd.cmdVel = 0.4 * 255;
+       result.pd.cmdAngular = result.pd.setPointYaw;
+       cout << "Angle min case, my Vel is: " << result.pd.setPointVel << endl;
+       //distRead.empty();
+     }
+    else if (right > triggerDistance && center > triggerDistance && left > triggerDistance){
+      result.pd.cmdAngular = 0.0;
+      result.pd.setPointVel = 0.0;
+      result.pd.cmdVel = 0.0;
+      result.pd.setPointYaw = 0;
+      //distRead.empty();
       cout << "No obstacle, my Vel is: " << result.pd.cmdVel << endl;
-    }
+     }
       
 }
 
@@ -216,103 +204,30 @@ Result ObstacleController::DoWork() {
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
-  double rightAngle = ((int(currentLocation.theta) - 30) + 180) % 360;
-  double leftAngle = ((int(currentLocation.theta) + 30) + 180) % 360;
   // The obstacle is an april tag marking the collection zone
   if(collection_zone_seen){
     avoidCollectionZone();
   }
   else {
-    //avoidObstacle();
     follow_Wall();
   }
 
   //if an obstacle has been avoided
   if (can_set_waypoint) {
     cout << "Im inside new waypoint if!"  << endl;
-    
+    //distRead.empty();
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
-    //obstacleDetected = false;
     // result.type = waypoint;
+
     // result.PIDMode = FAST_PID; //use fast pid for waypoints
-    // Point V1, V2, V3;
-    
-    // switch (caseVar) {
-    //   case 1 :
-    //   //while (right < 0.8 && center < 0.8){
-    //     V1.x = right * cos(rightAngle);
-    //     V1.y = right * sin(rightAngle);
-    //     V2.x = center * cos(rightAngle);
-    //     V2.y = center * sin(rightAngle);
-
-    //     V3.x = currentLocation.x + V1.x + V2.x;
-    //     V3.y = currentLocation.y + V1.y + V2.y;
-
-    //     cout << "X value for new vector = " << V3.x << endl;
-    //     cout << "Y value for new vector = " << V3.y << endl;
-
-    //     result.wpts.waypoints.clear();
-    //     result.wpts.waypoints.push_back(V3);
-    //   //}
-    //   break;
-    
-    //   case 2 :
-    //   V1.x = left * cos(leftAngle);
-    //   V1.y = left * sin(leftAngle);
-    //   V2.x = center * cos(leftAngle);
-    //   V2.y = center * sin(leftAngle);
-
-    //   V3.x = V1.x + V2.x + currentLocation.x;
-    //   V3.y = V1.y + V2.y + currentLocation.y;
-    //   result.wpts.waypoints.clear();
-    //   result.wpts.waypoints.push_back(V3);
-    //   break;
-      
-    //   default : 
-    //   cout << "Volé!!" << endl;
-    //   break;
-    // else if (right < 0.8){
-    //   V1.x = right * cos(rightAngle);
-    //   V1.y = right * sin(rightAngle);
-
-    //   V2.x = V1.x + currentLocation.x;
-    //   V2.y = V1.y + currentLocation.y;
-    //   result.wpts.waypoints.clear();
-    //   result.wpts.waypoints.push_back(V2);
-    // }
-    // else if (left < 0.8){
-    //   V1.x = left * cos(leftAngle);
-    //   V1.y = left * sin(leftAngle);
-
-    //   V2.x = V1.x + currentLocation.x;
-    //   V2.y = V1.y + currentLocation.y;
-    //   result.wpts.waypoints.clear();
-    //   result.wpts.waypoints.push_back(V2);
-    // }
     // Point forward; 
     // //waypoint is directly ahead of current heading
     // forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
     // forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));  
     // result.wpts.waypoints.clear();
     // result.wpts.waypoints.push_back(forward);
-
-    // //set heading to previous state
-    // result.type = precisionDriving;
-    // result.pd.cmdAngular = K_angular;
-    // result.pd.setPointVel = 0.0;
-    // result.pd.cmdVel = 0.0;
-    // result.pd.setPointYaw = 0;
-    
-
-    // result.type = waypoint;
-    // result.PIDMode = FAST_PID;
-    // forward.x = currentLocation.x + (2 * cos(currentLocation.theta));
-    // forward.y = currentLocation.y + (2 * sin(currentLocation.theta));  
-    // result.wpts.waypoints.clear();
-    // result.wpts.waypoints.push_back(forward);
-    //}
   }
   return result;
 }

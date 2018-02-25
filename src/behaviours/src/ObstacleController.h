@@ -51,8 +51,7 @@ private:
   int minIndex;
   int maxIndex;
   double angleMin, distMin;
-  double e, diffE;
-  PIDConfig config;
+  double e, diffE, distFront;
   
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
