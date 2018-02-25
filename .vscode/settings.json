@@ -4,6 +4,7 @@
         "slist": "cpp",
         "system_error": "cpp",
         "functional": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "array": "cpp"
     }
 }

@@ -27,7 +27,7 @@ bool ObstacleController::getObstacleInfo()
 }
 
 int ObstacleController::getDirection(){
-  if (right < left){
+  if (left < right){
     direction = -1;
   }
    else {
@@ -121,7 +121,7 @@ void ObstacleController::follow_Wall() {
     distRead.push_back(left);
     distRead.push_back(center);
     distRead.push_back(right);
-    cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
+    //cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
   
     // Calculate min index
     int size = distRead.size();
@@ -132,46 +132,57 @@ void ObstacleController::follow_Wall() {
 
     for (int i = minIndex; i < maxIndex; i++){
       if (distRead[i] < distRead[i+1] && distRead[i] > 0.1){
-        minIndex = i;
+        minIndex = i + 1;
       }
     }
 
+    cout <<"minIndex is = " << minIndex << endl;
+
     angleMin = (minIndex - size/2)*M_PI/12;
     distMin = distRead[minIndex];
-    //distFront = distRead[size/2];
     diffE = (distMin - triggerDistance) - e;
     e = distMin - triggerDistance;
 
+    cout <<"angleMin is = " << angleMin << endl;
+    
     result.type = precisionDriving;
-    result.pd.setPointYaw = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
-    result.pd.cmdAngular = K_angular;
+    result.pd.cmdAngular = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
     //cout <<"direction is = " << direction << endl;
     //cout << "My Angular Vel is: " << result.pd.cmdAngular << endl;
 
     if (right < triggerDistance || center < triggerDistance || left < triggerDistance){
       result.pd.cmdVel = 0.0;
+      result.pd.setPointYaw = currentLocation.theta;
       //result.pd.cmdAngular = ;
-      //distRead.empty();
+      //distRead.clear();
     }
-     else if (right < triggerDistance * 2 || center < triggerDistance * 2 || left < triggerDistance * 2){
+    else if (right < triggerDistance * 2 || center < triggerDistance * 2 || left < triggerDistance * 2){
       result.pd.cmdVel = 0.5 * 255;
       //result.pd.cmdAngular = 0.0;
-      cout << "Found Obstacle (2 case), my Vel is: " << result.pd.setPointVel << endl;
-      //distRead.empty();
+      result.pd.setPointYaw = currentLocation.theta;
+      cout << "Found Obstacle!, my Vel is: " << result.pd.cmdVel <<  " my anglar vel is: " << result.pd.cmdAngular << " my current heading is: " << 
+           currentLocation.theta << endl;
+      //distRead.clear();
     }
-    else if (fabs(angleMin) > 1.75){
+    else if (fabs(angleMin) > 1.57){
        result.pd.cmdVel = 0.4 * 255;
-       result.pd.cmdAngular = result.pd.setPointYaw;
-       cout << "Angle min case, my Vel is: " << result.pd.setPointVel << endl;
-       //distRead.empty();
+       if (direction == 1){
+         result.pd.cmdAngular = 0.0;
+       }
+       else{
+         result.pd.cmdAngular = 0.0;
+       }
+       //result.pd.setPointYaw = currentLocation.theta;
+       cout << "Angle min case!" << endl;
+       //distRead.clear();
      }
     else if (right > triggerDistance && center > triggerDistance && left > triggerDistance){
       result.pd.cmdAngular = 0.0;
       result.pd.setPointVel = 0.0;
       result.pd.cmdVel = 0.0;
       result.pd.setPointYaw = 0;
-      //distRead.empty();
-      cout << "No obstacle, my Vel is: " << result.pd.cmdVel << endl;
+      distRead.clear();
+      cout << "No obstacle detected!" << endl;
      }
       
 }
@@ -224,8 +235,8 @@ Result ObstacleController::DoWork() {
     // result.PIDMode = FAST_PID; //use fast pid for waypoints
     // Point forward; 
     // //waypoint is directly ahead of current heading
-    // forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    // forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));  
+    // forward.x = currentLocation.x;
+    // forward.y = currentLocation.y;  
     // result.wpts.waypoints.clear();
     // result.wpts.waypoints.push_back(forward);
   }
