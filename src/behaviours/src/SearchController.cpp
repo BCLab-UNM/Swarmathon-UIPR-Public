@@ -33,7 +33,7 @@ Result SearchController::DoWork() {
     if(myId == 1)
     {
       //smartRandomSearch(6.8,myId);
-      lawnMowerSearch(-6.8,myId);
+      lawnMowerSearch(-4,myId);
     }
 
     else if(myId == 2)
@@ -217,7 +217,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
     switch (myId) {
       case 1:
       {
-        searchLocation.x = -1;
+        searchLocation.x = -.5;
         searchLocation.y = (wallLocation/-1 - .5) ;
         break;
       }
@@ -247,7 +247,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
       {
         //cout << "-Reached mini wall-" << endl;
         searchLocation.x = currentLocation.x;
-        searchLocation.y = currentLocation.y - 1;
+        searchLocation.y = currentLocation.y - .5;
         cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y <<")" << endl;
         leftAdjust = true;
       }
@@ -265,7 +265,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
       {
         //cout << "-Reached center line-" << endl;
         searchLocation.x = currentLocation.x;
-        searchLocation.y = currentLocation.y - 1;
+        searchLocation.y = currentLocation.y - .5;
         cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y <<")" << endl;
         rightAdjust = true;
         leftAdjust = false;
@@ -289,7 +289,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
 
         if(miniWall < 0)//if Left Side Robot
         {
-          searchLocation.x = currentLocation.x +.3;
+          searchLocation.x = currentLocation.x +.2;
         }
         else{ //if Right Side Robot
           searchLocation.x = currentLocation.x -.3;
@@ -300,7 +300,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
         //cout << "-Walking towards wall-" << endl;
         if(miniWall < 0)//if Left Side Robot
         {
-          searchLocation.x = currentLocation.x -.3;
+          searchLocation.x = currentLocation.x -.2;
         }
         else{ //if Right Side Robot
           searchLocation.x = currentLocation.x +.3;
