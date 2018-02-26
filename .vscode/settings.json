@@ -5,6 +5,8 @@
         "system_error": "cpp",
         "functional": "cpp",
         "cmath": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "chrono": "cpp",
+        "limits": "cpp"
     }
 }

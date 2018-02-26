@@ -46,13 +46,13 @@ private:
   void follow_Wall();
   vector<double> distRead;
   int getDirection();
-  void calcMinIndex();
   int direction;
   int minIndex;
   int maxIndex;
   double angleMin, distMin;
-  double e, diffE, distFront;
-  
+  double e, diffE;
+  DriveController driveC;
+  float linearVelocity, angularVelocity;
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );
