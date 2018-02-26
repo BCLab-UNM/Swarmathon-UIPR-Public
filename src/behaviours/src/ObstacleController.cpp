@@ -27,17 +27,17 @@ bool ObstacleController::getObstacleInfo()
 void ObstacleController::avoidObstacle() {
 
     //always turn left to avoid obstacles
-    if (right < 0.8 || center < 0.8 || left < 0.8) {
-      cout << "Pared encontrada en (" << currentLocation.x << "," << currentLocation.y << ")";
-      obstacleDetected = true;
-      result.type = precisionDriving;
+    // if (right < 0.8 || center < 0.8 || left < 0.8) {
+    //   cout << "Pared encontrada en (" << currentLocation.x << "," << currentLocation.y << ")";
+    //   obstacleDetected = true;
+    //   result.type = precisionDriving;
 
-      result.pd.cmdAngular = -K_angular;
+    //   result.pd.cmdAngular = -K_angular;
 
-      result.pd.setPointVel = 0.0;
-      result.pd.cmdVel = 0.0;
-      result.pd.setPointYaw = 0;
-    }
+    //   result.pd.setPointVel = 0.0;
+    //   result.pd.cmdVel = 0.0;
+    //   result.pd.setPointYaw = 0;
+    // }
 }
 
 // A collection zone was seen in front of the rover and we are not carrying a target

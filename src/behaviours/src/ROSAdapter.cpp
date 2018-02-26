@@ -634,7 +634,7 @@ void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
 
 void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight) {
 
-  logicController.SetSonarData(sonarLeft->range, sonarCenter->range, sonarRight->range);
+  //logicController.SetSonarData(sonarLeft->range, sonarCenter->range, sonarRight->range);
 
 }
 
