@@ -33,7 +33,7 @@ Result SearchController::DoWork() {
     if(myId == 1)
     {
       //smartRandomSearch(6.8,myId);
-      lawnMowerSearch(-4,myId);
+      lawnMowerSearch(-3,myId);
     }
 
     else if(myId == 2)
