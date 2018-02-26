@@ -51,6 +51,7 @@ private:
   vector<double> distRead;
   int getDirection();
   int direction;
+  int size;
   int minIndex;
   int maxIndex;
   double angleMin, distMin;

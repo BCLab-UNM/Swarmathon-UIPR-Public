@@ -8,7 +8,7 @@ ObstacleController::ObstacleController()
   obstacleDetected = false;
   obstacleInterrupt = false;
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
-  direction = 0;
+  direction = 1;
 }
 
 //note, not a full reset as this could cause a bad state
@@ -18,7 +18,7 @@ void ObstacleController::Reset() {
   obstacleDetected = false;
   obstacleInterrupt = false;
   delay = current_time;
-  direction = 0;
+  direction = 1;
 }
 
 bool ObstacleController::getObstacleInfo()
@@ -193,9 +193,10 @@ void ObstacleController::follow_Wall() {
     //cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
   
     // Calculate min index
-    int size = distRead.size();
-    int direction = getDirection();
-  
+    size = distRead.size();
+    //int direction = getDirection();
+    direction = 1;
+      
     minIndex = size*(direction+1)/4;
     maxIndex = size*(direction+3)/4;
 
@@ -207,13 +208,13 @@ void ObstacleController::follow_Wall() {
 
     cout <<"minIndex is = " << minIndex << endl;
 
-    angleMin = (minIndex - size/2)*M_PI/8;
+    angleMin = (minIndex - size/2)*M_PI/12;
     distMin = distRead[minIndex];
     diffE = (distMin - triggerDistance) - e;
     e = distMin - triggerDistance;
     
     //clear lists and add new readings
-    //distRead.clear();
+    distRead.clear();
     cout <<"angleMin is = " << angleMin << endl;
 
     result.type = precisionDriving;
