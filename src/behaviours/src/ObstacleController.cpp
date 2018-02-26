@@ -120,67 +120,10 @@ int ObstacleController::getDirection(){
 //      }
       
 // }
-// void ObstacleController::follow_Wall() {
-//     //cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
-    
-//     //Add distances read to vector so min and max index can be calculated.
-//     distRead.push_back(left);
-//     distRead.push_back(center);
-//     distRead.push_back(right);
-//     //cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
-  
-//     // Calculate min index
-//     int size = distRead.size();
-//     int direction = getDirection();
-  
-//     minIndex = size*(direction+1)/4;
-//     maxIndex = size*(direction+3)/4;
 
-//     for (int i = minIndex; i < maxIndex; i++){
-//       if (distRead[i] < distRead[i+1] && distRead[i] > 0.1){
-//         minIndex = i + 1;
-//       }
-//     }
-
-//     cout <<"minIndex is = " << minIndex << endl;
-
-//     angleMin = (minIndex - size/2)*M_PI/8;
-//     distMin = distRead[minIndex];
-//     diffE = (distMin - triggerDistance) - e;
-//     e = distMin - triggerDistance;
-    
-//     distRead.clear();
-//     cout <<"angleMin is = " << angleMin << endl;
-
-//     result.type = precisionDriving;
-//     result.pd.cmdVel = 0.0;
-//     result.pd.cmdAngular = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
-
-//     if (right < triggerDistance || center < triggerDistance || left < triggerDistance){
-//       result.pd.cmdVel = 0.0;
-//     }
-//     else if (right < triggerDistance * 2 || center < triggerDistance * 2 || left < triggerDistance * 2){
-//       result.pd.cmdVel = 0.5 * 255;
-//       //result.pd.cmdAngular = 0.0;
-//       cout << "Found Obstacle!, my Vel is: " << result.pd.cmdVel  << " my current heading is: " << currentLocation.theta << endl;
-//     }
-//     else if (fabs(angleMin) > 1.57){
-//        result.pd.cmdVel = 0.4 * 255;
-//        //result.pd.cmdAngular = 0.0;
-//        cout << "Angle min case!" << endl;
-//      }
-//     else if (right > triggerDistance && center > triggerDistance && left > triggerDistance){
-//       result.pd.cmdAngular = 0.0;
-//       result.pd.setPointVel = 0.0;
-//       result.pd.cmdVel = 255;
-//       result.pd.setPointYaw = 0;
-//       cout << "No obstacle detected!" << endl;
-//      }
-// }
-
-void ObstacleController::setPIDController(PID pid, PIDConfig pidC){
-  this->pid = pid;
+void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2){
   this->pidC = pidC;
+  this->pidC2 = pidC2;
 }
 
 void ObstacleController::follow_Wall() {
@@ -220,7 +163,7 @@ void ObstacleController::follow_Wall() {
     result.type = precisionDriving;
     
     result.pd.cmdVel = 0.5 * 255;
-    result.pd.cmdAngular = direction*(pidC.Kp*e + pidC.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
+    result.pd.cmdAngular = direction*(pidC2.Kp*e + pidC2.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
     result.pd.setPointVel = 0.0;
     result.pd.setPointYaw = 0;
 }

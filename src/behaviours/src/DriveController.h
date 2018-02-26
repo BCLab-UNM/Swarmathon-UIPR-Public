@@ -19,7 +19,8 @@ public:
   void SetResultData(Result result) {this->result = result;}
   void SetVelocityData(float linearVelocity,float angularVelocity);
   void SetCurrentLocation(Point currentLocation) {this->currentLocation = currentLocation;}
-  PIDConfig getPIDConfig();
+  PIDConfig getPIDVelConfig();
+  PIDConfig getPIDYawConfig();
   PID getPID();
 
 private:

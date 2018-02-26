@@ -32,9 +32,9 @@ public:
   //Asked by logiccontroller to determine if drive controller should have its waypoints cleared
   bool getShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
 
-  PID pid;
-  PIDConfig pidC;
-  void setPIDController(PID pid, PIDConfig);
+  PID pid; //Unused
+  PIDConfig pidC, pidC2;
+  void setPIDController(PIDConfig pidC, PIDConfig pidC2);
 
 protected:
 

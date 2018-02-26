@@ -236,8 +236,11 @@ bool DriveController::HasWork() {   }
 PID DriveController::getPID(){
   return this->constVelPID;
 }
-PIDConfig DriveController::getPIDConfig(){
+PIDConfig DriveController::getPIDVelConfig(){
   return this->constVelConfig();
+}
+PIDConfig DriveController::getPIDYawConfig(){
+  return this->constYawConfig();
 }
 
 void DriveController::ProcessData()
