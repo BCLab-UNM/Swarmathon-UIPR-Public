@@ -221,7 +221,6 @@ void ObstacleController::follow_Wall() {
     result.pd.cmdVel = 0.5 * 255;
     result.pd.cmdAngular = direction*(pidC.Kp*e + pidC.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
     result.pd.setPointVel = 0.0;
-    result.pd.cmdVel = 0.0;
     result.pd.setPointYaw = 0;
 }
 // A collection zone was seen in front of the rover and we are not carrying a target
