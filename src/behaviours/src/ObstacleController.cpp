@@ -178,6 +178,11 @@ int ObstacleController::getDirection(){
 //      }
 // }
 
+void ObstacleController::setPIDController(PID pid, PIDConfig pidC){
+  this->pid = pid;
+  this->pidC = pidC;
+}
+
 void ObstacleController::follow_Wall() {
     //cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
     
@@ -207,33 +212,17 @@ void ObstacleController::follow_Wall() {
     diffE = (distMin - triggerDistance) - e;
     e = distMin - triggerDistance;
     
-    distRead.clear();
+    //clear lists and add new readings
+    //distRead.clear();
     cout <<"angleMin is = " << angleMin << endl;
 
     result.type = precisionDriving;
+    
+    result.pd.cmdVel = 0.5 * 255;
+    result.pd.cmdAngular = direction*(pidC.Kp*e + pidC.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
+    result.pd.setPointVel = 0.0;
     result.pd.cmdVel = 0.0;
-    result.pd.cmdAngular = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
-
-    if (right < triggerDistance || center < triggerDistance || left < triggerDistance){
-      result.pd.cmdVel = 0.0;
-    }
-    else if (right < triggerDistance * 2 || center < triggerDistance * 2 || left < triggerDistance * 2){
-      result.pd.cmdVel = 0.5 * 255;
-      result.pd.cmdAngular = 0.0;
-      cout << "Found Obstacle!, my Vel is: " << result.pd.cmdVel  << " my current heading is: " << currentLocation.theta << endl;
-    }
-    else if (fabs(angleMin) > 1.57){
-       result.pd.cmdVel = 0.4 * 255;
-       result.pd.cmdAngular = 0.0;
-       cout << "Angle min case!" << endl;
-     }
-    else if (right > triggerDistance && center > triggerDistance && left > triggerDistance){
-      result.pd.cmdAngular = 0.0;
-      result.pd.setPointVel = 0.0;
-      result.pd.cmdVel = 0.0;
-      result.pd.setPointYaw = 0;
-      cout << "No obstacle detected!" << endl;
-     }
+    result.pd.setPointYaw = 0;
 }
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.

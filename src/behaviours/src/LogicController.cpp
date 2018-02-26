@@ -263,6 +263,8 @@ bool LogicController::HasWork()
 
 void LogicController::controllerInterconnect()
 {
+
+  obstacleController.setPIDController(driveController.getPID(), driveController.getPIDConfig());
   // EDIT
   if(searchController.getVisitedFlag())
   {

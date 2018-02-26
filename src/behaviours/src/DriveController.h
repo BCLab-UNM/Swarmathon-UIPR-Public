@@ -19,6 +19,8 @@ public:
   void SetResultData(Result result) {this->result = result;}
   void SetVelocityData(float linearVelocity,float angularVelocity);
   void SetCurrentLocation(Point currentLocation) {this->currentLocation = currentLocation;}
+  PIDConfig getPIDConfig();
+  PID getPID();
 
 private:
 
@@ -58,7 +60,7 @@ private:
   PIDConfig slowVelConfig();
   PIDConfig slowYawConfig();
   PIDConfig constVelConfig();
-  PIDConfig constYawConfig();
+  PIDConfig constYawConfig();  
 
   void fastPID(float errorVel,float errorYaw, float setPointVel, float setPointYaw);
   void slowPID(float errorVel,float errorYaw, float setPointVel, float setPointYaw);

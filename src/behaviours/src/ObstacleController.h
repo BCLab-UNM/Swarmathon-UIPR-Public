@@ -32,6 +32,10 @@ public:
   //Asked by logiccontroller to determine if drive controller should have its waypoints cleared
   bool getShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
 
+  PID pid;
+  PIDConfig pidC;
+  void setPIDController(PID pid, PIDConfig);
+
 protected:
 
   void ProcessData();
@@ -50,8 +54,7 @@ private:
   int minIndex;
   int maxIndex;
   double angleMin, distMin;
-  double e, diffE;
-  DriveController driveC;
+  double e, diffE;  
   float linearVelocity, angularVelocity;
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
