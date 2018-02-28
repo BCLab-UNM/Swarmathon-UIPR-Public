@@ -224,7 +224,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
       }
       case 2:
       {
-        searchLocation.x = 1;
+        searchLocation.x = .5;
         searchLocation.y = (wallLocation/-1 - .5); //Modify when whole map configuration is done.
       }
       case 3:
@@ -293,7 +293,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
           searchLocation.x = currentLocation.x + 1;
         }
         else{ //if Right Side Robot
-          searchLocation.x = currentLocation.x -1;
+          searchLocation.x = currentLocation.x - 1;
         }
       }
       //if we are going outside the base searching.
@@ -304,7 +304,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
           searchLocation.x = currentLocation.x - 1;
         }
         else{ //if Right Side Robot
-          searchLocation.x = currentLocation.x +1;
+          searchLocation.x = currentLocation.x + 1;
         }
         searchLocation.y = currentLocation.y;
         cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y <<")" << endl;
