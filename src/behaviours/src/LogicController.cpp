@@ -265,6 +265,7 @@ void LogicController::controllerInterconnect()
 {
 
   obstacleController.setPIDController(driveController.getPIDVelConfig(),driveController.getPIDYawConfig());
+  
   // EDIT
   if(searchController.getVisitedFlag())
   {

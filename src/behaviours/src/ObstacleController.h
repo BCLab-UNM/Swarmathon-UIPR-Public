@@ -5,6 +5,7 @@
 #include "Tag.h"
 #include "PID.h"
 #include "DriveController.h"
+#include <angles/angles.h> 
 
 class ObstacleController : virtual Controller
 {
@@ -32,7 +33,7 @@ public:
   //Asked by logiccontroller to determine if drive controller should have its waypoints cleared
   bool getShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
 
-  PID pid; //Unused
+  PID pid; 
   PIDConfig pidC, pidC2;
   void setPIDController(PIDConfig pidC, PIDConfig pidC2);
 
@@ -48,15 +49,18 @@ private:
   // Try not to run into a physical object
   void avoidObstacle();
   void follow_Wall();
-  vector<double> distRead;
-  int getDirection();
-  int direction;
-  int size;
-  int minIndex;
-  int maxIndex;
-  double angleMin, distMin;
-  double e, diffE;  
-  float linearVelocity, angularVelocity;
+  vector<double> distRead; //distances read from sonars
+  int getDirection(); //returns direction (-1 or 1)
+  int direction; //-1 for following right wall. 1 for folloeing left wall
+  int size; //reenges vector size
+  int minIndex; //min and max indexes for angleMin calc
+  int maxIndex; 
+  int turnCounter; //count how many turns the robot has done
+  double angleMin, distMin; //minimun angle and distance between object and rover vars
+  double e, diffE;  //error vars
+  float linearVelocity, angularVelocity; //usused variables
+  float errorYaw, distance;
+  bool need_vel;
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );
@@ -64,7 +68,7 @@ private:
   const float K_angular = 1.0; //radians a second turn rate to avoid obstacles
   const float reactivate_center_sonar_threshold = 0.8; //reactive center sonar if it goes back above this distance, assuming it is deactivated
   const int targetCountPivot = 6; ///unused variable
-  const float obstacleDistancePivot = 0.2526; ///unused variable
+  const float obstacleDistancePivot = 0.2526; //used in angleMin calc
   const float triggerDistance = 0.8;
 
   /*

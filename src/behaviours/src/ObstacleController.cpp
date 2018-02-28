@@ -9,16 +9,22 @@ ObstacleController::ObstacleController()
   obstacleInterrupt = false;
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
   direction = 1;
+  turnCounter = 0;
+  need_vel = false;
 }
 
 //note, not a full reset as this could cause a bad state
 //resets the interupt and knowledge of an obstacle or obstacle avoidance only.
-void ObstacleController::Reset() {
+void ObstacleController::Reset()
+{
   obstacleAvoided = true;
   obstacleDetected = false;
   obstacleInterrupt = false;
   delay = current_time;
+  result.PIDMode = CONST_PID;
   direction = 1;
+  turnCounter = 0;
+  need_vel = false;
 }
 
 bool ObstacleController::getObstacleInfo()
@@ -26,13 +32,16 @@ bool ObstacleController::getObstacleInfo()
   return obstacleDetected;
 }
 
-int ObstacleController::getDirection(){
-  if (left < right){
+int ObstacleController::getDirection()
+{
+  if (left < right)
+  {
+    direction = 1;
+  }
+  else
+  {
     direction = -1;
   }
-   else {
-     direction = 1;
-   } 
   return direction;
 }
 
@@ -55,17 +64,17 @@ int ObstacleController::getDirection(){
 
 // void ObstacleController::follow_Wall() {
 //     //cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
-    
+
 //     //Add distances read to vector so min and max index can be calculated.
 //     distRead.push_back(left);
 //     distRead.push_back(center);
 //     distRead.push_back(right);
 //     //cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
-  
+
 //     // Calculate min index
 //     int size = distRead.size();
 //     int direction = getDirection();
-  
+
 //     minIndex = size*(direction+1)/4;
 //     maxIndex = size*(direction+3)/4;
 
@@ -99,7 +108,7 @@ int ObstacleController::getDirection(){
 //       result.pd.cmdVel = 0.5 * 255;
 //       result.pd.cmdAngular = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2);;
 //       //result.pd.setPointYaw = currentLocation.theta;
-//       cout << "Found Obstacle!, my Vel is: " << result.pd.cmdVel <<  " my anglar vel is: " << result.pd.cmdAngular << " my current heading is: " << 
+//       cout << "Found Obstacle!, my Vel is: " << result.pd.cmdVel <<  " my anglar vel is: " << result.pd.cmdAngular << " my current heading is: " <<
 //            currentLocation.theta << endl;
 //       //distRead.clear();
 //     }
@@ -118,112 +127,144 @@ int ObstacleController::getDirection(){
 //       distRead.clear();
 //       cout << "No obstacle detected!" << endl;
 //      }
-      
+
 // }
 
-void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2){
+void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2)
+{
+  //this->pid = pid;
   this->pidC = pidC;
   this->pidC2 = pidC2;
 }
 
-void ObstacleController::follow_Wall() {
-    //cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
-    
-    //Add distances read to vector so min and max index can be calculated.
-    distRead.push_back(left);
-    distRead.push_back(center);
-    distRead.push_back(right);
-    //cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
-  
-    // Calculate min index
-    size = distRead.size();
-    //int direction = getDirection();
-    direction = 1;
-      
-    minIndex = size*(direction+1)/4;
-    maxIndex = size*(direction+3)/4;
+void ObstacleController::follow_Wall()
+{
+  //cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
+  //Add distances read to vector so min and max index can be calculated.
+  distRead.push_back(left);
+  distRead.push_back(center);
+  distRead.push_back(right);
+  //cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
 
-    for (int i = minIndex; i < maxIndex; i++){
-      if (distRead[i] < distRead[i+1] && distRead[i] > 0.1){
-        minIndex = i + 1;
-      }
+  // Calculate min index
+  size = distRead.size();
+  direction = getDirection();
+  //direction = 1;
+  cout << "My direction is: " << direction << endl;
+  minIndex = size * (direction + 1) / 4;
+  maxIndex = size * (direction + 3) / 4;
+
+  for (int i = minIndex; i < maxIndex; i++)
+  {
+    if (distRead[i] < distRead[i + 1] && distRead[i] > 0.1)
+    {
+      minIndex = i + 1;
     }
+  }
 
-    cout <<"minIndex is = " << minIndex << endl;
+  //cout <<"minIndex is = " << minIndex << endl;
 
-    angleMin = (minIndex - size/2)*M_PI/12;
-    distMin = distRead[minIndex];
-    diffE = (distMin - triggerDistance) - e;
-    e = distMin - triggerDistance;
-    
-    //clear lists and add new readings
-    distRead.clear();
-    cout <<"angleMin is = " << angleMin << endl;
+  angleMin = (minIndex - size / 2) * M_PI/12;
+  distMin = distRead[minIndex];
+  diffE = (distMin - triggerDistance) - e;
+  e = distMin - triggerDistance;
 
-    result.type = precisionDriving;
-    
-    result.pd.cmdVel = 0.5 * 255;
-    result.pd.cmdAngular = direction*(pidC2.Kp*e + pidC2.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
-    result.pd.setPointVel = 0.0;
-    result.pd.setPointYaw = 0;
+  result.type = precisionDriving;
+
+  // drive and turn simultaniously
+  result.pd.cmdAngular = 0.8;
+  result.pd.cmdVel = 0.15;
+  result.pd.setPointVel = 0.35;
+  result.pd.setPointYaw = direction*(10*e + 1.1*diffE) + K_angular * (angleMin - M_PI * direction/2);
+
+  //clear lists and add new readings
+  //distRead.clear();
+  //     cout <<"angleMin is = " << angleMin << endl;
+
+  //     result.type = precisionDriving;
+
+  //     //result.pd.cmdVel = 0.5 * 255;
+  //     result.pd.left = direction*(pidC.Kp*e + pidC.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
+  //     cout << "My angular vel is = " << result.pd.left << endl;
+  //     result.pd.setPointVel = 0.0;
+  //     result.pd.setPointYaw = 0.0;
+
+  //     if (turnCounter == 0){
+  //       result.pd.right = 127.5;
+  //       //result.pd.cmdAngular = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
+  //       //cout << "My angular vel is (if 1) = " << result.pd.left << endl;
+  //       turnCounter++;
+  //     }
+  //     else if (turnCounter > 0){
+  //       result.pd.right = 200;
+  //       //result.pd.left = direction*(10*e + 5*diffE) + K_angular * (angleMin - M_PI * direction/2); //PD controller
+  //       turnCounter++;
+  //     }
 }
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
-void ObstacleController::avoidCollectionZone() {
+void ObstacleController::avoidCollectionZone()
+{
 
-    cout << "Base detected" << endl;
-    result.type = precisionDriving;
+  cout << "Base detected" << endl;
+  result.type = precisionDriving;
 
-    result.pd.cmdVel = 0.0;
+  result.pd.cmdVel = 0.0;
 
-    // Decide which side of the rover sees the most april tags and turn away
-    // from that side
-    if(count_left_collection_zone_tags < count_right_collection_zone_tags) {
-      result.pd.cmdAngular = K_angular;
-    } else {
-      result.pd.cmdAngular = -K_angular;
-    }
+  // Decide which side of the rover sees the most april tags and turn away
+  // from that side
+  if (count_left_collection_zone_tags < count_right_collection_zone_tags)
+  {
+    result.pd.cmdAngular = K_angular;
+  }
+  else
+  {
+    result.pd.cmdAngular = -K_angular;
+  }
 
-    result.pd.setPointVel = 0.0;
-    result.pd.cmdVel = 0.0;
-    result.pd.setPointYaw = 0;
+  result.pd.setPointVel = 0.0;
+  result.pd.cmdVel = 0.0;
+  result.pd.setPointYaw = 0;
 }
 
-
-Result ObstacleController::DoWork() {
+Result ObstacleController::DoWork()
+{
 
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
   // The obstacle is an april tag marking the collection zone
-  if(collection_zone_seen){
+  if (collection_zone_seen)
+  {
     avoidCollectionZone();
   }
-  else {
+  else
+  {
     follow_Wall();
   }
 
   //if an obstacle has been avoided
-  if (can_set_waypoint) {
-    cout << "Im inside new waypoint if!"  << endl;
+  if (can_set_waypoint)
+  {
+    cout << "Im inside new waypoint if!" << endl;
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
     // result.type = waypoint;
 
     // result.PIDMode = FAST_PID; //use fast pid for waypoints
-    // Point forward; 
+    // Point forward;
     // //waypoint is directly ahead of current heading
     // forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    // forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));  
+    // forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
     // result.wpts.waypoints.clear();
     // result.wpts.waypoints.push_back(forward);
   }
   return result;
 }
 
-
-void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float sonarright) {
+void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float sonarright)
+{
   left = sonarleft;
   right = sonarright;
   center = sonarcenter;
@@ -231,20 +272,23 @@ void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float 
   ProcessData();
 }
 
-void ObstacleController::setCurrentLocation(Point currentLocation) {
+void ObstacleController::setCurrentLocation(Point currentLocation)
+{
   this->currentLocation = currentLocation;
 }
 
-void ObstacleController::ProcessData() {
+void ObstacleController::ProcessData()
+{
 
   //timeout timer for no tag messages
   //this is used to set collection zone seen to false beacuse
   //there is no report of 0 tags seen
   long int Tdifference = current_time - timeSinceTags;
-  float Td = Tdifference/1e3;
-  if (Td >= 0.5) {
+  float Td = Tdifference / 1e3;
+  if (Td >= 0.5)
+  {
     collection_zone_seen = false;
-    phys= false;
+    phys = false;
     if (!obstacleAvoided)
     {
       can_set_waypoint = true;
@@ -252,24 +296,30 @@ void ObstacleController::ProcessData() {
   }
 
   //If we are ignoring the center sonar
-  if(ignore_center_sonar){
+  if (ignore_center_sonar)
+  {
     //If the center distance is longer than the reactivation threshold
-    if(center > reactivate_center_sonar_threshold){
+    if (center > reactivate_center_sonar_threshold)
+    {
       //currently do not re-enable the center sonar instead ignore it till the block is dropped off
       //ignore_center_sonar = false; //look at sonar again beacuse center ultrasound has gone long
     }
-    else{
+    else
+    {
       //set the center distance to "max" to simulated no obstacle
       center = 3;
     }
   }
-  else {
+  else
+  {
     //this code is to protect against a held block causing a false short distance
     //currently pointless due to above code
-    if (center < 3.0) {
+    if (center < 3.0)
+    {
       result.wristAngle = 0.7;
     }
-    else {
+    else
+    {
       result.wristAngle = -1;
     }
   }
@@ -299,54 +349,60 @@ void ObstacleController::ProcessData() {
 // Added relative pose information so we know whether the
 // top of the AprilTag is pointing towards the rover or away.
 // If the top of the tags are away from the rover then treat them as obstacles.
-void ObstacleController::setTagData(vector<Tag> tags){
+void ObstacleController::setTagData(vector<Tag> tags)
+{
   collection_zone_seen = false;
   count_left_collection_zone_tags = 0;
   count_right_collection_zone_tags = 0;
 
   // this loop is to get the number of center tags
-  if (!targetHeld) {
-    for (int i = 0; i < tags.size(); i++) { //redundant for loop
-      if (tags[i].getID() == 256) {
+  if (!targetHeld)
+  {
+    for (int i = 0; i < tags.size(); i++)
+    { //redundant for loop
+      if (tags[i].getID() == 256)
+      {
 
-	collection_zone_seen = checkForCollectionZoneTags( tags );
+        collection_zone_seen = checkForCollectionZoneTags(tags);
         timeSinceTags = current_time;
       }
     }
   }
 }
 
-bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags ) {
+bool ObstacleController::checkForCollectionZoneTags(vector<Tag> tags)
+{
 
-  for ( auto & tag : tags ) {
+  for (auto &tag : tags)
+  {
 
     // Check the orientation of the tag. If we are outside the collection zone the yaw will be positive so treat the collection zone as an obstacle.
     //If the yaw is negative the robot is inside the collection zone and the boundary should not be treated as an obstacle.
     //This allows the robot to leave the collection zone after dropping off a target.
-    if ( tag.calcYaw() > 0 )
+    if (tag.calcYaw() > 0)
+    {
+      // checks if tag is on the right or left side of the image
+      if (tag.getPositionX() + camera_offset_correction > 0)
       {
-	// checks if tag is on the right or left side of the image
-	if (tag.getPositionX() + camera_offset_correction > 0) {
-	  count_right_collection_zone_tags++;
-
-	} else {
-	  count_left_collection_zone_tags++;
-	}
+        count_right_collection_zone_tags++;
       }
-
+      else
+      {
+        count_left_collection_zone_tags++;
+      }
+    }
   }
-
 
   // Did any tags indicate that the robot is inside the collection zone?
   return count_left_collection_zone_tags + count_right_collection_zone_tags > 0;
-
 }
 
 //obstacle controller should inrerupt is based upon the transition from not seeing and obstacle to seeing an obstacle
-bool ObstacleController::ShouldInterrupt() {
+bool ObstacleController::ShouldInterrupt()
+{
 
   //if we see and obstacle and havent thrown an interrupt yet
-  if(obstacleDetected && !obstacleInterrupt)
+  if (obstacleDetected && !obstacleInterrupt)
   {
     obstacleInterrupt = true;
     return true;
@@ -354,17 +410,20 @@ bool ObstacleController::ShouldInterrupt() {
   else
   {
     //if the obstacle has been avoided and we had previously detected one interrupt to change to waypoints
-    if(obstacleAvoided && obstacleDetected)
+    if (obstacleAvoided && obstacleDetected)
     {
       Reset();
       return true;
-    } else {
+    }
+    else
+    {
       return false;
     }
   }
 }
 
-bool ObstacleController::HasWork() {
+bool ObstacleController::HasWork()
+{
   //there is work if a waypoint needs to be set or the obstacle hasnt been avoided
   if (can_set_waypoint && set_waypoint)
   {
@@ -375,20 +434,23 @@ bool ObstacleController::HasWork() {
 }
 
 //ignore center ultrasound
-void ObstacleController::setIgnoreCenterSonar(){
+void ObstacleController::setIgnoreCenterSonar()
+{
   ignore_center_sonar = true;
 }
 
-void ObstacleController::setCurrentTimeInMilliSecs( long int time )
+void ObstacleController::setCurrentTimeInMilliSecs(long int time)
 {
   current_time = time;
 }
 
-void ObstacleController::setTargetHeld() {
+void ObstacleController::setTargetHeld()
+{
   targetHeld = true;
 
   //adjust current state on transition from no cube held to cube held
-  if (previousTargetState == false) {
+  if (previousTargetState == false)
+  {
     obstacleAvoided = true;
     obstacleInterrupt = false;
     obstacleDetected = false;

@@ -233,9 +233,9 @@ bool DriveController::ShouldInterrupt()
 bool DriveController::HasWork() {   }
 
 //Students Code!
-PID DriveController::getPID(){
-  return this->constVelPID;
-}
+// PID DriveController::getPID(){
+//   return this->fastPID;
+// }
 PIDConfig DriveController::getPIDVelConfig(){
   return this->constVelConfig();
 }
@@ -268,7 +268,7 @@ void DriveController::ProcessData()
     //calculate inputs into the PIDS for precision driving
     if (result.PIDMode == FAST_PID)
     {
-      float vel = result.pd.cmdVel -linearVelocity;
+      float vel = result.pd.cmdVel - linearVelocity;
       float setVel = result.pd.cmdVel;
       fastPID(vel,result.pd.cmdAngularError, setVel, result.pd.setPointYaw);
     }
@@ -286,7 +286,7 @@ void DriveController::ProcessData()
       float vel = result.pd.cmdVel - linearVelocity;
       float angular = result.pd.cmdAngular - angularVelocity;
 
-      //cout << "Ang. Vel.  " << angularVelocity << "  Ang. Error" << angular << endl; //DEBUGGING CODE
+      cout << "Ang. Vel.  " << angularVelocity << "  Ang. Error" << angular << endl; //DEBUGGING CODE
 
       constPID(vel, angular ,result.pd.setPointVel, result.pd.setPointYaw);
     }
@@ -338,7 +338,7 @@ void DriveController::slowPID(float errorVel,float errorYaw, float setPointVel, 
 void DriveController::constPID(float erroVel,float constAngularError, float setPointVel, float setPointYaw)
 {
 
-  //cout << "PID CONST" << endl; //DEBUGGING CODE
+  cout << "PID CONST" << endl; //DEBUGGING CODE
 
   float velOut = constVelPID.PIDOut(erroVel, setPointVel);
   float yawOut = constYawPID.PIDOut(constAngularError, setPointYaw);
