@@ -22,7 +22,7 @@ void ObstacleController::Reset()
   obstacleInterrupt = false;
   delay = current_time;
   result.PIDMode = CONST_PID;
-  direction = 1;
+  direction = 0;
   turnCounter = 0;
   need_vel = false;
 }
@@ -36,11 +36,11 @@ int ObstacleController::getDirection()
 {
   if (left < right)
   {
-    direction = 1;
+    direction = -1;
   }
   else
   {
-    direction = -1;
+    direction = 1;
   }
   return direction;
 }
@@ -141,14 +141,13 @@ void ObstacleController::follow_Wall()
 {
   //cout << "Current - " << "x: " <<currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
   //Add distances read to vector so min and max index can be calculated.
+  //cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
   distRead.push_back(left);
   distRead.push_back(center);
   distRead.push_back(right);
-  //cout << "Added to list: " << distRead[0] << " " << distRead[1] << " " << distRead[2] << endl;
-
   // Calculate min index
   size = distRead.size();
-  direction = getDirection();
+  direction = -1;
   //direction = 1;
   cout << "My direction is: " << direction << endl;
   minIndex = size * (direction + 1) / 4;
@@ -164,18 +163,30 @@ void ObstacleController::follow_Wall()
 
   //cout <<"minIndex is = " << minIndex << endl;
 
-  angleMin = (minIndex - size / 2) * M_PI/12;
+  angleMin = (minIndex - size / 2) * M_PI_4;
   distMin = distRead[minIndex];
   diffE = (distMin - triggerDistance) - e;
   e = distMin - triggerDistance;
+  //distRead.clear();
+
+  cout << "ANGLEMIN = " << angleMin << endl;
 
   result.type = precisionDriving;
+  result.pd.cmdAngular =  direction*(pidC2.Kp*e + pidC2.Kd*diffE) + K_angular * (angleMin - M_PI * direction/2);
 
-  // drive and turn simultaniously
-  result.pd.cmdAngular = 0.8;
-  result.pd.cmdVel = 0.15;
-  result.pd.setPointVel = 0.35;
-  result.pd.setPointYaw = direction*(10*e + 1.1*diffE) + K_angular * (angleMin - M_PI * direction/2);
+  if (turnCounter == 0){
+    result.pd.cmdVel = 0.0;
+    turnCounter++;
+  }
+  else if (turnCounter > 0 && fabs(angleMin) > M_PI_2){
+    result.pd.cmdVel = 1.00;
+    cout << "ANGLEMIN CASE!" << endl;
+    //result.pd.cmdVel = 0.0;
+  }
+  else{
+    result.pd.cmdVel = 1.50;
+  }
+
 
   //clear lists and add new readings
   //distRead.clear();
