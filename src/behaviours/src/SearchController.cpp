@@ -33,17 +33,17 @@ Result SearchController::DoWork() {
     if(myId == 1)
     {
       //smartRandomSearch(6.8,myId);
-      lawnMowerSearch(-3,myId);
+      lawnMowerSearch(-4,myId);
     }
 
     else if(myId == 2)
     {
-      lawnMowerSearch(6.8,myId);
+      lawnMowerSearch(4,myId);
     }
 
     else if(myId == 3)
     {
-      smartRandomSearch(-6.8,myId);
+      smartRandomSearch(-4,myId);
     }
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
@@ -82,86 +82,87 @@ void SearchController::smartRandomSearch(int wallLocation, int myId){
   setVisitedPoint(currentLocation);
   setVisitedPointFlag(true);
 
-  if(visitedPoints.size() == 0)
-  {
-    cout << "-There are no Published Visited Locations-" << endl;
-    //cout << "-Going to first X value-" << endl;
-    //number = .1;
-  }
-  else{
-    cout << "------------------------------------------" << endl;
-     for(int i = 0; i <= visitedPoints.size() - 1; i++)
-     {
-       cout << "Location #" << i + 1 << "(" << visitedPoints.at(i).x << "," << visitedPoints.at(0).y << ")" << endl;
-     }
-    cout << "------------------------------------------" << endl;
-  }
+  // if(visitedPoints.size() == 0)
+  // {
+  //   cout << "-There are no Published Visited Locations-" << endl;
+  //   //cout << "-Going to first X value-" << endl;
+  //   //number = .1;
+  // }
+  // else{
+  //   cout << "------------------------------------------" << endl;
+  //    for(int i = 0; i <= visitedPoints.size() - 1; i++)
+  //    {
+  //      cout << "Location #" << i + 1 << "(" << visitedPoints.at(i).x << "," << visitedPoints.at(0).y << ")" << endl;
+  //    }
+  //   cout << "------------------------------------------" << endl;
+  // }
 
 if(first_waypoint)
 {
   first_waypoint = false;
   cout << "Searching for first given location!!" << endl;
-  searchLocation.theta = 0;
+  //searchLocation.theta = 0;
   searchLocation.x = -.1;
   searchLocation.y = -.1;
 }
 else{
  
-  while(xAccepted == false)
-  {
-    number = rng->uniformReal(0,-6.5);
-    for(int i = 0; i <= (this->visitedPoints.size() - 1); i++)
-    {
-      cout <<"Verifying numbers" << endl;
-      if(abs(number - visitedPoints.at(i).x) <= .1)
-      {
-        shield = true;
-        break;
-      }
-    }
-    if(shield)
-    {
-      cout << "Generated X value rejected!!" << endl;
-      shield = false;
-      xAccepted = false;
-    }
-    else{
-      cout << "Generated X value accepted" << endl;
-      xAccepted = true;
-      }
-    }
+  // while(xAccepted == false)
+  // {
+  //   number = rng->uniformReal(0,-6.5);
+  //   for(int i = 0; i <= (this->visitedPoints.size() - 1); i++)
+  //   {
+  //     cout <<"Verifying numbers" << endl;
+  //     if(abs(number - visitedPoints.at(i).x) <= .1)
+  //     {
+  //       shield = true;
+  //       break;
+  //     }
+  //   }
+  //   if(shield)
+  //   {
+  //     cout << "Generated X value rejected!!" << endl;
+  //     shield = false;
+  //     xAccepted = false;
+  //   }
+  //   else{
+  //     cout << "Generated X value accepted" << endl;
+  //     xAccepted = true;
+  //     }
+  //   }
 
+    number = rng->uniformReal(0,-4);
     searchLocation.x = number;
     shield = false;
 
-    while(yAccepted == false)
-    {
-      number = rng->uniformReal(0,-6.5);
-      for(int i = 0; i <= (this->visitedPoints.size() - 1); i++)
-      {
-        cout <<"Verifying numbers" << endl;
-        if(abs(number - visitedPoints.at(i).y) <= .1)
-        {
-          shield = true;
-          break;
-        }
-      }
-      if(shield)
-      {
-        cout << "Generated Y value rejected!!" << endl;
-        shield = false;
-        yAccepted = false;
-      }
-      else{
-        cout << "Generated Y value accepted" << endl;
-        yAccepted = true;
-      }
-    }
-    number = rng->uniformReal(0,-6.5);
+    // while(yAccepted == false)
+    // {
+    //   number = rng->uniformReal(0,-6.5);
+    //   for(int i = 0; i <= (this->visitedPoints.size() - 1); i++)
+    //   {
+    //     cout <<"Verifying numbers" << endl;
+    //     if(abs(number - visitedPoints.at(i).y) <= .1)
+    //     {
+    //       shield = true;
+    //       break;
+    //     }
+    //   }
+    //   if(shield)
+    //   {
+    //     cout << "Generated Y value rejected!!" << endl;
+    //     shield = false;
+    //     yAccepted = false;
+    //   }
+    //   else{
+    //     cout << "Generated Y value accepted" << endl;
+    //     yAccepted = true;
+    //   }
+    // }
+    number = rng->uniformReal(0,-4);
     searchLocation.y = number;
     cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y <<")" << endl;
   }
-  this->visitedPoints.push_back(searchLocation);
+  //this->visitedPoints.push_back(searchLocation);
 }
 
 void SearchController::lawnMowerSearch(int wallLocation,int myId){
@@ -187,11 +188,11 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
    centerLine = -0.01;
   }
 
-  cout << "Publishing visited point: (" << currentLocation.x << "," << currentLocation.y << ")" << endl;
-  setVisitedPoint(currentLocation);
-  setVisitedPointFlag(true);
+  cout << "Initial Location: (" << currentLocation.x << "," << currentLocation.y << ")" << endl;
+  //setVisitedPoint(currentLocation);
+  //setVisitedPointFlag(true);
 
-  cout << "-Looking for Published visited locations-" << endl;
+  //cout << "-Looking for Published visited locations-" << endl;
 
 /*
   if(visitedPoints.size() == 0)
@@ -212,7 +213,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
   {
     first_waypoint = false;
     cout << "Searching for first given location!!" << endl;
-    searchLocation.theta = 0;
+    //searchLocation.theta = 0;
 
     switch (myId) {
       case 1:
@@ -247,7 +248,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
       {
         //cout << "-Reached mini wall-" << endl;
         searchLocation.x = currentLocation.x;
-        searchLocation.y = currentLocation.y - .5;
+        searchLocation.y = currentLocation.y - 1;
         cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y <<")" << endl;
         leftAdjust = true;
       }
@@ -265,7 +266,7 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
       {
         //cout << "-Reached center line-" << endl;
         searchLocation.x = currentLocation.x;
-        searchLocation.y = currentLocation.y - .5;
+        searchLocation.y = currentLocation.y - 1;
         cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y <<")" << endl;
         rightAdjust = true;
         leftAdjust = false;
@@ -289,10 +290,10 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
 
         if(miniWall < 0)//if Left Side Robot
         {
-          searchLocation.x = currentLocation.x +.2;
+          searchLocation.x = currentLocation.x + 1;
         }
         else{ //if Right Side Robot
-          searchLocation.x = currentLocation.x -.3;
+          searchLocation.x = currentLocation.x -1;
         }
       }
       //if we are going outside the base searching.
@@ -300,10 +301,10 @@ void SearchController::lawnMowerSearch(int wallLocation,int myId){
         //cout << "-Walking towards wall-" << endl;
         if(miniWall < 0)//if Left Side Robot
         {
-          searchLocation.x = currentLocation.x -.2;
+          searchLocation.x = currentLocation.x - 1;
         }
         else{ //if Right Side Robot
-          searchLocation.x = currentLocation.x +.3;
+          searchLocation.x = currentLocation.x +1;
         }
         searchLocation.y = currentLocation.y;
         cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y <<")" << endl;

@@ -29,7 +29,7 @@ void LogicController::Reset() {
 //The logical flow if the behaviours is controlled here by using a interrupt, haswork, priority queue system.
 Result LogicController::DoWork() {
   Result result;
-
+ 
   //first a loop runs through all the controllers who have a priority of 0 or above witht he largest number being
   //most important. A priority of less than 0 is an ignored controller use -1 for standards sake.
   //if any controller needs and interrupt the logic state is changed to interrupt
@@ -126,7 +126,7 @@ Result LogicController::DoWork() {
     //waypoints are also a pass through facilitated command but with a slightly diffrent overhead
     //they are handled in the LOGIC_STATE_WAITING switch case
     else if(result.type == waypoint) {
-
+      cout << "Sendig result to DriveController! "<< endl; 
       logicState = LOGIC_STATE_WAITING;
       driveController.SetResultData(result);
       //fall through on purpose
@@ -311,6 +311,7 @@ void LogicController::controllerInterconnect()
 // Recieves position in the world inertial frame (should rename to SetOdomPositionData)
 void LogicController::SetPositionData(Point currentLocation)
 {
+  cout << "Current location (LOGIC C) is: " << "(" << currentLocation.x << "," << currentLocation.y << ")" << endl;
   searchController.SetCurrentLocation(currentLocation);
   dropOffController.SetCurrentLocation(currentLocation);
   obstacleController.setCurrentLocation(currentLocation);

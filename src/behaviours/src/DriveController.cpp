@@ -80,7 +80,7 @@ Result DriveController::DoWork()
 
   case STATE_MACHINE_WAYPOINTS:
   {
-
+    cout << "Using DriveController" << endl;
     //Handles route planning and navigation as well as making sure all waypoints are valid.
 
     bool tooClose = true;
