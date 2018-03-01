@@ -1,19 +1,32 @@
 #include "LogicController.h"
 
-LogicController::LogicController() {
+LogicController::LogicController()
+{
 
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
+  /////////////////////////////////////////ANGEL////////////////////////////////
+  LPF_BETA = 0.25f;
+  lefta = 0;
+  righta = 0;
+  centera = 0;
+
+  SumLeftSensor.resize(10, 3);
+  SumRightSensor.resize(10, 3);
+  SumCenterSensor.resize(10, 3);
+
+  AveSensor = 0;
+  //////////////////////////////////////////////////////////////////////////////
 
   ProcessData();
 
   control_queue = priority_queue<PrioritizedController>();
-
 }
 
 LogicController::~LogicController() {}
 
-void LogicController::Reset() {
+void LogicController::Reset()
+{
 
   std::cout << "LogicController.Reset()" << std::endl;
   logicState = LOGIC_STATE_INTERRUPT;
@@ -27,47 +40,57 @@ void LogicController::Reset() {
 //***********************************************************************************************************************
 //This function is called every 1/10th second by the ROSAdapter
 //The logical flow if the behaviours is controlled here by using a interrupt, haswork, priority queue system.
-Result LogicController::DoWork() {
+Result LogicController::DoWork()
+{
   Result result;
- 
+
   //first a loop runs through all the controllers who have a priority of 0 or above witht he largest number being
   //most important. A priority of less than 0 is an ignored controller use -1 for standards sake.
   //if any controller needs and interrupt the logic state is changed to interrupt
-  for(PrioritizedController cntrlr : prioritizedControllers) {
-    if(cntrlr.controller->ShouldInterrupt() && cntrlr.priority >= 0)
-      {
-	logicState = LOGIC_STATE_INTERRUPT;
-	//do not break all shouldInterupts may need calling in order to properly pre-proccess data.
-      }
+  for (PrioritizedController cntrlr : prioritizedControllers)
+  {
+    if (cntrlr.controller->ShouldInterrupt() && cntrlr.priority >= 0)
+    {
+      logicState = LOGIC_STATE_INTERRUPT;
+      //do not break all shouldInterupts may need calling in order to properly pre-proccess data.
+    }
   }
 
   //logic state switch
-  switch(logicState) {
+  switch (logicState)
+  {
 
   //when an interrupt has been thorwn or there are no pending control_queue.top().actions logic controller is in this state.
-  case LOGIC_STATE_INTERRUPT: {
+  case LOGIC_STATE_INTERRUPT:
+  {
     //Reset the control queue
     control_queue = priority_queue<PrioritizedController>();
 
     //check what controllers have work to do all that say yes will be added to the priority queue.
-    for(PrioritizedController cntrlr : prioritizedControllers) {
-      if(cntrlr.controller->HasWork()) {
-        if (cntrlr.priority < 0) {
+    for (PrioritizedController cntrlr : prioritizedControllers)
+    {
+      if (cntrlr.controller->HasWork())
+      {
+        if (cntrlr.priority < 0)
+        {
           continue;
         }
-        else {
+        else
+        {
           control_queue.push(cntrlr);
         }
       }
     }
 
     //if no controlers have work report this to ROS Adapter and do nothing.
-    if(control_queue.empty()) {
+    if (control_queue.empty())
+    {
       result.type = behavior;
       result.b = wait;
       break;
     }
-    else {
+    else
+    {
       //default result state if someone has work this safe gaurds against faulty result types
       result.b = noChange;
     }
@@ -77,36 +100,45 @@ Result LogicController::DoWork() {
 
     //anaylyze the result that was returned and do state changes accordingly
     //behavior types are used to indicate behavior changes of some form
-    if(result.type == behavior) {
+    if (result.type == behavior)
+    {
 
       //ask for an external reset so the state of the controller is preserved untill after it has returned a result and
       //gotten a chance to communicate with other controllers
-      if (result.reset) {
+      if (result.reset)
+      {
         controllerInterconnect(); //allow controller to communicate state data before it is reset
         control_queue.top().controller->Reset();
       }
 
       //ask for the procces state to change to the next state or loop around to the begining
-      if(result.b == nextProcess) {
-        if (processState == _LAST - 1) {
+      if (result.b == nextProcess)
+      {
+        if (processState == _LAST - 1)
+        {
           processState = _FIRST;
         }
-        else {
+        else
+        {
           processState = (ProcessState)((int)processState + 1);
         }
       }
       //ask for the procces state to change to the previouse state or loop around to the end
-      else if(result.b == prevProcess) {
-        if (processState == _FIRST) {
+      else if (result.b == prevProcess)
+      {
+        if (processState == _FIRST)
+        {
           processState = (ProcessState)((int)_LAST - 1);
         }
-        else {
+        else
+        {
           processState = (ProcessState)((int)processState - 1);
         }
       }
 
       //update the priorites of the controllers based upon the new process state.
-      if (result.b == nextProcess || result.b == prevProcess) {
+      if (result.b == nextProcess || result.b == prevProcess)
+      {
         ProcessData();
         result.b = wait;
         driveController.Reset(); //it is assumed that the drive controller may be in a bad state if interrupted so reset it
@@ -116,17 +148,18 @@ Result LogicController::DoWork() {
 
     //precision driving result types are when a controller wants direct command of the robots actuators
     //logic controller facilitates the command pass through in the LOGIC_STATE_PRECISION_COMMAND switch case
-    else if(result.type == precisionDriving) {
+    else if (result.type == precisionDriving)
+    {
 
       logicState = LOGIC_STATE_PRECISION_COMMAND;
       break;
-
     }
 
     //waypoints are also a pass through facilitated command but with a slightly diffrent overhead
     //they are handled in the LOGIC_STATE_WAITING switch case
-    else if(result.type == waypoint) {
-      cout << "Sendig result to DriveController! "<< endl; 
+    else if (result.type == waypoint)
+    {
+
       logicState = LOGIC_STATE_WAITING;
       driveController.SetResultData(result);
       //fall through on purpose
@@ -135,23 +168,27 @@ Result LogicController::DoWork() {
   } //end of interupt case***************************************************************************************
 
     //this case is primarly when logic controller is waiting for drive controller to reach its last waypoint
-  case LOGIC_STATE_WAITING: {
+  case LOGIC_STATE_WAITING:
+  {
     //ask drive controller how to drive
     //commands to be passed the ROS Adapter as left and right wheel PWM values in the result struct are returned
     result = driveController.DoWork();
 
     //when out of waypoints drive controller will through an interrupt however unlike other controllers
     //drive controller is not on the priority queue so it must be checked here
-    if (result.type == behavior) {
-      if(driveController.ShouldInterrupt()) {
+    if (result.type == behavior)
+    {
+      if (driveController.ShouldInterrupt())
+      {
         logicState = LOGIC_STATE_INTERRUPT;
       }
     }
     break;
-  }//end of waiting case*****************************************************************************************
+  } //end of waiting case*****************************************************************************************
 
     //used for precision driving pass through
-  case LOGIC_STATE_PRECISION_COMMAND: {
+  case LOGIC_STATE_PRECISION_COMMAND:
+  {
 
     //unlike waypoints precision commands change every update tick so we ask the
     //controller for new commands on every update tick.
@@ -165,12 +202,11 @@ Result LogicController::DoWork() {
     result = driveController.DoWork();
     break;
 
-  }//end of precision case****************************************************************************************
-  }//end switch statment******************************************************************************************
+  } //end of precision case****************************************************************************************
+  } //end switch statment******************************************************************************************
 
-   // bad! causes node to crash
-   // cout << "logic state " << logicState << " top controller " << control_queue.top().priority << " Proccess " << processState <<endl;
-
+  // bad! causes node to crash
+  // cout << "logic state " << logicState << " top controller " << control_queue.top().priority << " Proccess " << processState <<endl;
 
   //now using proccess logic allow the controller to communicate data between eachother
   controllerInterconnect();
@@ -202,49 +238,46 @@ void LogicController::ProcessData()
   if (processState == PROCCESS_STATE_SEARCHING)
   {
     prioritizedControllers = {
-      PrioritizedController{0, (Controller*)(&searchController)},
-      PrioritizedController{10, (Controller*)(&obstacleController)},
-      PrioritizedController{15, (Controller*)(&pickUpController)},
-      PrioritizedController{5, (Controller*)(&range_controller)},
-      PrioritizedController{-1, (Controller*)(&dropOffController)},
-      PrioritizedController{-1, (Controller*)(&manualWaypointController)}
-    };
+        PrioritizedController{0, (Controller *)(&searchController)},
+        PrioritizedController{10, (Controller *)(&obstacleController)},
+        PrioritizedController{15, (Controller *)(&pickUpController)},
+        PrioritizedController{5, (Controller *)(&range_controller)},
+        PrioritizedController{-1, (Controller *)(&dropOffController)},
+        PrioritizedController{-1, (Controller *)(&manualWaypointController)}};
   }
 
   //this priority is used when returning a target to the center collection zone
-  else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP)
+  else if (processState == PROCCESS_STATE_TARGET_PICKEDUP)
   {
     prioritizedControllers = {
-    PrioritizedController{-1, (Controller*)(&searchController)},
-    PrioritizedController{15, (Controller*)(&obstacleController)},
-    PrioritizedController{-1, (Controller*)(&pickUpController)},
-    PrioritizedController{10, (Controller*)(&range_controller)},
-    PrioritizedController{1, (Controller*)(&dropOffController)},
-    PrioritizedController{-1, (Controller*)(&manualWaypointController)}
-    };
+        PrioritizedController{-1, (Controller *)(&searchController)},
+        PrioritizedController{15, (Controller *)(&obstacleController)},
+        PrioritizedController{-1, (Controller *)(&pickUpController)},
+        PrioritizedController{10, (Controller *)(&range_controller)},
+        PrioritizedController{1, (Controller *)(&dropOffController)},
+        PrioritizedController{-1, (Controller *)(&manualWaypointController)}};
   }
   //this priority is used when returning a target to the center collection zone
-  else if (processState  == PROCCESS_STATE_DROP_OFF)
+  else if (processState == PROCCESS_STATE_DROP_OFF)
   {
     prioritizedControllers = {
-      PrioritizedController{-1, (Controller*)(&searchController)},
-      PrioritizedController{-1, (Controller*)(&obstacleController)},
-      PrioritizedController{-1, (Controller*)(&pickUpController)},
-      PrioritizedController{10, (Controller*)(&range_controller)},
-      PrioritizedController{1, (Controller*)(&dropOffController)},
-      PrioritizedController{-1, (Controller*)(&manualWaypointController)}
-    };
+        PrioritizedController{-1, (Controller *)(&searchController)},
+        PrioritizedController{-1, (Controller *)(&obstacleController)},
+        PrioritizedController{-1, (Controller *)(&pickUpController)},
+        PrioritizedController{10, (Controller *)(&range_controller)},
+        PrioritizedController{1, (Controller *)(&dropOffController)},
+        PrioritizedController{-1, (Controller *)(&manualWaypointController)}};
   }
-  else if (processState == PROCESS_STATE_MANUAL) {
+  else if (processState == PROCESS_STATE_MANUAL)
+  {
     // under manual control only the manual waypoint controller is active
     prioritizedControllers = {
-      PrioritizedController{-1, (Controller*)(&searchController)},
-      PrioritizedController{-1, (Controller*)(&obstacleController)},
-      PrioritizedController{-1, (Controller*)(&pickUpController)},
-      PrioritizedController{-1, (Controller*)(&range_controller)},
-      PrioritizedController{-1, (Controller*)(&dropOffController)},
-      PrioritizedController{5,  (Controller*)(&manualWaypointController)}
-    };
+        PrioritizedController{-1, (Controller *)(&searchController)},
+        PrioritizedController{-1, (Controller *)(&obstacleController)},
+        PrioritizedController{-1, (Controller *)(&pickUpController)},
+        PrioritizedController{-1, (Controller *)(&range_controller)},
+        PrioritizedController{-1, (Controller *)(&dropOffController)},
+        PrioritizedController{5, (Controller *)(&manualWaypointController)}};
   }
 }
 
@@ -259,7 +292,6 @@ bool LogicController::HasWork()
 {
   return false;
 }
-
 
 void LogicController::controllerInterconnect()
 {
@@ -311,7 +343,6 @@ void LogicController::controllerInterconnect()
 // Recieves position in the world inertial frame (should rename to SetOdomPositionData)
 void LogicController::SetPositionData(Point currentLocation)
 {
-  cout << "Current location (LOGIC C) is: " << "(" << currentLocation.x << "," << currentLocation.y << ")" << endl;
   searchController.SetCurrentLocation(currentLocation);
   dropOffController.SetCurrentLocation(currentLocation);
   obstacleController.setCurrentLocation(currentLocation);
@@ -327,12 +358,11 @@ void LogicController::SetMapPositionData(Point currentLocation)
 
 void LogicController::SetVelocityData(float linearVelocity, float angularVelocity)
 {
-  driveController.SetVelocityData(linearVelocity,angularVelocity);
+  driveController.SetVelocityData(linearVelocity, angularVelocity);
 }
 
 void LogicController::SetMapVelocityData(float linearVelocity, float angularVelocity)
 {
-
 }
 
 void LogicController::SetAprilTags(vector<Tag> tags)
@@ -344,8 +374,19 @@ void LogicController::SetAprilTags(vector<Tag> tags)
 
 void LogicController::SetSonarData(float left, float center, float right)
 {
-  pickUpController.SetSonarData(center);
-  obstacleController.setSonarData(left,center,right);
+  
+  //////////////////////////Angel FILTRO//////////////////////////////////////
+
+  this->lefta = filterSonars(SumLeftSensor, left, lefta);
+  this->righta = filterSonars(SumRightSensor, right, righta);
+  this->centera = filterSonars(SumCenterSensor, center, centera);
+
+  obstacleController.setSonarData(this->lefta, this->centera, this->righta); //change from (lefts,center,right) to (lefta,centera,righta)
+  pickUpController.SetSonarData(centera);
+
+  /////////////////////////////////////////////////////////////////////
+
+  // obstacleController.setSonarData(left,center,right); //change from (lefts,center,right) to (lefta,centera,righta)
 }
 
 // Called once by RosAdapter in guarded init
@@ -370,7 +411,7 @@ std::vector<int> LogicController::GetClearedWaypoints()
   return manualWaypointController.ReachedWaypoints();
 }
 
-void LogicController::setVirtualFenceOn( RangeShape* range )
+void LogicController::setVirtualFenceOn(RangeShape *range)
 {
   range_controller.setRangeShape(range);
   range_controller.setEnabled(true);
@@ -383,19 +424,20 @@ void LogicController::setVirtualFenceOff()
 
 void LogicController::SetCenterLocationMap(Point centerLocationMap)
 {
-
 }
 
-void LogicController::SetCurrentTimeInMilliSecs( long int time )
+void LogicController::SetCurrentTimeInMilliSecs(long int time)
 {
   current_time = time;
-  dropOffController.SetCurrentTimeInMilliSecs( time );
-  pickUpController.SetCurrentTimeInMilliSecs( time );
-  obstacleController.setCurrentTimeInMilliSecs( time );
+  dropOffController.SetCurrentTimeInMilliSecs(time);
+  pickUpController.SetCurrentTimeInMilliSecs(time);
+  obstacleController.setCurrentTimeInMilliSecs(time);
 }
 
-void LogicController::SetModeAuto() {
-  if(processState == PROCESS_STATE_MANUAL) {
+void LogicController::SetModeAuto()
+{
+  if (processState == PROCESS_STATE_MANUAL)
+  {
     // only do something if we are in manual mode
     this->Reset();
     manualWaypointController.Reset();
@@ -403,11 +445,28 @@ void LogicController::SetModeAuto() {
 }
 void LogicController::SetModeManual()
 {
-  if(processState != PROCESS_STATE_MANUAL) {
+  if (processState != PROCESS_STATE_MANUAL)
+  {
     logicState = LOGIC_STATE_INTERRUPT;
     processState = PROCESS_STATE_MANUAL;
     ProcessData();
     control_queue = priority_queue<PrioritizedController>();
     driveController.Reset();
   }
+}
+
+float LogicController::filterSonars(vector<float> &sonarVector, float newSonarData, float &sensor)
+{
+  sonarVector.erase(sonarVector.begin());
+  sonarVector.push_back(newSonarData);
+  AveSensor = sonarVector[0];
+
+  for (int i = 1; i <= sonarVector.size(); i++)
+  {
+    AveSensor += sonarVector[i];
+  }
+
+  AveSensor = AveSensor / sonarVector.size();
+
+  return sensor + LPF_BETA * (AveSensor - sensor);
 }
