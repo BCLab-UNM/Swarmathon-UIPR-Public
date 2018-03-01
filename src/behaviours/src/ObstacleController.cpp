@@ -62,12 +62,12 @@ int ObstacleController::getDirection()
 //     }
 // }
 
-// void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2)
-// {
-//   //this->pid = pid;
-//   this->pidC = pidC;
-//   this->pidC2 = pidC2;
-// }
+void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2)
+{
+  //this->pid = pid;
+  this->pidC = pidC;
+  this->pidC2 = pidC2;
+}
 
 // void ObstacleController::follow_Wall()
 // {
@@ -120,25 +120,35 @@ int ObstacleController::getDirection()
 //   }
 // }
 
-void ObstacleController::follow_Wall()
-{
+void ObstacleController::follow_Wall() {
   result.type = precisionDriving;
 
   if (right < triggerDistance){
     cout << "Obstacle on Right side!" << endl;
-    result.pd.cmdVel = 0.35;
-    result.pd.cmdAngular = 0.20;
+    result.pd.cmdVel = 0.5;
+    result.pd.cmdAngular = 0.7;
   }
   else if (left < triggerDistance){
     cout << "Obstacle on Left side!" << endl;
-    result.pd.cmdVel = 0.35;
-    result.pd.cmdAngular = -0.20;
+    result.pd.cmdVel = 0.5;
+    result.pd.cmdAngular = -0.7;
+  }
+  if (right > triggerDistance){
+    result.pd.cmdVel = 0.5;
+    result.pd.cmdAngular = -0.7;
+  }
+  else if (left > triggerDistance){
+    result.pd.cmdVel = 0.5;
+    result.pd.cmdAngular = 0.7;
   }
   else{
     cout << "Desired distance from obstacle achieved!" << endl;
-    result.pd.cmdVel = 0.5;
+    result.pd.cmdVel = 0.8;
+    result.pd.cmdAngular = 0.0;
   }
+  //result.pd.cmdAngular = 0.0;
 }
+
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone()
