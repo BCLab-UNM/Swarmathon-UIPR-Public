@@ -273,12 +273,12 @@ void LogicController::controllerInterconnect()
 
   if (processState == PROCCESS_STATE_SEARCHING)
   {
-
+/*
     if(obstacleController.getObstacleInfo() == true)
     {
       searchController.setObstacleDetected(true);
     }
-
+*/
     //obstacle needs to know if the center ultrasound should be ignored
     if(pickUpController.GetIgnoreCenter())
     {
