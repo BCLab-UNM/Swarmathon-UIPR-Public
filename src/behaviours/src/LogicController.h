@@ -14,6 +14,9 @@
 #include <queue>
 
 using namespace std;
+// /////////////////////////////////////////ANGEL////////////////////////////////
+// float lefta = 0,righta = 0,centera = 0,average = 0, sumc = 0, sumr = 0, suml = 0, x = 0;
+// //////////////////////////////////////////////////////////////////////////////
 
 struct PrioritizedController {
   int priority = -1;
@@ -86,7 +89,7 @@ public:
   void setVirtualFenceOn( RangeShape* range );
   void setVirtualFenceOff( );
 
-  // EDIT
+    // EDIT
   //** Variables
   bool init = true;
   int myId = 0;
@@ -101,13 +104,23 @@ public:
   const bool getVisitedFlag(){return publishVisitedPointFlag;}
   void setVisitedFlag(bool setFlag){this->publishVisitedPointFlag = setFlag;}
   //**
-  //
+//
 
 protected:
   void ProcessData();
 
 private:
 
+  ////////////////////////////////////////////ANGEL FILTRO////////////////////////////////////////
+  float LPF_BETA;
+  vector<float> SumLeftSensor;
+  vector<float> SumRightSensor;
+  vector<float> SumCenterSensor;
+  float AveSensor;
+  float lefta,righta,centera;
+  float filterSonars(vector<float> &v, float nSD, float &s);;
+
+  ///////////////////////////////////////////////////////////////////////////////
   enum LogicState {
     LOGIC_STATE_INTERRUPT = 0,
     LOGIC_STATE_WAITING,
