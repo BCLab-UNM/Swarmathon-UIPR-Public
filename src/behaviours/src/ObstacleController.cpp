@@ -120,28 +120,34 @@ void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2)
 //   }
 // }
 
-void ObstacleController::follow_Wall() {
+void ObstacleController::follow_Wall()
+{
   result.type = precisionDriving;
 
-  if (right < triggerDistance){
+  if (right < triggerDistance)
+  {
     cout << "Obstacle on Right side!" << endl;
     result.pd.cmdVel = 0.5;
     result.pd.cmdAngular = 0.7;
   }
-  else if (left < triggerDistance){
+  else if (left < triggerDistance)
+  {
     cout << "Obstacle on Left side!" << endl;
     result.pd.cmdVel = 0.5;
     result.pd.cmdAngular = -0.7;
   }
-  if (right > triggerDistance){
+  if (right > triggerDistance)
+  {
     result.pd.cmdVel = 0.5;
     result.pd.cmdAngular = -0.7;
   }
-  else if (left > triggerDistance){
+  else if (left > triggerDistance)
+  {
     result.pd.cmdVel = 0.5;
     result.pd.cmdAngular = 0.7;
   }
-  else{
+  else
+  {
     cout << "Desired distance from obstacle achieved!" << endl;
     result.pd.cmdVel = 0.8;
     result.pd.cmdAngular = 0.0;
@@ -192,21 +198,20 @@ Result ObstacleController::DoWork()
   }
 
   //if an obstacle has been avoided
-  if (can_set_waypoint)
+  if (can_set_waypoint && (right > triggerDistance && center > triggerDistance) || (left > triggerDistance && left > triggerDistance))
   {
-    cout << "Im inside new waypoint if!" << endl;
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
-    // result.type = waypoint;
+    result.type = waypoint;
 
-    // result.PIDMode = FAST_PID; //use fast pid for waypoints
-    // Point forward;
-    // //waypoint is directly ahead of current heading
-    // forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    // forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
-    // result.wpts.waypoints.clear();
-    // result.wpts.waypoints.push_back(forward);
+    result.PIDMode = FAST_PID; //use fast pid for waypoints
+    Point forward;
+    //waypoint is directly ahead of current heading
+    forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
+    forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
+    result.wpts.waypoints.clear();
+    result.wpts.waypoints.push_back(forward);
   }
   return result;
 }
