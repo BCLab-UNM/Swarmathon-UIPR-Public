@@ -27,10 +27,10 @@ void ObstacleController::Reset()
   need_vel = false;
 }
 
-bool ObstacleController::getObstacleInfo()
-{
-  return obstacleDetected;
-}
+//bool ObstacleController::getObstacleInfo()
+//{
+//  return obstacleDetected;
+//}
 
 int ObstacleController::getDirection()
 {
@@ -219,7 +219,7 @@ Result ObstacleController::DoWork()
 void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float sonarright)
 {
   left = sonarleft;
-  right = sonarright;
+    right = sonarright;
   center = sonarcenter;
 
   ProcessData();
