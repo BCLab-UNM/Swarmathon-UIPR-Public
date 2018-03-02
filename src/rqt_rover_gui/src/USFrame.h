@@ -48,7 +48,22 @@ namespace rqt_rover_gui {
       float center_range;
       float left_range;
       float right_range;
+////////////////////////////////////////////////////////////////
+ float LPF_BETA;
+  vector<float> SumLeftSensor;
+  vector<float> SumRightSensor;
+  vector<float> SumCenterSensor;
 
+  vector<float> SumLeftSensor_text;
+  vector<float> SumRightSensor_text;
+  vector<float> SumCenterSensor_text;
+
+  float AveSensor;
+  float lefta,righta,centera;
+  float leftT,rightT,centerT;
+  
+  float filterSonars(vector<float> &v, float nSD, float &s);;
+////////////////////////////////////////////////////////////////
       float center_max_range;
       float center_min_range;
 
