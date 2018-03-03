@@ -58,35 +58,31 @@ public:
 
 protected:
 
-  void ProcessData();
-  void lawnMowerSearch(int wallLocation, int myId);
-  void smartRandomSearch(int wallLocation, int myId);
-  void triangleSearch(int myId, int triangularSection,float triangleSquare);
-  void sideSearch(int myId, int sideSection,float triangleSquare);
   Point setSearchLocation(float x, float y);
+  
   float degToRad(float deg);
   float radToDeg(float rad);
 
+  void ProcessData();
+  
 private:
 
+  Point currentLocation, centerLocation, searchLocation;
   Result result;
-  
-  int pointCounter, triangleSel,sideSel;
-  bool changeSide = false;
   random_numbers::RandomNumberGenerator* rng;
-  Point currentLocation;
-  Point centerLocation;
-  Point searchLocation;
-  bool outTravel;
-  bool searchObstacle;
+
+  int pointCounter, triangleSel,sideSel,pointLimit;
   int attemptCount = 0;
-  bool leftAdjust;
-  bool rightAdjust;
-  int mapSize = 15;
+  int mapSize;
   int triangularSection = 1;
+
+  float ghostWall;
   float magnitude;
   float angle, unknownAngle;
   float triangleSquare;
+  float sideBoundary;
+
+  bool searchObstacle;
   bool movingLeft, movingRight = false;
 
   // Search state
@@ -109,7 +105,13 @@ private:
   //**
 
   //** Functions
-
+  int getMapSize();
+  void setTriangleSquareArea(float area);
+  void setGhostWall(float ghostWall);
+  void setSideBoundary();
+  void giveTask2Robot();
+  void triangleSearch(int myId, int triangularSection,float triangleSquare);
+  void sideSearch(int myId, int sideSection,float triangleSquare);
   //**
   //
 
