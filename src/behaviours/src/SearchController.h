@@ -71,7 +71,7 @@ private:
   Result result;
   random_numbers::RandomNumberGenerator* rng;
 
-  int pointCounter, triangleSel,sideSel,pointLimit;
+  int pointCounter, triangleSel,sideSel,trianglePointLimit;
   int attemptCount = 0;
   int mapSize;
   int triangularSection = 1;
@@ -83,12 +83,12 @@ private:
   float sideBoundary;
 
   bool searchObstacle;
-  bool movingLeft, movingRight = false;
+  bool goRight,goLeft;
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
-  bool first_waypoint = true;
-  bool first_side_waypoint = true;
+  bool first_waypoint;
+  bool first_side_waypoint;
   bool succesfullPickup = false;
 
   // EDIT
@@ -112,6 +112,9 @@ private:
   void giveTask2Robot();
   void triangleSearch(int myId, int triangularSection,float triangleSquare);
   void sideSearch(int myId, int sideSection,float triangleSquare);
+  void thenGoRight();
+  void thenGoLeft();
+  bool checkAvailableDistance(int sideSel);
   //**
   //
 

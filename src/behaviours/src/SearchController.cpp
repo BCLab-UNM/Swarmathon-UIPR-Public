@@ -25,18 +25,94 @@ SearchController::SearchController() {
   unknownAngle = 0; //Used Sine law to calculate maximum Hypo depending on generated Angle
   triangleSel = 1; //Variable used to iterate through triangle areas.
   triangleSquare = 0; // Maximum sqaure area for triangle search.
-
+  first_waypoint = true;
+  trianglePointLimit = 9;
 
   //Variables used for ZIG ZAG search.
   first_side_waypoint = true; // First waypoint of a side area.
-  pointLimit = 14; //Variable to limit visited points in any area. Every side gives a particular value.
   sideSel = 1; //Variable used to iterate through side areas.
-  ghostWall = .8; //Variable to evade walls. 
+  ghostWall = .8; //Variable to evade walls.
+  goRight = false;
+  goLeft = false;
+  first_side_waypoint = true; 
 }
 
 void SearchController::Reset() {
   result.reset = false;
 }
+bool SearchController::checkAvailableDistance(int sideSel)
+  {
+    cout << "Checking for distance availabilty!" << endl;
+
+    switch(sideSel)
+    {
+      case 1:
+      {
+        if(abs(currentLocation.x - (mapSize/2 *-1)) >= 1.5)
+        {
+          cout << "Distance left is > 1" << endl;
+          return true;
+          break;
+        }
+        else{
+          cout << "Distance left is < 1" << endl;
+          return false;
+          break;
+        }
+      }
+
+      case 2:
+      {
+        if(abs(currentLocation.y - (mapSize/2 *-1)) >= 1.5)
+        {
+          cout << "Distance left is > 1" << endl;
+          return true;
+          break;
+        }
+        else{
+          cout << "Distance left is < 1" << endl;
+          return false;
+          break;
+        }
+      }
+
+      case 3:
+      {
+        if(abs(currentLocation.x - (mapSize/2)) >= 2.5)
+        {
+          cout << "Distance left is > 1" << endl;
+          return true;
+          break;
+        }
+        else{
+          cout << "Distance left is < 1" << endl;
+          return false;
+          break;
+        }
+      }
+
+      case 4:
+      {
+        if(abs(currentLocation.y - (mapSize/2)) >= 1.5)
+        {
+          cout << "Distance left is > 1" << endl;
+          return true;
+          break;
+        }
+        else{
+          cout << "Distance left is < 1" << endl;
+          return false;
+          break;
+        }
+      }
+
+      default:
+      {
+        cout << "NO here" << endl;
+        break;
+      }
+    }
+  }
 Result SearchController::DoWork() {
 
     cout << "Total IDs " << totalIds << endl;
@@ -52,7 +128,7 @@ Result SearchController::DoWork() {
     giveTask2Robot(); //Verify ID and give the robot a task. 
 
     result.wpts.waypoints.clear();
-    result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
+    result.wpts.waypoints.insert(result.wpts.waypoints.begin(), this->searchLocation);
 
     return result;
   }
@@ -63,21 +139,18 @@ void SearchController::giveTask2Robot()
     {
       case 1:
       {
-         if(pointCounter == pointLimit)
+        if(checkAvailableDistance(sideSel) == false)
       {
-        pointCounter = 0;
         sideSel++;
         first_side_waypoint = true;
       }
-      else{
-        pointCounter++;
-      }
+
       sideSearch(myId,sideSel,triangleSquare);
   
       //Before of deciding where to search check the public list of triangles to know their state.
 
       /* 
-        if(pointCounter == 8)
+        if(pointCounter == trianglePointLimit)
         {
           pointCounter = 0;
           //Look for triangle availability. 
@@ -165,7 +238,7 @@ int SearchController::getMapSize()
 
 void SearchController::setSideBoundary()
   {
-    this->sideBoundary = (this->mapSize/2 - this->triangleSquare/2) - ghostWall;
+    this->sideBoundary = (this->mapSize/2 - this->triangleSquare/2) - this->ghostWall;
   }
 
 void SearchController::setGhostWall(float ghostWall)
@@ -173,74 +246,77 @@ void SearchController::setGhostWall(float ghostWall)
     this->ghostWall = ghostWall;
   }
 
+void SearchController::thenGoRight()
+  {
+    cout << "Moving Left" << endl;
+    this->goLeft = false;
+    this->goRight = true;
+  }
+
+void SearchController::thenGoLeft()
+  {
+    cout << "Moving Right" << endl;
+    this->goLeft = true;
+    this->goRight = false;
+  }
 void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
   {
     result.type = waypoint;
     setSideBoundary();
+    cout << "Looking for side section #" << sideSection << endl;
     switch(sideSection)
     {
-      cout << "Looking for side section #" << sideSection << endl;
-
       case 1://Top side
       {
         if(first_side_waypoint)
         {
           cout << "Looking for first location" << endl;
           first_side_waypoint = false; 
-          searchLocation = setSearchLocation(mapSize/2 - this->ghostWall, mapSize/2 - this->ghostWall);
-          movingLeft = true;
+          this->searchLocation = setSearchLocation(mapSize/2 - this->ghostWall, mapSize/2 - this->ghostWall);
+          goLeft = true;
           break;
         }
 
         else
         {
           cout << "Calculating new position." << endl;
-          if(movingLeft)
+          if(goLeft)
           {
-            cout << "Moving Left" << endl;
             this->searchLocation = setSearchLocation(currentLocation.x - 1 ,currentLocation.y - sideBoundary);
-            movingLeft = false;
-            movingRight = true;
+            thenGoRight();
             break;
           }
 
-          else if(movingRight)
+          else if(goRight)
           {
-            cout << "Moving Right" << endl;
             this->searchLocation = setSearchLocation(currentLocation.x - 1 ,currentLocation.y + sideBoundary);
-            movingLeft =true;
-            movingRight = false;
+            thenGoLeft();
             break;
           }
         }
       }
     case 2://Left Side
       {
-        pointLimit = 11;
         if(first_side_waypoint)
         {
           first_side_waypoint = false;
-          movingLeft = true; 
+          goLeft = true; 
           cout << "Looking for first location" << endl;
-          searchLocation = setSearchLocation((mapSize/2 - this->ghostWall) * -1, triangleSquare);
+          this->searchLocation = setSearchLocation((mapSize/2 - this->ghostWall) * -1, triangleSquare/2);
           break;
         }
         else
         {
           cout << "Calculating new position." << endl;
-          if(movingLeft)
+          if(goLeft)
           {
-            movingLeft = false;
-            movingRight = true;
-            cout << "Moving Left" << endl;
+            thenGoRight();
             this->searchLocation = setSearchLocation(currentLocation.x + sideBoundary,currentLocation.y - 1);
             break;
           }
-          else if(movingRight)
+          else if(goRight)
           {
-            movingLeft =true;
-            movingRight = false;
-            cout << "Moving Right" << endl;
+            thenGoLeft();
             this->searchLocation = setSearchLocation(currentLocation.x - sideBoundary,currentLocation.y - 1);
             break;
           }
@@ -248,33 +324,28 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
       }
 
     case 3://Bottom Side
-      {
-        pointLimit = 12;    
+      {  
         if(first_side_waypoint)
         {
           first_side_waypoint = false;
-          movingRight = true;
+          goRight = true;
           cout << "Looking for first location" << endl; 
-          searchLocation = setSearchLocation((mapSize/2 - this->ghostWall) * -1, (mapSize/2 - this->ghostWall) * -1);
+          this->searchLocation = setSearchLocation((mapSize/2 - this->ghostWall) * -1, (mapSize/2 - this->ghostWall) * -1);
           break;
         }
         else
         {
           cout << "Calculating new position." << endl;
-          if(movingLeft)
+          if(goLeft)
           {
-            movingLeft = false;
-            movingRight = true;
-            cout << "Moving Left" << endl;
+            thenGoRight();
             this->searchLocation = setSearchLocation(currentLocation.x + 1,currentLocation.y - sideBoundary);
             break;
           }
 
-          else if(movingRight)
+          else if(goRight)
           {
-            movingLeft =true;
-            movingRight = false;
-            cout << "Moving Right" << endl;
+            thenGoLeft();
             this->searchLocation = setSearchLocation(currentLocation.x + 1,currentLocation.y + sideBoundary);
             break;
           }
@@ -285,32 +356,27 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare)
 
       case 4://Right Side
       {
-        pointLimit = 11;
         if(first_side_waypoint)
         {
-          movingRight = true;
+          goRight = true;
           first_side_waypoint = false; 
           cout << "Looking for first location" << endl;
-          searchLocation = setSearchLocation(mapSize/2 - this->ghostWall, triangleSquare * -1);
+          this->searchLocation = setSearchLocation(mapSize/2 - this->ghostWall, (mapSize/2 - this->ghostWall) * -1);
           break;
         }
         else
         {
           cout << "Calculating new position." << endl;
-          if(movingLeft)
+          if(goLeft)
           {
-            movingLeft = false;
-            movingRight = true;
-            cout << "Moving Left" << endl;
+            thenGoRight();
             this->searchLocation = setSearchLocation(currentLocation.x + sideBoundary,currentLocation.y + 1);
             break;
           }
 
-          else if(movingRight)
+          else if(goRight)
           {
-            movingLeft = true;
-            movingRight = false;
-            cout << "Moving Right" << endl;
+            thenGoLeft();
             this->searchLocation = setSearchLocation(currentLocation.x - sideBoundary,currentLocation.y + 1);
             break;
           }
