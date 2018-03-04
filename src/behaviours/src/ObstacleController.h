@@ -55,12 +55,9 @@ private:
   int size; //reenges vector size
   int minIndex; //min and max indexes for angleMin calc
   int maxIndex; 
-  int turnCounter; //count how many turns the robot has done
   double angleMin, distMin; //minimun angle and distance between object and rover vars
   double e, diffE;  //error vars
-  float linearVelocity, angularVelocity; //usused variables
-  float errorYaw, distance;
-  bool need_vel;
+
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );
