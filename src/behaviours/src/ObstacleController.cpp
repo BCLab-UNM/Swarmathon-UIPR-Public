@@ -66,7 +66,7 @@ void ObstacleController::follow_Wall() {
     e = distMin - triggerDistance;
 
    result.type = precisionDriving;
-   result.pd.cmdAngular = getDirection()*(5*e + 0.01*diffE); + K_angular * (angleMin - M_PI*(getDirection()/2));
+   result.pd.cmdAngular = getDirection()*(5*e + 0.01*diffE) + K_angular * (angleMin - M_PI*(getDirection()/2));
    result.pd.cmdVel = 0.35;
 }
 
