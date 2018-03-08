@@ -39,7 +39,21 @@ void SearchController::Reset() {
 }
 Result SearchController::DoWork() {
 
-    cout << "Total IDs " << totalIds << endl;
+    
+
+    result.wpts.waypoints.clear();
+    result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
+
+    return result;
+  }
+
+void SearchController::newPointManager(){
+  cout << "New Thread running!" << endl;
+  while(true){
+
+    // Verifiy if points in vector are the maximum size
+    // if it is NOT the max size then generate a new point
+    // else do nothing
 
     if(getMapSize() == 15) //Preliminars?
     {
@@ -51,11 +65,8 @@ Result SearchController::DoWork() {
 
     giveTask2Robot(); //Verify ID and give the robot a task. 
 
-    result.wpts.waypoints.clear();
-    result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
-
-    return result;
   }
+}
 
 void SearchController::giveTask2Robot()
   {
@@ -661,4 +672,10 @@ bool SearchController::HasWork() {
 
 void SearchController::SetSuccesfullPickup() {
   succesfullPickup = true;
+}
+
+
+void SearchController::CreateThread(){
+    thread pointCreatorThread (&SearchController::newPointManager, this);
+    pointCreatorThread.detach();
 }
