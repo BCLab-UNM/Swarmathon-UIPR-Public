@@ -66,8 +66,8 @@ void ObstacleController::follow_Wall() {
     e = distMin - triggerDistance;
 
    result.type = precisionDriving;
-   result.pd.cmdAngular = getDirection()*(5*e + 0.01*diffE); + K_angular * (angleMin - M_PI*(getDirection()/2));
-   result.pd.cmdVel = 0.35;
+   result.pd.cmdAngular = getDirection()*(5*e + 0.01*diffE) + K_angular * (angleMin - M_PI*(getDirection()/2));
+   result.pd.cmdVel = 0.4;
 }
 
 // void ObstacleController::follow_Wall()
@@ -157,8 +157,8 @@ Result ObstacleController::DoWork()
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;
     //waypoint is directly ahead of current heading
-    forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
+    //forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
+    //forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
     //result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
   }
