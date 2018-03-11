@@ -75,15 +75,18 @@ private:
   int attemptCount = 0;
   int mapSize;
   int triangularSection = 1;
+  
 
   float ghostWall;
   float magnitude;
   float angle, unknownAngle;
   float triangleSquare;
   float sideBoundary;
+  float sideOffset;
 
   bool searchObstacle;
   bool goRight,goLeft;
+  bool sideInit;
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
@@ -111,7 +114,7 @@ private:
   void setSideBoundary();
   void giveTask2Robot();
   void triangleSearch(int myId, int triangularSection,float triangleSquare);
-  void sideSearch(int myId, int sideSection,float triangleSquare);
+  void sideSearch(int myId, int sideSection,float triangleSquare,float offset);
   void thenGoRight();
   void thenGoLeft();
   bool checkAvailableDistance(int sideSel);
