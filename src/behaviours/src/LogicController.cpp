@@ -185,6 +185,7 @@ void LogicController::UpdateData()
   if (init)
   {
     searchController.getID(myId);
+    searchController.CreateThread();
     init = false;
   }
 
