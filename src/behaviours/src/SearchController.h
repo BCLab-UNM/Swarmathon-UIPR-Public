@@ -71,7 +71,7 @@ private:
   Result result;
   random_numbers::RandomNumberGenerator* rng;
 
-  int pointCounter, triangleSel,sideSel,trianglePointLimit;
+  int pointCounter, triangleSel,sideSel,trianglePointLimit,triangleSel2;
   int attemptCount = 0;
   int mapSize;
   int triangularSection = 1;

@@ -24,6 +24,7 @@ SearchController::SearchController() {
   angle = 0;
   unknownAngle = 0; //Used Sine law to calculate maximum Hypo depending on generated Angle
   triangleSel = 1; //Variable used to iterate through triangle areas.
+  triangleSel2 = 5;
   triangleSquare = 0; // Maximum sqaure area for triangle search.
   first_waypoint = true;
   trianglePointLimit = 9;
@@ -122,7 +123,7 @@ Result SearchController::DoWork() {
       setTriangleSquareArea(10); // 10x10mts area for triangle square.(5mts each side)
     }
     else{ // Semi/Finals?
-
+       setTriangleSquareArea(11); // 10x10mts area for triangle square.(5mts each side)
     }
 
     giveTask2Robot(); //Verify ID and give the robot a task. 
@@ -168,7 +169,7 @@ void SearchController::giveTask2Robot()
 
       case 2:
       {
-        if(pointCounter == 8)
+        if(pointCounter == trianglePointLimit)
         {
           pointCounter = 0;
           //Look for triangle availability. 
@@ -176,33 +177,45 @@ void SearchController::giveTask2Robot()
           triangleSel++;
         }
         else{
-            pointCounter++;
+          pointCounter++;
         }
         triangleSearch(myId,triangleSel,triangleSquare);
         break;
       }
     
-      case 3:
+      case 6:
       {
-        sideSearch(myId,3,triangleSquare);
+        sideSearch(myId,2,triangleSquare);
         break;
       }
 
       case 4:
       {
-        sideSearch(myId,1,triangleSquare);
+        sideSearch(myId,3,triangleSquare);
         break;
       }
 
       case 5:
       {
         //5th robot
+        sideSearch(myId,4,triangleSquare);
         break;
       }
 
-      case 6:
+      case 3:
       {
         //6th robot
+        if(pointCounter == trianglePointLimit)
+        {
+          pointCounter = 0;
+          //Look for triangle availability. 
+          cout << "Limited Point search reached!!" << endl;
+          triangleSel2++;
+        }
+        else{
+          pointCounter++;
+        }
+        triangleSearch(myId,triangleSel2,triangleSquare);
         break;
       }
 
@@ -401,20 +414,6 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
       {
         case 1: //This section is from degrees 0->45
           {
-            /*
-            if(visitedLoc.size() == 0)
-              {
-                cout << "-There are no Published Visited Locations-" << endl;
-              }
-            else{
-                cout << "------------------------------------------" << endl;
-                for(int i = 0; i <= visitedLoc.size() - 1; i++)
-                {
-                  cout << "Location #" << i + 1 << "(" << visitedLoc.at(i).x << "," << visitedLoc.at(i).y << ")" << endl;
-                }
-                cout << "------------------------------------------" << endl;
-              }
-              */
 
             if(first_waypoint) 
             {
@@ -426,6 +425,18 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
 
             else{
               this->visitedLoc.push_back(currentLocation);
+              angle = rng->uniformReal(0,M_PI/4);
+                angle = radToDeg(angle);
+
+                unknownAngle = 180 - (angle + 90);
+                unknownAngle = degToRad(unknownAngle);
+                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
+                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
+                angle = degToRad(angle); 
+                xLoc = magnitude * cos(angle);
+                yLoc = magnitude * sin(angle);
+
+                /*
               while(pointAccepted == false)
               {
                 angle = rng->uniformReal(0,M_PI/4);
@@ -440,7 +451,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 yLoc = magnitude * sin(angle);
 
                 cout <<"Current Location: (" << currentLocation.x <<"," << currentLocation.y << ")" << endl;
-
+                /*
                 for(int i = 0; i <= this->visitedLoc.size()-1; i++)
                 {
                   cout << "Validating new location" << endl;
@@ -464,7 +475,9 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 }
                 
               }
-              
+             */
+
+              this->searchLocation = setSearchLocation(xLoc,yLoc);
               break;
             } 
           } 
