@@ -4,7 +4,6 @@
 #include <random_numbers/random_numbers.h>
 #include "Controller.h"
 #include "Triangle.h"
-#include <thread> 
 
 /**
  * This class implements the search control algorithm for the rovers. The code
@@ -39,8 +38,6 @@ public:
   void setObstacleDetected(bool var);
   void getID(int myId){this->myId = myId;}
   void getTotalIds(int totalIds){this->totalIds = totalIds;}
-  void CreateThread();
-  void newPointManager();
 
   //Receives point lists. This is only used by Logic Controller.
   void setVisitedVector(std::vector<Point> visitedVector){this->visitedPoints = visitedVector;}
