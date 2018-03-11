@@ -193,16 +193,21 @@ ros::Publisher idFlagPublisher;
 ros::Subscriber idFlagSubscriber;
 ros::Publisher coordPub;
 ros::Subscriber coordSub;
+ros::Publisher initLocPub;
+ros::Subscriber initLocSub;
 
 std_msgs::UInt8 idcount;
 std_msgs::Bool ifUseFlag;
 std_msgs::Float64MultiArray coordArray;
+std_msgs::Float64MultiArray initLoc;
 
 void idHandler(const std_msgs::UInt8::ConstPtr& message);
 void idFlagHandler(const std_msgs::Bool::ConstPtr& message);
 void coordHandler(const std_msgs::Float64MultiArray& message);
+void initialCoord(const std_msgs::Float64MultiArray& message);
 
 bool idGlobalFlag;
+vector<Point> initialLocations;
 //**
 
 //** Other
@@ -212,6 +217,14 @@ auto start_time = chrono::high_resolution_clock::now();
 auto end_time = chrono::high_resolution_clock::now();
 auto timeWaited = chrono::duration_cast<chrono::microseconds>(end_time - start_time).count();
 Point baseLocation;
+
+vector<Point> startPoints;
+int mapSize;
+float ghostWall;
+float triangleSquare;
+
+void setStartPoints();
+Point pointBuilder(float, float);
 //**
 
 //
@@ -260,6 +273,9 @@ int main(int argc, char **argv) {
 
     coordSub = mNH.subscribe(("/coordenates"), 10, coordHandler);
     coordPub = mNH.advertise<std_msgs::Float64MultiArray>("/coordenates", 50);
+
+    initLocSub = mNH.subscribe(("/initialLocations"), 10, initialCoord);
+    initLocPub = mNH.advertise<std_msgs::Float64MultiArray>("/initialLocations", 50);
   //
 
   status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
@@ -358,6 +374,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
       //cout << "centerMap (" << centerMap.x << ", " << centerMap.y << ")" << endl;
       //cout << "Current Location Mod (" << currentLocation.x - centerOdom.x << ", " << currentLocation.y - centerOdom.y << ")" << endl;
 
+      
+
       idcount.data = 0;
       ifUseFlag.data = false;
       waitTime = 5;//rng->uniformReal(1, 100); // Save random number from 1 to 100
@@ -383,28 +401,19 @@ void behaviourStateMachine(const ros::TimerEvent&)
             idPublish.publish(idcount);
 
             // Save ID
-            logicController.myId = logicController.totalIds;
+            logicController.myIdPub = logicController.totalIds;
+
+            // Publish Initial location
+            initLoc.data.push_back(currentLocation.x - baseLocation.x);
+            initLoc.data.push_back(currentLocation.y - baseLocation.y);
+            initLocPub.publish(initLoc);
 
             // Turn semaphore OFF
             ifUseFlag.data = false;
             idFlagPublisher.publish(ifUseFlag);
 
             // Rover has ID
-            doIHaveID = true;
-
-            // Set robot task by where their staring location
-            if(logicController.myId == 1)
-            {
-              //Robot with ID 1 works as leader assigning tasks to each robot
-
-            }
-            else
-            {
-              //Every other robot will wait until robot leader assigns work to each one 
-
-              
-            }
-
+            doIHaveID = true;   
 
           }
         }
@@ -417,7 +426,38 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
       }
 
-      cout << "Rover ID = " << logicController.myId << endl;
+      cout << "Rover ID = " << logicController.myIdPub << endl;
+
+      waitTime = 10;
+      //Timer to allow new rovers to connect and get IDs
+      float startDelay = time(0);    
+
+      //Waiting for new rovers
+      while(time(0) - startDelay < waitTime)
+      {
+        // Verify if it is possible that there are 6 rovers
+        if ((time(0) - startDelay) >= waitTime - 1 && logicController.totalIds > 3 && logicController.totalIds < 6)
+        {
+          // If so, then increment waiting time
+          waitTime += 1;
+        }
+                
+      }
+
+      //Set starting points on vector
+      setStartPoints();
+
+      // Set robot task by where their staring location
+      if(logicController.myIdPub == 1)
+      {
+        //Robot with ID 1 works as leader assigning tasks to each robot
+
+      }
+      else
+      {
+        //Every other robot will wait until robot leader assigns work to each one 
+        
+      }
 
       logicController.UpdateData();
       //
@@ -578,6 +618,48 @@ void sendDriveCommand(double left, double right)
 
   // publish the drive commands
   driveControlPublish.publish(velocity);
+}
+
+
+void setStartPoints()
+{
+  if(logicController.totalIds <=3)
+    {
+      cout << "Map Size: 15x15mts" << endl;
+      mapSize = 15; //15mts by 15mts map size.
+    }
+    else{
+      cout << "Map Size: 22x22mts" << endl;
+      mapSize = 22; //22mts by 22mts map size. 
+    }
+
+  ghostWall = .8; //Variable to evade walls.
+
+  if(mapSize == 15) 
+    {
+      triangleSquare = 10; // 10x10mts area for triangle square.(5mts each side)
+    }
+    else // Semi/Finals
+    {
+      // Set area    
+    }
+
+    startPoints.push_back(pointBuilder(1.0, 0.5));
+    startPoints.push_back(pointBuilder(-1.0, -0.5));
+    startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, mapSize/2 - ghostWall));
+    startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, triangleSquare/2));
+    startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, (mapSize/2 - ghostWall) * -1));
+    startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, (mapSize/2 - ghostWall) * -1));
+}
+
+Point pointBuilder(float x, float y)
+{
+  Point newPoint;
+
+  newPoint.x = x;
+  newPoint.y = y;
+
+  return newPoint;
 }
 
 /*************************
@@ -912,5 +994,15 @@ void coordHandler(const std_msgs::Float64MultiArray& message){
 
 
   //printf("%d\n",element1 );
+}
+
+void initialCoord(const std_msgs::Float64MultiArray& message)
+{
+  Point tempPoint;
+  
+  tempPoint.x = message.data[0];
+  tempPoint.y = message.data[1];
+
+  initialLocations.push_back(tempPoint);
 }
 //

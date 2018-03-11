@@ -184,7 +184,7 @@ void LogicController::UpdateData()
   // EDIT
   if (init)
   {
-    searchController.getID(myId);
+    searchController.getID(myIdLoc);
     init = false;
   }
 
