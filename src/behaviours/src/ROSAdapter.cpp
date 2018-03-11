@@ -392,16 +392,17 @@ void behaviourStateMachine(const ros::TimerEvent&)
             // Rover has ID
             doIHaveID = true;
 
-            // Still need to implement to get scatter running on multiple robots
+            // Set robot task by where their staring location
             if(logicController.myId == 1)
             {
-              // Set random point to scatter
+              //Robot with ID 1 works as leader assigning tasks to each robot
 
             }
             else
             {
-              // Set random point relative to the point from ID 1
+              //Every other robot will wait until robot leader assigns work to each one 
 
+              
             }
 
 
