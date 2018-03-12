@@ -144,15 +144,13 @@ void ObstacleController::follow_Wall()
   e = result.pd.setPointYaw - currentLocation.theta;
   cout << "Error before fix = " << e << endl; //Debug 
 
-  //e = atan2(sin(e), cos(e));
-  //cout << "Error after fix = " << e << endl; //Debug
+  e = atan2(sin(e), cos(e));
+  cout << "Error after fix = " << e << endl; //Debug
 
-  result.pd.cmdAngular = getDirection() * e * 3;
+  result.pd.cmdAngular = getDirection() * e * 2.5;
   cout << "Angular Vel = " << result.pd.cmdAngular << endl; //Debug 
 
-  result.pd.cmdVel = 0.3;
-  //diffE = (distMin - triggerDistance) - e;
-  //e = distMin - triggerDistance;
+  result.pd.cmdVel = 0.2;
 
   distRead.clear();
 }
