@@ -116,7 +116,7 @@ void ObstacleController::follow_Wall()
   }
 
   v1.x = distMin_V2.x - distMin_V1.x;
-  v1.y = distMin_V1.y - distMin_V1.y;
+  v1.y = distMin_V2.y - distMin_V1.y;
 
   v1_2.x = v1.x/norm(v1.x);
   v1_2.y = v1.y/norm(v1.y);
@@ -127,8 +127,8 @@ void ObstacleController::follow_Wall()
   u_p.x = currentLocation.x;
   u_p.y = currentLocation.y;
 
-  v2.x = (((u_a.x-u_p.x))-(((u_a.x-u_p.x))*v1_2.x)*v1_2.x);
-  v2.y = (((u_a.y-u_p.y))-(((u_a.y-u_p.y))*v1_2.y)*v1_2.y);
+  v2.x = ((u_a.x-u_p.x)-((u_a.x-u_p.x)*v1_2.x)*v1_2.x);
+  v2.y = ((u_a.y-u_p.y)-((u_a.y-u_p.y)*v1_2.y)*v1_2.y);
 
   //v_2 = sqrt(pow(v2.x,2),pow(v2.y,2));
   v3.x = v2.x/norm(v2.x);
@@ -139,12 +139,19 @@ void ObstacleController::follow_Wall()
 
   result.type = precisionDriving;
 
-  result.pd.setPointYaw = atan2(v_all.y, v_all.x);
-  e = result.pd.setPointYaw - currentLocation.theta;
-  e = atan2(sin(e), cos(e));
+  result.pd.setPointYaw = atan2(v_all.y, v_all.x);  
+  cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
 
-  result.pd.cmdAngular = getDirection() * e * 8;
-  result.pd.cmdVel = 0.35;
+  e = result.pd.setPointYaw - currentLocation.theta;
+  cout << "Error before fix = " << e << endl; //Debug 
+
+  //e = atan2(sin(e), cos(e));
+  //cout << "Error after fix = " << e << endl; //Debug
+
+  result.pd.cmdAngular = getDirection() * e * 3;
+  cout << "Angular Vel = " << result.pd.cmdAngular << endl; //Debug 
+
+  result.pd.cmdVel = 0.3;
   //diffE = (distMin - triggerDistance) - e;
   //e = distMin - triggerDistance;
 
@@ -227,7 +234,7 @@ Result ObstacleController::DoWork()
     follow_Wall();
   }
   //if an obstacle has been avoided
-  if (can_set_waypoint && (right > triggerDistance && center > triggerDistance) || (left > triggerDistance && center > triggerDistance))
+  if (can_set_waypoint && (right > triggerDistance && center > triggerDistance) && (left > triggerDistance && center > triggerDistance))
   {
     distRead.clear();
     //turnCounter = 0;
