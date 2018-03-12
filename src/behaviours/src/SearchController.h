@@ -87,6 +87,7 @@ private:
   bool searchObstacle;
   bool goRight,goLeft;
   bool sideInit;
+  bool finals;
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
@@ -118,6 +119,8 @@ private:
   void thenGoRight();
   void thenGoLeft();
   bool checkAvailableDistance(int sideSel);
+  float getSideOffset();
+  void randomWalk();
   //**
   //
 
