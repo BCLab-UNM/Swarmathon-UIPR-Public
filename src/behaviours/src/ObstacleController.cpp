@@ -117,13 +117,14 @@ void ObstacleController::follow_Wall()
 
   v1.x = distMin_V2.x - distMin_V1.x;
   v1.y = distMin_V2.y - distMin_V1.y;
-  
 
   mt << v1.x,
         v1.y;
+  cout << "mt = " << mt << endl; //Debug
 
   mtp = mt/mt.norm();
-
+  cout << "mtp = " << mtp << endl; //Debug
+  
   ma << distMin_V1.x,
         distMin_V1.y;
   
@@ -138,13 +139,13 @@ void ObstacleController::follow_Wall()
 
   result.type = precisionDriving;
 
-  result.pd.setPointYaw = atan2((m_all(0) - 1), m_all(0));  
+  //result.pd.setPointYaw = atan2((m_all(0) - 1), m_all(0));  
   cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
 
   e = result.pd.setPointYaw - currentLocation.theta;
   cout << "Error before fix = " << e << endl; //Debug 
 
-  e = atan2(sin(e), cos(e));
+  //e = atan2(sin(e), cos(e));
   cout << "Error after fix = " << e << endl; //Debug
 
   result.pd.cmdAngular = getDirection() * e * 2.5;
