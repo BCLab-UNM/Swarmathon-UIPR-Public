@@ -144,7 +144,7 @@ void SearchController::giveTask2Robot()
     switch(this->myId)
     {
       case 1:
-      {
+      {        
         if(pointCounter == trianglePointLimit)
         {
           pointCounter = 0;
@@ -295,7 +295,81 @@ void SearchController::giveTask2Robot()
   }
 void SearchController::randomWalk()
   {
-    float xLoc = rng->uniformReal()
+    result.type = waypoint;
+    float xLoc = 0;
+    float yLoc = 0;
+
+    switch(this->myId)
+    {
+      case 1:
+      {
+        angle = rng->uniformReal(0.2,3);
+        angle = radToDeg(angle);
+        float translate;
+
+        if(angle >= 0 && angle <= 45)
+        {
+          translate = 0;
+        }
+        else if(angle >= 45 && angle <= 90){
+          translate = 45;
+        }
+        else if(angle >= 90 && angle <= 135)
+        {
+          translate = 90;
+        }
+        else if(angle >= 135 && angle <= 180)
+        {
+          translate = 135;
+        }
+
+        unknownAngle = 180 - (angle - translate + 90);
+        unknownAngle = degToRad(unknownAngle);
+        magnitude = rng->uniformReal(1,(sin(M_PI/2) * mapSize/2 - 2.5)/sin(unknownAngle));
+        cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
+        angle = degToRad(angle); 
+
+        xLoc = magnitude * cos(angle);
+        yLoc = magnitude * sin(angle);
+        this->searchLocation = setSearchLocation(xLoc,yLoc);
+        break;
+      }
+
+      case 2:
+      {
+        angle = rng->uniformReal(3.3,6.1);
+        angle = radToDeg(angle);
+        float translate;
+
+        if(angle >= 180 && angle <= 225)
+        {
+          translate = 180;
+        }
+        else if(angle >= 225 && angle <= 270){
+          translate = 225;
+        }
+        else if(angle >= 270 && angle <= 315)
+        {
+          translate = 270;
+        }
+        else if(angle >= 315 && angle <= 360)
+        {
+          translate = 315;
+        }
+
+        unknownAngle = 180 - (angle - translate + 90);
+        unknownAngle = degToRad(unknownAngle);
+        magnitude = rng->uniformReal(1,(sin(M_PI/2) * mapSize/2 - 2.5)/sin(unknownAngle));
+        cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
+        angle = degToRad(angle); 
+
+        xLoc = magnitude * cos(angle);
+        yLoc = magnitude * sin(angle);
+        this->searchLocation = setSearchLocation(xLoc,yLoc);
+        break;
+      }
+    }
+    
   }
 float SearchController::getSideOffset()
   {
@@ -338,7 +412,6 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 break;
               }
               else{
-                //this->visitedLoc.push_back(currentLocation);
                 angle = rng->uniformReal(0,M_PI/4);
                 angle = radToDeg(angle);
                 unknownAngle = 180 - (angle + 90);
