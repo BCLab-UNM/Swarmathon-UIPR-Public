@@ -1,6 +1,5 @@
 #include "ObstacleController.h"
-#include <cmath>
-#include <iostream>
+
 
 ObstacleController::ObstacleController()
 {
@@ -23,10 +22,14 @@ void ObstacleController::Reset()
   direction = 0;
 }
 
-int ObstacleController::getDirection() {
-  if (left < right) {
+int ObstacleController::getDirection()
+{
+  if (left < right)
+  {
     direction = -1;
-  } else {
+  }
+  else
+  {
     direction = 1;
   }
   return direction;
@@ -41,35 +44,112 @@ void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2)
   this->pidC2 = pidC2;
 }
 
-void ObstacleController::follow_Wall() {
-       
-    //Add distances read to vector so min and max index can be calculated.
-    distRead.push_back(left);
-    distRead.push_back(center);
-    distRead.push_back(right);
+// void ObstacleController::follow_Wall()
+// {
 
-    // Calculate min index
-    size = distRead.size(); 
+//   //Add distances read to vector so min and max index can be calculated.
+//   distRead.push_back(left);
+//   distRead.push_back(center);
+//   distRead.push_back(right);
 
-    minIndex = size*(direction+1)/4;
-    maxIndex = size*(direction+3)/4;
+//   // Calculate min index
+//   size = distRead.size();
 
-    for (int i = minIndex; i < maxIndex; i++){
-      if (distRead[i] < distRead[i + 1] && distRead[i] > 0.01){
-        minIndex = i;
-      }
-    }
+//   minIndex = size * (direction + 1) / 4;
+//   maxIndex = size * (direction + 3) / 4;
 
-    angleMin = (minIndex - (size/2)) * M_PI/4;
-    distMin = distRead[minIndex];
-    diffE = (distMin - triggerDistance) - e;
-    e = distMin - triggerDistance;
+//   for (int i = 0; i < maxIndex; i++)
+//   {
+//     if (distRead[i] < distRead[i + 1] && distRead[i] > 0.01)
+//     {
+//       minIndex = i;
+//     }
+//   }
 
-   result.type = precisionDriving;
-   result.pd.cmdAngular = getDirection()*(5*e + 0.01*diffE) + K_angular * (angleMin - M_PI*(getDirection()/2));
-   result.pd.cmdVel = 0.4;
+//   //angleMin = (minIndex - (size / 2)) * M_PI / 4;
+//   distMin = distRead[minIndex];
+//   diffE = (distMin - triggerDistance) - e;
+//   e = distMin - triggerDistance;
+
+
+//   result.type = precisionDriving;
+
+//   if (turnCounter < 10)
+//   {
+//     result.pd.cmdAngular = getDirection() * (10 * e + 3 * diffE); 
+//     result.pd.cmdVel = 0.3;
+//     turnCounter++;
+//     distRead.clear();
+//   }
+//   else{
+//     result.pd.cmdAngular = getDirection() * (5 * e + 0.1 * diffE); /*+ K_angular * (angleMin - M_PI * (getDirection() / 2));*/
+//     result.pd.cmdVel = 0.6;
+//     distRead.clear();
+//   }
+  
+// }
+void ObstacleController::follow_Wall()
+{
+  //Add read distances to vector
+  distRead.push_back(left);
+  distRead.push_back(center);
+  distRead.push_back(right);
+  sort(distRead.begin(), distRead.end());
+
+  distMin = distRead[0];
+  distMin2 = distRead[1];
+
+  if (getDirection() == 1){
+    distMin_V1.x = distMin*cos(currentLocation.theta - M_PI_4);
+    distMin_V1.y = distMin*sin(currentLocation.theta - M_PI_4);
+
+    distMin_V2.x = distMin2*cos(currentLocation.theta);
+    distMin_V2.y = distMin2*sin(currentLocation.theta);
+  }
+
+  else{
+    distMin_V1.x = distMin*cos(currentLocation.theta + M_PI_4);
+    distMin_V1.y = distMin*sin(currentLocation.theta + M_PI_4);
+
+    distMin_V2.x = distMin2*cos(currentLocation.theta);
+    distMin_V2.y = distMin2*sin(currentLocation.theta);
+  }
+
+  v1.x = distMin_V2.x - distMin_V1.x;
+  v1.y = distMin_V1.y - distMin_V1.y;
+
+  v1_2.x = v1.x/norm(v1.x);
+  v1_2.y = v1.y/norm(v1.y);
+
+  u_a.x = distMin_V1.x;
+  u_a.y = distMin_V1.y;
+
+  u_p.x = currentLocation.x;
+  u_p.y = currentLocation.y;
+
+  v2.x = (((u_a.x-u_p.x))-(((u_a.x-u_p.x))*v1_2.x)*v1_2.x);
+  v2.y = (((u_a.y-u_p.y))-(((u_a.y-u_p.y))*v1_2.y)*v1_2.y);
+
+  //v_2 = sqrt(pow(v2.x,2),pow(v2.y,2));
+  v3.x = v2.x/norm(v2.x);
+  v3.y = v2.y/norm(v2.y);
+
+  v_all.x = triggerDistance*v1_2.x+(v2.x-triggerDistance*v3.x);
+  v_all.y = triggerDistance*v1_2.y+(v2.y-triggerDistance*v3.y);
+
+  result.type = precisionDriving;
+
+  result.pd.setPointYaw = atan2(v_all.y, v_all.x);
+  e = result.pd.setPointYaw - currentLocation.theta;
+  e = atan2(sin(e), cos(e));
+
+  result.pd.cmdAngular = getDirection() * e * 8;
+  result.pd.cmdVel = 0.35;
+  //diffE = (distMin - triggerDistance) - e;
+  //e = distMin - triggerDistance;
+
+  distRead.clear();
 }
-
 // void ObstacleController::follow_Wall()
 // {
 //   result.type = precisionDriving;
@@ -147,20 +227,22 @@ Result ObstacleController::DoWork()
     follow_Wall();
   }
   //if an obstacle has been avoided
-  if (can_set_waypoint && (right > triggerDistance && center > triggerDistance) || (left > triggerDistance && left > triggerDistance))
+  if (can_set_waypoint && (right > triggerDistance && center > triggerDistance) || (left > triggerDistance && center > triggerDistance))
   {
+    distRead.clear();
+    //turnCounter = 0;
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
     result.type = waypoint;
 
-    result.PIDMode = FAST_PID; //use fast pid for waypoints
-    Point forward;
+    //result.PIDMode = FAST_PID; //use fast pid for waypoints
+    //Point forward;
     //waypoint is directly ahead of current heading
     //forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
     //forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
     //result.wpts.waypoints.clear();
-    result.wpts.waypoints.push_back(forward);
+    //result.wpts.waypoints.push_back(forward);
   }
   return result;
 }
@@ -168,7 +250,7 @@ Result ObstacleController::DoWork()
 void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float sonarright)
 {
   left = sonarleft;
-    right = sonarright;
+  right = sonarright;
   center = sonarcenter;
 
   ProcessData();

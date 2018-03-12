@@ -5,7 +5,9 @@
 #include "Tag.h"
 #include "PID.h"
 #include "DriveController.h"
-#include <angles/angles.h> 
+#include <algorithm> 
+#include <cmath>
+#include <iostream>
 
 class ObstacleController : virtual Controller
 {
@@ -55,7 +57,12 @@ private:
   int size; //reenges vector size
   int minIndex; //min and max indexes for angleMin calc
   int maxIndex; 
-  double angleMin, distMin; //minimun angle and distance between object and rover vars
+  int turnCounter;
+  Point distMin_V1, distMin_V2;
+  Point v2, v_all, u_a, v1_2, v1, v_2, v3;
+  Point u_p;
+  Point u_tp;
+  double distMin, distMin2; //minimun angle and distance between object and rover vars
   double e, diffE;  //error vars
 
   // Are there AprilTags in the camera view that mark the collection zone
