@@ -117,29 +117,28 @@ void ObstacleController::follow_Wall()
 
   v1.x = distMin_V2.x - distMin_V1.x;
   v1.y = distMin_V2.y - distMin_V1.y;
+  
 
-  v1_2.x = v1.x/norm(v1.x);
-  v1_2.y = v1.y/norm(v1.y);
+  mt << v1.x,
+        v1.y;
 
-  u_a.x = distMin_V1.x;
-  u_a.y = distMin_V1.y;
+  mtp = mt/mt.norm();
 
-  u_p.x = currentLocation.x;
-  u_p.y = currentLocation.y;
+  ma << distMin_V1.x,
+        distMin_V1.y;
+  
+  mloc << currentLocation.x,
+          currentLocation.y;
 
-  v2.x = ((u_a.x-u_p.x)-((u_a.x-u_p.x)*v1_2.x)*v1_2.x);
-  v2.y = ((u_a.y-u_p.y)-((u_a.y-u_p.y)*v1_2.y)*v1_2.y);
+  mp = ((ma-mloc)-((ma-mloc)*mtp)*mtp);
 
-  //v_2 = sqrt(pow(v2.x,2),pow(v2.y,2));
-  v3.x = v2.x/norm(v2.x);
-  v3.y = v2.y/norm(v2.y);
+  mpp = mp/mp.norm();
 
-  v_all.x = triggerDistance*v1_2.x+(v2.x-triggerDistance*v3.x);
-  v_all.y = triggerDistance*v1_2.y+(v2.y-triggerDistance*v3.y);
+  m_all = triggerDistance * mtp + (mp - triggerDistance*mpp);
 
   result.type = precisionDriving;
 
-  result.pd.setPointYaw = atan2(v_all.y, v_all.x);  
+  result.pd.setPointYaw = atan2((m_all(0) - 1), m_all(0));  
   cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
 
   e = result.pd.setPointYaw - currentLocation.theta;
