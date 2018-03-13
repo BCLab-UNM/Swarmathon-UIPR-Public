@@ -219,6 +219,7 @@ auto timeWaited = chrono::duration_cast<chrono::microseconds>(end_time - start_t
 Point baseLocation;
 
 vector<Point> startPoints;
+vector<int> newIds;
 int mapSize;
 float ghostWall;
 float triangleSquare;
@@ -428,6 +429,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
       cout << "Rover ID = " << logicController.myIdPub << endl;
 
+      // Wait 10 seconds
       waitTime = 10;
       //Timer to allow new rovers to connect and get IDs
       float startDelay = time(0);    
@@ -438,7 +440,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
         // Verify if it is possible that there are 6 rovers
         if ((time(0) - startDelay) >= waitTime - 1 && logicController.totalIds > 3 && logicController.totalIds < 6)
         {
-          // If so, then increment waiting time
+          // If so, then increment waiting time by one second
           waitTime += 1;
         }
                 
@@ -446,17 +448,54 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
       //Set starting points on vector
       setStartPoints();
+      newIds.resize(initialLocations.size(), 0);
 
       // Set robot task by where their staring location
       if(logicController.myIdPub == 1)
       {
         //Robot with ID 1 works as leader assigning tasks to each robot
+        float distanceToInit;
+        float savedDistance;
+        int savedID;
+
+        for (int i = 1; i <= initialLocations.size(); i++){
+
+          //Ensure the rover picks the first point
+          savedDistance = 1000000;
+          
+          for (int j = 0; j < startPoints.size(); j++) {
+        
+            //Distance from starting location for search to the rover being assigned an ID
+            distanceToInit = hypot(startPoints.at(0).x - initialLocations.at(0).x, startPoints.at(0).y - initialLocations.at(0).y);
+
+            if (distanceToInit < savedDistance){
+
+              ///////////////////
+              // Still need to handle if that ID is already taken
+              // Think best way is to hold it until verified entire vector
+              // If no startPoint is better compare distance between
+              // ID already on index and current ID, if current is
+              // closer repeat but dont allow verifying previous ID
+              // repeat until all IDs are arranged
+              ///////////////////
+
+              savedDistance = distanceToInit;
+              savedID = j;   
+            }
+
+            
+          }
+
+          // Save "j" on vector to be published on saved Index
+          newIds.at(savedID) = i;
+        }
 
       }
       else
       {
         //Every other robot will wait until robot leader assigns work to each one 
         
+        // Need to add 1 to 
       }
 
       logicController.UpdateData();
