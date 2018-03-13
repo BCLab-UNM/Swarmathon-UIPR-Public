@@ -44,6 +44,12 @@ SearchController::SearchController() {
 void SearchController::Reset() {
   result.reset = false;
 }
+
+void SearchController::displayVector(float magnitude, float angle)
+{
+  cout << "Vector: (" << magnitude << "mts," << angle << "°)" << endl;
+}
+
 bool SearchController::checkAvailableDistance(int sideSel)
   {
     cout << "Checking for distance availabilty!" << endl;
@@ -296,76 +302,17 @@ void SearchController::giveTask2Robot()
 void SearchController::randomWalk()
   {
     result.type = waypoint;
-    float xLoc = 0;
-    float yLoc = 0;
-
     switch(this->myId)
     {
       case 1:
       {
-        angle = rng->uniformReal(0.2,3);
-        angle = radToDeg(angle);
-        float translate;
-
-        if(angle >= 0 && angle <= 45)
-        {
-          translate = 0;
-        }
-        else if(angle >= 45 && angle <= 90){
-          translate = 45;
-        }
-        else if(angle >= 90 && angle <= 135)
-        {
-          translate = 90;
-        }
-        else if(angle >= 135 && angle <= 180)
-        {
-          translate = 135;
-        }
-
-        unknownAngle = 180 - (angle - translate + 90);
-        unknownAngle = degToRad(unknownAngle);
-        magnitude = rng->uniformReal(1,(sin(M_PI/2) * mapSize/2 - 2.5)/sin(unknownAngle));
-        cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-        angle = degToRad(angle); 
-
-        xLoc = magnitude * cos(angle);
-        yLoc = magnitude * sin(angle);
-        this->searchLocation = setSearchLocation(xLoc,yLoc);
+        this->searchLocation = generateRandomTriangleLoc(0.2,3,mapSize/2 - 2.5);
         break;
       }
 
       case 2:
       {
-        angle = rng->uniformReal(3.3,6.1);
-        angle = radToDeg(angle);
-        float translate;
-
-        if(angle >= 180 && angle <= 225)
-        {
-          translate = 180;
-        }
-        else if(angle >= 225 && angle <= 270){
-          translate = 225;
-        }
-        else if(angle >= 270 && angle <= 315)
-        {
-          translate = 270;
-        }
-        else if(angle >= 315 && angle <= 360)
-        {
-          translate = 315;
-        }
-
-        unknownAngle = 180 - (angle - translate + 90);
-        unknownAngle = degToRad(unknownAngle);
-        magnitude = rng->uniformReal(1,(sin(M_PI/2) * mapSize/2 - 2.5)/sin(unknownAngle));
-        cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-        angle = degToRad(angle); 
-
-        xLoc = magnitude * cos(angle);
-        yLoc = magnitude * sin(angle);
-        this->searchLocation = setSearchLocation(xLoc,yLoc);
+        this->searchLocation = generateRandomTriangleLoc(3.3,6.1,mapSize/2 - 2.5);
         break;
       }
     }
@@ -381,20 +328,74 @@ float SearchController::getSideOffset()
         return .5;
       }
   }
+
+float SearchController::angleTraslation(float newAngle)
+  {
+    float translationAngle;
+  
+        if(newAngle >= 0 && newAngle <= 45)
+        {
+          translationAngle = 0;
+        }
+        else if(newAngle >= 45 && newAngle <= 90){
+          translationAngle = 45;
+        }
+        else if(newAngle >= 90 && newAngle <= 135)
+        {
+          translationAngle = 90;
+        }
+        else if(newAngle >= 135 && newAngle <= 180)
+        {
+          translationAngle = 135;
+        }
+        else if(newAngle >= 180 && newAngle <= 225)
+        {
+          translationAngle = 180;
+        }
+        else if(newAngle >= 225 && newAngle <= 270)
+        {
+          translationAngle = 225;
+        }
+        else if(newAngle >= 270 && newAngle <= 315)
+        {
+          translationAngle = 270;
+        }
+        else if(newAngle >= 315 && newAngle <= 360)
+        {
+          translationAngle = 315;
+        }
+      return translationAngle;
+  }
+Point SearchController::generateRandomTriangleLoc(float firstBound, float secondBound, float maxBoundary)
+  {
+    Point newLoc;
+    float newAngle;
+    float unknownedAngle;
+    float magnituded;
+    newAngle = rng->uniformReal(firstBound,secondBound);
+    newAngle = radToDeg(newAngle);
+    unknownedAngle = 180 - (newAngle - angleTraslation(newAngle) + 90);
+
+    
+    unknownedAngle = degToRad(unknownedAngle);
+    magnituded = rng->uniformReal(1,(sin(M_PI/2) * maxBoundary)/sin(unknownedAngle));
+
+    displayVector(magnituded,newAngle);
+    newAngle = degToRad(newAngle);
+    newLoc.x = magnituded * cos(newAngle);
+    newLoc.y = magnituded * sin(newAngle);
+
+    return newLoc;
+    
+  }
 void SearchController::triangleSearch(int myId,int triangularSection, float triangleSquare)
   {
-    float xLoc = 0;
-    float yLoc = 0;
-    bool pointAccepted = false;
-
-
     result.type = waypoint;
       //Developing code for first traingular section
       switch(triangularSection)
       {
         case 1: //This section is from degrees 0->45
           {
-
             if(first_waypoint) 
             {
               cout << "--Looking for first given location.--" << endl;
@@ -412,62 +413,9 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 break;
               }
               else{
-                angle = rng->uniformReal(0,M_PI/4);
-                angle = radToDeg(angle);
-                unknownAngle = 180 - (angle + 90);
-                unknownAngle = degToRad(unknownAngle);
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle); 
-
-                xLoc = magnitude * cos(angle);
-                yLoc = magnitude * sin(angle);
-                this->searchLocation = setSearchLocation(xLoc,yLoc);
+                this->searchLocation = generateRandomTriangleLoc(0,M_PI/4,triangleSquare);
                break;
               }
-                
-
-                /*
-              while(pointAccepted == false)
-              {
-                angle = rng->uniformReal(0,M_PI/4);
-                angle = radToDeg(angle);
-
-                unknownAngle = 180 - (angle + 90);
-                unknownAngle = degToRad(unknownAngle);
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle); 
-                xLoc = magnitude * cos(angle);
-                yLoc = magnitude * sin(angle);
-
-                cout <<"Current Location: (" << currentLocation.x <<"," << currentLocation.y << ")" << endl;
-                /*
-                for(int i = 0; i <= this->visitedLoc.size()-1; i++)
-                {
-                  cout << "Validating new location" << endl;
-                  if(((xLoc >= this->visitedLoc.at(i).x - .5) && (xLoc <= this->visitedLoc.at(i).x + .5)) && ((yLoc >= this->visitedPoints.at(i).y - .5)  && (yLoc <= this->visitedPoints.at(i).y + .5)))
-                  {
-                    pointAccepted = false;
-                    break;
-                  }
-                  else{
-                    pointAccepted = true;
-                  }
-                }
-                if(pointAccepted)
-                {
-                  cout << "Point accepted!" << endl;
-                  this->searchLocation = setSearchLocation(xLoc,yLoc);
-                }
-                else{
-                  cout << "Point not accepted. Generating other location!!" << endl;
-                  cout << "Rejected location: (" << xLoc << "," << yLoc << ")" << endl;
-                }
-                
-              }
-             */
-              
             } 
           } 
 
@@ -489,16 +437,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 break;
               }
               else{
-                angle = rng->uniformReal(M_PI/4,M_PI/2);
-                angle = radToDeg(angle);
-
-                unknownAngle = 180 - (angle -45 + 90);
-                unknownAngle = degToRad(unknownAngle);
-
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle);
-                this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+                this->searchLocation = generateRandomTriangleLoc(M_PI/4,M_PI/2,triangleSquare);
                 cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
                 break;
               }
@@ -524,16 +463,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 break;
               }
               else{
-                angle = rng->uniformReal(M_PI/2,3*M_PI/4);
-                angle = radToDeg(angle);
-
-                unknownAngle = 180 - (angle - 90 + 90);
-                unknownAngle = degToRad(unknownAngle);
-
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle);
-                this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+                this->searchLocation = generateRandomTriangleLoc(M_PI/2, 3*M_PI/4,triangleSquare);
                 cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
                 break;
               }
@@ -558,16 +488,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 break;
               }
               else{
-                angle = rng->uniformReal(3*M_PI/4,M_PI);
-                angle = radToDeg(angle);
-
-                unknownAngle = 180 - (angle - 135 + 90);
-                unknownAngle = degToRad(unknownAngle);
-
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle);
-                this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+                this->searchLocation = generateRandomTriangleLoc(3*M_PI/4,M_PI,triangleSquare);
                 cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
                 break;
               }
@@ -592,16 +513,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 break;
               }
               else{
-                angle = rng->uniformReal(M_PI,5*M_PI/4);
-                angle = radToDeg(angle);
-
-                unknownAngle = 180 - (angle - 180 + 90);
-                unknownAngle = degToRad(unknownAngle);
-
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle);
-                this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+                this->searchLocation = generateRandomTriangleLoc(M_PI,5*M_PI/4,triangleSquare);
                 cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
                 break;
               }
@@ -626,16 +538,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
                 break;
               }
               else{
-                angle = rng->uniformReal(5*M_PI/4,3*M_PI/2);
-                angle = radToDeg(angle);
-
-                unknownAngle = 180 - (angle - 225 + 90);
-                unknownAngle = degToRad(unknownAngle);
-
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle);
-                this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+                this->searchLocation = generateRandomTriangleLoc(5*M_PI/4,3*M_PI/2,triangleSquare);
                 cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
                 break;
               }
@@ -661,16 +564,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
               }
 
               else{
-                angle = rng->uniformReal(3*M_PI/2,7*M_PI/4);
-                angle = radToDeg(angle);
-
-                unknownAngle = 180 - (angle - 270 + 90);
-                unknownAngle = degToRad(unknownAngle);
-
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle);
-                this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
+                this->searchLocation = generateRandomTriangleLoc(3*M_PI/2,7*M_PI/4,triangleSquare);
                 cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
                 break;
               }
@@ -696,19 +590,9 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
               }
               else{
                 angle = rng->uniformReal(7*M_PI/4,2*M_PI);
-                angle = radToDeg(angle);
-
-                unknownAngle = 180 - (angle - 315 + 90);
-                unknownAngle = degToRad(unknownAngle);
-
-                magnitude = rng->uniformReal(1,(sin(M_PI/2) * triangleSquare)/sin(unknownAngle));
-                cout << "Vector: (" << magnitude << "," << angle <<")" << endl;
-                angle = degToRad(angle);
-                this->searchLocation = setSearchLocation(magnitude * cos(angle),magnitude * sin(angle));
-                cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
+                this->searchLocation = generateRandomTriangleLoc(7*M_PI/4,2*M_PI,triangleSquare);cout << "Looking for location: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
                 break;
               }
-              
             } 
           }
         default:

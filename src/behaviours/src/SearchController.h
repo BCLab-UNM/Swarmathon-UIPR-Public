@@ -121,6 +121,9 @@ private:
   bool checkAvailableDistance(int sideSel);
   float getSideOffset();
   void randomWalk();
+  void displayVector(float magnitude, float angle);
+  Point generateRandomTriangleLoc(float firstBound, float secondBound, float triangleSquare);
+  float angleTraslation(float newAngle);
   //**
   //
 
