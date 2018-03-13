@@ -141,37 +141,46 @@ void ObstacleController::follow_Wall()
   mloc(0,0) = currentLocation.x;
   mloc(1,0) = currentLocation.y;
 
-  MatrixXf mp, matras, mloctras;
+  MatrixXf mp, maTrans, mlocTrans, middleCalc;
   mp.resize(2,1);
-  matras.resize(1,2);
-  mloctras.resize(1,2);
-  matras = ma.transpose();
-  cout << "mATras = " << matras << endl; //Debug
-  mloctras = mloc.transpose();
+  maTrans.resize(1,2);
+  mlocTrans.resize(1,2);
+  maTrans = ma.transpose();
+  mlocTrans = mloc.transpose();
+  
+  //changes a 1x1 Matrix to a single number
+  middleCalc.resize(1,1);
+  middleCalc = (maTrans-mlocTrans)*mtp;
+  float midleCal = middleCalc(0,0);
 
-  ///////////////////////////Hasta aqui funciona!!//////////////////////////////////
-  mp = ((ma-mloc)-((matras-mloctras)*mtp)*mtp);
+  mp = ((ma-mloc) - midleCal*mtp);
   cout << "mp = " << mp << endl; //Debug
-  // MatrixXf mpp = mp/mp.norm();
+  
+  MatrixXf mpp;
+  mpp.resize(2,1);
+  mpp = mp/mp.norm();
 
-  // MatrixXf m_all = MatrixXf::Random(2,1);
-  // m_all = triggerDistance * mtp + (mp - triggerDistance*mpp);
+  MatrixXf m_all;
+  m_all.resize(2,1);
+  m_all = triggerDistance * mtp + (mp - triggerDistance*mpp);
 
-  // result.type = precisionDriving;
+  result.type = precisionDriving;
 
-  // result.pd.setPointYaw = atan2(m_all(1,0), m_all(0,0));  
-  // cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
+  result.pd.setPointYaw = atan2(m_all(1,0), m_all(0,0));  
+  cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
 
-  // e = result.pd.setPointYaw - currentLocation.theta;
-  // cout << "Error before fix = " << e << endl; //Debug 
+  diffE = (result.pd.setPointYaw - currentLocation.theta) - e;
+  e = result.pd.setPointYaw - currentLocation.theta;
+  cout << "Error before fix = " << e << endl; //Debug 
 
-  // e = atan2(sin(e), cos(e));
-  // cout << "Error after fix = " << e << endl; //Debug
+  
+  e = atan2(sin(e), cos(e));
+  cout << "Error after fix = " << e << endl; //Debug
 
-  // result.pd.cmdAngular = getDirection() * e * 2.5;
-  // cout << "Angular Vel = " << result.pd.cmdAngular << endl; //Debug 
+  result.pd.cmdAngular = getDirection() * (2.5 * e + 0.01 * diffE);
+  cout << "Angular Vel = " << result.pd.cmdAngular << endl; //Debug 
 
-  // result.pd.cmdVel = 0.2;
+  result.pd.cmdVel = 0.25;
 
   distRead.clear();
 }
