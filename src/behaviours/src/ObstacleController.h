@@ -15,7 +15,6 @@
 #include <Eigen/Dense>
 #include <Eigen/Eigen>
 
-using namespace Eigen;
 
 class ObstacleController : virtual Controller
 {
@@ -68,7 +67,7 @@ private:
   int turnCounter;
   Point distMin_V1, distMin_V2;
   Point v1, v2, v_all, u_a, v1_2, v_2, v3;
-  MatrixXf mt, mtp, mp, mloc, ma, mpp, m_all;
+  //MatrixXf mt, mtp, mp, mloc, ma, mpp, m_all;
   double distMin, distMin2; //minimun angle and distance between object and rover vars
   double e, diffE;  //error vars
 

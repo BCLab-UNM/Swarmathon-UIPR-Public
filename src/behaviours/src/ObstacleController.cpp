@@ -1,5 +1,6 @@
 #include "ObstacleController.h"
 
+using namespace Eigen;
 
 ObstacleController::ObstacleController()
 {
@@ -90,6 +91,7 @@ void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2)
 // }
 void ObstacleController::follow_Wall()
 {
+
   //Add read distances to vector
   distRead.push_back(left);
   distRead.push_back(center);
@@ -117,41 +119,59 @@ void ObstacleController::follow_Wall()
 
   v1.x = distMin_V2.x - distMin_V1.x;
   v1.y = distMin_V2.y - distMin_V1.y;
-
-  mt << v1.x,
-        v1.y;
+  
+  MatrixXf mt;
+  mt.resize(2,1);
+  mt(0,0) = v1.x;
+  mt(1,0) = v1.y;
   cout << "mt = " << mt << endl; //Debug
 
+  MatrixXf mtp;
+  mtp.resize(2,1);
   mtp = mt/mt.norm();
   cout << "mtp = " << mtp << endl; //Debug
-  
-  ma << distMin_V1.x,
-        distMin_V1.y;
-  
-  mloc << currentLocation.x,
-          currentLocation.y;
 
-  mp = ((ma-mloc)-((ma-mloc)*mtp)*mtp);
+  MatrixXf ma;
+  ma.resize(2,1);
+  ma(0,0) = distMin_V1.x;
+  ma(1,0) = distMin_V1.y;
 
-  mpp = mp/mp.norm();
+  MatrixXf mloc;
+  mloc.resize(2,1);
+  mloc(0,0) = currentLocation.x;
+  mloc(1,0) = currentLocation.y;
 
-  m_all = triggerDistance * mtp + (mp - triggerDistance*mpp);
+  MatrixXf mp, matras, mloctras;
+  mp.resize(2,1);
+  matras.resize(1,2);
+  mloctras.resize(1,2);
+  matras = ma.transpose();
+  cout << "mATras = " << matras << endl; //Debug
+  mloctras = mloc.transpose();
 
-  result.type = precisionDriving;
+  ///////////////////////////Hasta aqui funciona!!//////////////////////////////////
+  mp = ((ma-mloc)-((matras-mloctras)*mtp)*mtp);
+  cout << "mp = " << mp << endl; //Debug
+  // MatrixXf mpp = mp/mp.norm();
 
-  //result.pd.setPointYaw = atan2((m_all(0) - 1), m_all(0));  
-  cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
+  // MatrixXf m_all = MatrixXf::Random(2,1);
+  // m_all = triggerDistance * mtp + (mp - triggerDistance*mpp);
 
-  e = result.pd.setPointYaw - currentLocation.theta;
-  cout << "Error before fix = " << e << endl; //Debug 
+  // result.type = precisionDriving;
 
-  //e = atan2(sin(e), cos(e));
-  cout << "Error after fix = " << e << endl; //Debug
+  // result.pd.setPointYaw = atan2(m_all(1,0), m_all(0,0));  
+  // cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
 
-  result.pd.cmdAngular = getDirection() * e * 2.5;
-  cout << "Angular Vel = " << result.pd.cmdAngular << endl; //Debug 
+  // e = result.pd.setPointYaw - currentLocation.theta;
+  // cout << "Error before fix = " << e << endl; //Debug 
 
-  result.pd.cmdVel = 0.2;
+  // e = atan2(sin(e), cos(e));
+  // cout << "Error after fix = " << e << endl; //Debug
+
+  // result.pd.cmdAngular = getDirection() * e * 2.5;
+  // cout << "Angular Vel = " << result.pd.cmdAngular << endl; //Debug 
+
+  // result.pd.cmdVel = 0.2;
 
   distRead.clear();
 }
