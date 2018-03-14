@@ -2,6 +2,12 @@
     "files.associations": {
         "*.ipp": "cpp",
         "system_error": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "functional": "cpp",
+        "future": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "condition_variable": "cpp",
+        "chrono": "cpp"
     }
 }
