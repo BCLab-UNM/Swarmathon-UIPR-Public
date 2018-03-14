@@ -220,6 +220,7 @@ auto start_time = chrono::high_resolution_clock::now();
 auto end_time = chrono::high_resolution_clock::now();
 auto timeWaited = chrono::duration_cast<chrono::microseconds>(end_time - start_time).count();
 Point baseLocation;
+bool clusterClose;
 //**
 
 //
@@ -618,22 +619,29 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
       loc.setID( message->detections[i].id );
 
       // Pass the position of the AprilTag
-      geometry_msgs::PoseStamped tagPose = message->detections[i].pose;//====== Detect cluster and publish location ==============
-      if (message->detections.size() > 5 && clusterPointSaved == false) {
+      geometry_msgs::PoseStamped tagPose = message->detections[i].pose;
+      //====== Detect cluster and publish location ==============
+      if (message->detections.size() > 5) { //&& clusterPointSaved == false) {
+        float distanceToCluster = 0;
+        if (!logicController.clusterPoints.empty()){
+          cout << "Cluster Point size: " << logicController.clusterPoints.size() << endl;
+          distanceToCluster = hypot(logicController.clusterPoints.at(i).x - currentLocation.x, logicController.clusterPoints.at(i).y - currentLocation.y);
+          cout << "Distance to Cluster is: " << distanceToCluster << endl;
+        }
+        cout << "Before for" << endl;
+        for (int i = 0; i < logicController.clusterPoints.size(); i++) {
 
-        // for (int i = 0; i < logicController.clusterPoints.size(); i++) {
+           if (distanceToCluster < 2.5) {
+             std::cout << "It's close to the same cluster." << '\n';
+             clusterClose = true;
+             break;
+           }
 
-        //   if (hypot(logicController.clusterPoints.at(i).x - currentLocation.x, logicController.clusterPoints.at(i).y - currentLocation.y) < 1) {
-        //     std::cout << "It's closed to master robot." << '\n';
-        //     clusterClose = true;
-        //     break;
-        //   }
-
-        //   else{
-        //     std::cout << "Not close" << '\n';
-        //     clusterClose = false;
-        //   }
-        // }
+           else{
+             std::cout << "Not close" << '\n';
+             clusterClose = false;
+           }
+         }
 
         // if (!clusterClose){
         //   // magnitude = sqrt(pow(currentLocation.x, 2) + pow(currentLocation.y, 2)) + 0.5;
@@ -642,18 +650,24 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
         std::cout << "Cluster!!!" << '\n';
 
-        clusterPointSaved = true;
-        clusterCoordArray.data.push_back((0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x));
-        clusterCoordArray.data.push_back((0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y));
+        //clusterPointSaved = true;
+        if (!clusterClose){ 
+      
+          cout << "Pushing Back" << endl;
 
-        std::cout << "currentLocation.x = " << currentLocation.x - baseLocation.x << ", currentLocation.y = " << currentLocation.y - baseLocation.y << endl;
-        std::cout << "clusterLocation.x = " << 0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x << ", clusterLocation.y = " << 0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y << endl;
+          clusterCoordArray.data.push_back((0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x));
+          clusterCoordArray.data.push_back((0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y));
+
+          std::cout << "1 currentLocation.x = " << currentLocation.x - baseLocation.x << ", currentLocation.y = " << currentLocation.y - baseLocation.y << endl;
+          std::cout << "2 clusterLocation.x = " << 0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x << ", clusterLocation.y = " << 0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y << endl;
         
 
-        clusterPointPub.publish(clusterCoordArray);
+          clusterPointPub.publish(clusterCoordArray);
 
-        clusterCoordArray.data.clear();
-
+          clusterCoordArray.data.clear();
+          clusterClose = true;
+        }
+        cout << "End cluster logic" << '\n';
         // }
 
       }

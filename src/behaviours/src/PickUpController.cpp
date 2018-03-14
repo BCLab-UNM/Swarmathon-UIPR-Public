@@ -389,7 +389,7 @@ Result PickUpController::CenterTag()
 
   if (blockYawError < -0.08 || blockYawError > 0.08) {
     result.pd.cmdVel = 0;
-    result.pd.cmdAngularError = -blockYawError * 1.6;
+    result.pd.cmdAngularError = -blockYawError *0.2;//Virtual //1.6; Physical
 
   }
 
