@@ -53,6 +53,7 @@ public:
 
   //This is to verify if we Publish the point in Master.
   const bool getVisitedFlag(){return this->publishVisitedPointFlag;}
+   void setClusterLocation (std::vector<Point> clusterLocation){this->clusterLocation = clusterLocation;}
   //**
   //
 
@@ -100,7 +101,7 @@ private:
   int myId;
   int totalIds;
   bool publishVisitedPointFlag = true;
-
+  vector<Point> clusterLocation;
   //This Struct is used to share a Visited point with Logic Controller.
   Point latestVisitedPoint;
   //This Vector is used to know all the points that were published into Master.
@@ -124,6 +125,7 @@ private:
   void displayVector(float magnitude, float angle);
   Point generateRandomTriangleLoc(float firstBound, float secondBound, float triangleSquare);
   float angleTraslation(float newAngle);
+  
   //**
   //
 

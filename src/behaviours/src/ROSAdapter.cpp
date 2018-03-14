@@ -66,6 +66,14 @@ private:
   std::string msg;
 };
 
+//Cluster Points Subscriber
+ros::Subscriber clusterPointSubs;
+//Cluster Points Publisher
+ros::Publisher clusterPointPub;
+
+std_msgs::Float64MultiArray clusterCoordArray;
+bool clusterPointSaved = false;
+void clusterHandler(const std_msgs::Float64MultiArray& message);
 
 // Random number generator
 random_numbers::RandomNumberGenerator* rng;
@@ -261,6 +269,14 @@ int main(int argc, char **argv) {
     coordSub = mNH.subscribe(("/coordenates"), 10, coordHandler);
     coordPub = mNH.advertise<std_msgs::Float64MultiArray>("/coordenates", 50);
   //
+
+  //=========Cluster Public and subscribe initialization=========||
+
+    clusterPointSubs = mNH.subscribe(("/clusterCoord"), 10, clusterHandler);
+    clusterPointPub = mNH.advertise<std_msgs::Float64MultiArray>("/clusterCoord", 50);
+
+  //=============================================================||
+//
 
   status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
   stateMachinePublish = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
@@ -602,7 +618,48 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
       loc.setID( message->detections[i].id );
 
       // Pass the position of the AprilTag
-      geometry_msgs::PoseStamped tagPose = message->detections[i].pose;
+      geometry_msgs::PoseStamped tagPose = message->detections[i].pose;//====== Detect cluster and publish location ==============
+      if (message->detections.size() > 5 && clusterPointSaved == false) {
+
+        // for (int i = 0; i < logicController.clusterPoints.size(); i++) {
+
+        //   if (hypot(logicController.clusterPoints.at(i).x - currentLocation.x, logicController.clusterPoints.at(i).y - currentLocation.y) < 1) {
+        //     std::cout << "It's closed to master robot." << '\n';
+        //     clusterClose = true;
+        //     break;
+        //   }
+
+        //   else{
+        //     std::cout << "Not close" << '\n';
+        //     clusterClose = false;
+        //   }
+        // }
+
+        // if (!clusterClose){
+        //   // magnitude = sqrt(pow(currentLocation.x, 2) + pow(currentLocation.y, 2)) + 0.5;
+        //   // direction = atan2(currentLocation.y,currentLocation.x);
+
+
+        std::cout << "Cluster!!!" << '\n';
+
+        clusterPointSaved = true;
+        clusterCoordArray.data.push_back((0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x));
+        clusterCoordArray.data.push_back((0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y));
+
+        std::cout << "currentLocation.x = " << currentLocation.x - baseLocation.x << ", currentLocation.y = " << currentLocation.y - baseLocation.y << endl;
+        std::cout << "clusterLocation.x = " << 0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x << ", clusterLocation.y = " << 0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y << endl;
+        
+
+        clusterPointPub.publish(clusterCoordArray);
+
+        clusterCoordArray.data.clear();
+
+        // }
+
+      }
+
+//===================================================
+
       loc.setPosition( make_tuple( tagPose.pose.position.x,
 				   tagPose.pose.position.y,
 				   tagPose.pose.position.z ) );
@@ -911,5 +968,14 @@ void coordHandler(const std_msgs::Float64MultiArray& message){
 
 
   //printf("%d\n",element1 );
+}
+
+void clusterHandler(const std_msgs::Float64MultiArray& message){
+  Point clusterPoint;
+  clusterPoint.x = message.data[0];
+  clusterPoint.y = message.data[1];
+
+  logicController.clusterPoints.push_back(clusterPoint);
+  //logicController.itsACluster = true;
 }
 //

@@ -187,7 +187,7 @@ void LogicController::UpdateData()
     searchController.getID(myId);
     init = false;
   }
-
+  searchController.setClusterLocation(clusterPoints);
   searchController.getTotalIds(totalIds);
   searchController.setVisitedVector(visitedPoints);
   searchController.setVisitedPointFlag(publishVisitedPointFlag);

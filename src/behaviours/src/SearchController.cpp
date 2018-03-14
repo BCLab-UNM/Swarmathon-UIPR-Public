@@ -150,7 +150,7 @@ void SearchController::giveTask2Robot()
     switch(this->myId)
     {
       case 1:
-      {        
+      {  
         if(pointCounter == trianglePointLimit)
         {
           pointCounter = 0;
@@ -169,6 +169,9 @@ void SearchController::giveTask2Robot()
         else{
           triangleSearch(myId,triangleSel,triangleSquare);
         }
+        
+
+        //this->searchLocation = setSearchLocation(-5,1);
         break;
     }
 
@@ -203,6 +206,12 @@ void SearchController::giveTask2Robot()
         {
           sideSel = 1;
           this->sideInit = false;
+        }
+        if (clusterLocation.empty() == false) {
+        this->searchLocation.x = clusterLocation.at(0).x;
+        this->searchLocation.y = clusterLocation.at(0).y;
+        std::cout << "Location Cluster = " << searchLocation.x << ", " << searchLocation.y << '\n';
+        break;
         }
         if(checkAvailableDistance(sideSel) == false)
         {
@@ -399,7 +408,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             if(first_waypoint) 
             {
               cout << "--Looking for first given location.--" << endl;
-              this->searchLocation = setSearchLocation(1,.5);
+              this->searchLocation = setSearchLocation(-5,1);
               first_waypoint = false;
               break;
             }
@@ -456,6 +465,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             }
 
             else{
+              
               if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
               {
                 //first_side_waypoint = true;

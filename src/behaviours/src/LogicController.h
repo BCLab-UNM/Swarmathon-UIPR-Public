@@ -94,6 +94,7 @@ public:
   bool publishVisitedPointFlag = true;
   Point latestVisitedPoint;
   std::vector<Point> visitedPoints;
+  std::vector<Point> clusterPoints;
   //**
 
   //** Functions
