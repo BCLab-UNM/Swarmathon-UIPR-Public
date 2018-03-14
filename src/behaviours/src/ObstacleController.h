@@ -68,7 +68,7 @@ private:
   Point distMin_V1, distMin_V2;
   Point v1, v2, v_all, u_a, v1_2, v_2, v3;
   //MatrixXf mt, mtp, mp, mloc, ma, mpp, m_all;
-  double distMin, distMin2; //minimun angle and distance between object and rover vars
+  double distMin, distMin2, angleMin; //minimun angle and distance between object and rover vars
   double e, diffE, integE;  //error vars
 
   // Are there AprilTags in the camera view that mark the collection zone
