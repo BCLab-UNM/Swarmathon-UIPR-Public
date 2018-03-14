@@ -26,7 +26,19 @@ public:
   bool GetTargetHeld() {return targetHeld;}
 
   void SetCurrentTimeInMilliSecs( long int time );
+  //------------------------------------------------// Jomar-------------------------------------------------------------
 
+  // Getters
+  bool getCantSeeTargetDontRepeat() { return cantSeeTargetDontRepeat; }
+  bool getDontRepeatSeeTarget() { return dontRepeatSeeTarget; }
+
+  // Setters
+  void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
+  void setDontRepeatSeeTarget(bool dontRepeatSeeTarget) { this->dontRepeatSeeTarget = dontRepeatSeeTarget; }
+
+  bool TagDetected() {return seeTarget;}
+
+//------------------------------------------------// Jomar-------------------------------------------------------------
 protected:
 
   void ProcessData();
@@ -76,6 +88,10 @@ private:
 
   //this controller has control~
   bool has_control = false;
+
+  bool seeTarget, cantSeeTargetDontRepeat;
+  bool dontRepeatSeeTarget = true;
+  bool seetarget;
 };
 
 #endif // end header define

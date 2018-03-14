@@ -865,8 +865,8 @@ Point updateCenterLocation()
   transformMapCentertoOdom();
 
   Point tmp;
-  tmp.x = centerLocationOdom.x;
-  tmp.y = centerLocationOdom.y;
+  tmp.x = centerLocationOdom.x - baseLocation.x;
+  tmp.y = centerLocationOdom.y - baseLocation.y;
 
   return tmp;
 }

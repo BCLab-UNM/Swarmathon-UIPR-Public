@@ -47,6 +47,17 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
         //absolute distance to block from camera lens
         double test = hypot(hypot(tags[i].getPositionX(), tags[i].getPositionY()), tags[i].getPositionZ());
+         // -------------------------------------------------- Jomar--------------------------------------------------------
+        if (getDontRepeatSeeTarget()) {
+          seeTarget = true;
+          setDontRepeatSeeTarget(false);
+        }
+
+        else{
+          seeTarget = false;
+        }
+
+    // -------------------------------------------------- Jomar--------------------------------------------------------
 
         if (closest > test)
         {

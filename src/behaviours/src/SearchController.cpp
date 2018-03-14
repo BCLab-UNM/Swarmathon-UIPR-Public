@@ -136,8 +136,13 @@ Result SearchController::DoWork() {
        setTriangleSquareArea(11); // 10x10mts area for triangle square.(5mts each side)
        this->finals = true;
     }
-
-    giveTask2Robot(); //Verify ID and give the robot a task. 
+    if (fidImprovement) {
+      cout << "Using Fidelity" << endl;
+      FidelityImprovement();
+    }
+    else{
+      giveTask2Robot(); //Verify ID and give the robot a task. 
+    }
 
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), this->searchLocation);
@@ -877,3 +882,89 @@ bool SearchController::HasWork() {
 void SearchController::SetSuccesfullPickup() {
   succesfullPickup = true;
 }
+
+//----------------------------------------------------------------- Fidelity Improvement (Jomar) -------------------------------------------------------------------------
+
+void SearchController::FidelityImprovement(){ //Enters when detects a Tag
+
+  if (getSdropped()){ // if drops the tag, go to the saved location
+
+          cout << "S-1" << '\n';
+
+          if (getDeleteVector()) { // enter if there is more than one element in the vector
+            SavedPointsVector.pop_back(); // delete the last saved point visited
+          }
+
+
+          if(SavedPointsVector.size() == 1) { // if only one element, get out of the 'if' statement
+            setDeleteVector(false);
+            arrives = true;
+            Sdropped = false;
+            cout<<"FINISHED FIDELITY"<<endl;
+          }
+
+          else{
+            setDeleteVector(true); // if not, enter again to the statement.
+          }
+          result.wpts.waypoints.clear();
+          result.wpts.waypoints.insert(result.wpts.waypoints.begin(), SavedPointsVector[SavedPointsVector.size() - 1]);
+          std::cout << "Dropped: Getting Back to: " << SavedPointsVector[SavedPointsVector.size() - 1].x << ", " << SavedPointsVector[SavedPointsVector.size() - 1].y << "\n\n";
+
+  }
+
+
+  else if (arrives){ // else if arrives to the saved location
+
+          cout << "S-2" << '\n';
+          SavedPointsVector.pop_back(); //delete the last element
+          arrives = false;
+          fidImprovement = false; // continue with the search algorithm
+
+
+  }
+
+}
+
+void SearchController::aTagDetected(){
+  // If detects do it only one time
+  if (getTagDetectedCatched()){
+      setDeleteVector(false);
+      arrives = false;
+      SavedPointsVector.push_back(currentLocation);
+
+
+      std::cout << "Tag Detected!!!" << '\n';
+      int arrayCounter, searchProcess =0;
+      for (size_t j = 0; j != SavedPointsVector.size(); j++) {
+        if (j == 0){
+          std::cout << "\nPoints Saved Array: [\n(" << SavedPointsVector[j].x << ", " << SavedPointsVector[j].y << ", " << SavedPointsVector[j].theta << ")" << '\n';
+        }
+        else if (j == arrayCounter && j != 0) {
+            std::cout << "(" << SavedPointsVector[j].x << ", " << SavedPointsVector[j].y << ", " << SavedPointsVector[j].theta << ")]" << "\n\n";
+        }
+        else{
+          std::cout << "(" << SavedPointsVector[j].x << ", " << SavedPointsVector[j].y << ", " << SavedPointsVector[j].theta << ")" << '\n';
+        }
+      }
+
+      arrayCounter = arrayCounter + 1;
+      setTagDetectedCatched(false);
+      }
+}
+
+
+
+
+void SearchController::droppedOFF(){
+  // If dropped it, do it only one time
+  if (!getTagDetectedCatched()){
+    std::cout << "SearchController::droppedOFF()" << '\n';
+    fidImprovement = true;
+
+    Sdropped = true;
+    setTagDetectedCatched(true);
+  }
+}
+
+
+//----------------------------------------------------------------- Fidelity Improvement --------------------------------------------------------------------------------

@@ -90,6 +90,8 @@ Result LogicController::DoWork() {
       if(result.b == nextProcess) {
         if (processState == _LAST - 1) {
           processState = _FIRST;
+          searchController.setTagDetectedCatched(true); // Jomar
+          pickUpController.setDontRepeatSeeTarget(true); // Jomar
         }
         else {
           processState = (ProcessState)((int)processState + 1);
@@ -292,8 +294,44 @@ void LogicController::controllerInterconnect()
       obstacleController.setTargetHeld();
       searchController.SetSuccesfullPickup();
     }
+
+
+    // --------------------------------------------------------------- // Jomar -------------------------------------------------------------------------
+    if(pickUpController.TagDetected()){
+      searchController.aTagDetected();
+    }
+
+
+    if (pickUpController.getCantSeeTargetDontRepeat()) {
+      searchController.setCantSeeTargetDontRepeat(true);
+    }
+
+    else{
+      searchController.setCantSeeTargetDontRepeat(false);
+    }
+
+    if (searchController.getCantSeeTargetDontRepeat()) {
+      pickUpController.setCantSeeTargetDontRepeat(true);
+    }
+
+    else{
+      pickUpController.setCantSeeTargetDontRepeat(false);
+    }
+
+    // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
   }
 
+
+// --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+  if (processState == PROCCESS_STATE_DROP_OFF)
+  {
+    if (dropOffController.NotHasTag()) {
+      searchController.droppedOFF();
+    }
+  }
+
+// --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
   //ask if drop off has released the target from the claws yet
   if (!dropOffController.HasTarget())
   {

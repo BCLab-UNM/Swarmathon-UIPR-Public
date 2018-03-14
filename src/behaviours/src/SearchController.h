@@ -35,6 +35,31 @@ public:
   //**
 
   //** Functions
+  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
+
+  void aTagDetected();
+  void droppedOFF();
+  void cantSeeTarget();
+  void FidelityImprovement();
+
+  // Getters
+	bool getSdropped() { return Sdropped; }
+  bool getDeleteVector() { return deleteVector; }
+  bool getCantSeeTargetDontRepeat() { return cantSeeTargetDontRepeat; }
+  bool getTagDetectedCatched(){ return TagDetectedCatched; }
+
+  void setClusterLocation (std::vector<Point> clusterLocation){this->clusterLocation = clusterLocation;}
+
+  // Setters
+  void setSdropped(bool Sdropped) { this->Sdropped = Sdropped; }
+  void setDeleteVector(bool deleteVector) { this->deleteVector = deleteVector; }
+  void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
+  void setTagDetectedCatched(bool TagDetectedCatched){ this->TagDetectedCatched = TagDetectedCatched; }
+
+
+  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+
   void setObstacleDetected(bool var);
   void getID(int myId){this->myId = myId;}
   void getTotalIds(int totalIds){this->totalIds = totalIds;}
@@ -53,7 +78,7 @@ public:
 
   //This is to verify if we Publish the point in Master.
   const bool getVisitedFlag(){return this->publishVisitedPointFlag;}
-   void setClusterLocation (std::vector<Point> clusterLocation){this->clusterLocation = clusterLocation;}
+  //void setClusterLocation (std::vector<Point> clusterLoc){this->clusterLocation = clusterLoc;}
   //**
   //
 
@@ -77,6 +102,12 @@ private:
   int mapSize;
   int triangularSection = 1;
   
+  bool Sdropped = false;
+  bool cantSeeTargetDontRepeat = false;
+  bool arrives = false;
+  bool deleteVector = false;
+  bool fidImprovement = false;
+  bool TagDetectedCatched = true;
 
   float ghostWall;
   float magnitude;
@@ -107,6 +138,7 @@ private:
   //This Vector is used to know all the points that were published into Master.
   std::vector<Point> visitedPoints;
   vector<Point> visitedLoc;
+  vector<Point> SavedPointsVector;
   //**
 
   //** Functions

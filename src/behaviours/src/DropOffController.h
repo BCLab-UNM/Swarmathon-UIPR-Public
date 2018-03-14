@@ -30,6 +30,7 @@ public:
   void UpdateData(vector<Tag> tags);
 
   void SetCurrentTimeInMilliSecs( long int time );
+  bool NotHasTag() {return notHasTag;} // Jomar
 
 private:
 
@@ -46,6 +47,8 @@ private:
   const float spinSizeIncrement = 0.50; //in meters
   const float searchVelocity = 0.15; //in meters per second
   const float dropDelay = 0.5; //delay in seconds for dropOff
+
+  bool notHasTag;
 
 
 

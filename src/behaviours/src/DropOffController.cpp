@@ -53,7 +53,9 @@ Result DropOffController::DoWork() {
         result.type = behavior;
         result.b = nextProcess;
         result.reset = true;
+        notHasTag = true; // Jomar
         return result;
+        
       }
       else
       {
