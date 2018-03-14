@@ -38,6 +38,10 @@ public:
 
   bool TagDetected() {return seeTarget;}
 
+  // ================== Luis =======================
+  Result CenterTag();
+// ================== Luis =======================
+
 //------------------------------------------------// Jomar-------------------------------------------------------------
 protected:
 
@@ -92,6 +96,8 @@ private:
   bool seeTarget, cantSeeTargetDontRepeat;
   bool dontRepeatSeeTarget = true;
   bool seetarget;
+  Point currenLocation;
+  
 };
 
 #endif // end header define

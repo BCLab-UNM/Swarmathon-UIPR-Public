@@ -157,7 +157,7 @@ void PickUpController::ProcessData()
   {
     //set gripper;
     result.fingerAngle = M_PI_2;
-    result.wristAngle = 1.25;
+    result.wristAngle = 2;
   }
 }
 
@@ -289,15 +289,7 @@ Result PickUpController::DoWork()
     else if (blockDistance > targetDistance && !lockTarget) //if a target is detected but not locked, and not too close.
     {
       // this is a 3-line P controller, where Kp = 0.20
-      float vel = blockDistance * 0.20;
-      if (vel < 0.1) vel = 0.1;
-      if (vel > 0.2) vel = 0.2;
-
-      result.pd.cmdVel = vel;
-      result.pd.cmdAngularError = -blockYawError;
-      timeOut = false;
-
-      return result;
+      return CenterTag();
     }
     else if (!lockTarget) //if a target hasn't been locked lock it and enter a counting state while slowly driving forward.
     {
@@ -389,3 +381,30 @@ void PickUpController::SetCurrentTimeInMilliSecs( long int time )
 {
   current_time = time;
 }
+
+Result PickUpController::CenterTag()
+{
+  cout << "CENTERING TAG\n";
+  cout << "Block yaw error: " << blockYawError << endl;;
+
+  if (blockYawError < -0.08 || blockYawError > 0.08) {
+    result.pd.cmdVel = 0;
+    result.pd.cmdAngularError = -blockYawError * 1.6;
+
+  }
+
+  else {
+
+    // this is a 3-line P controller, where Kp = 0.15
+    float vel = blockDistance * 0.15;
+    if (vel < 0.1) vel = 0.1;
+    if (vel > 0.2) vel = 0.2;
+
+    result.pd.cmdVel = vel;
+    result.pd.cmdAngularError = 0;
+  }
+
+  timeOut = false;
+  return result;
+}
+
