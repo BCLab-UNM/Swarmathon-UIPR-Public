@@ -31,6 +31,8 @@ DropOffController::~DropOffController() {
 
 Result DropOffController::DoWork() {
 
+  cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
+
   cout << "8" << endl;
 
   int count = countLeft + countRight;
