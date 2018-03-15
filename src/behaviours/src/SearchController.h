@@ -69,8 +69,10 @@ private:
   Point currentLocation;
   Point centerLocation;
   Point searchLocation;
+  Point previous;
   bool outTravel;
   bool searchObstacle;
+  bool reached;
   int attemptCount = 0;
   bool leftAdjust;
   bool rightAdjust;

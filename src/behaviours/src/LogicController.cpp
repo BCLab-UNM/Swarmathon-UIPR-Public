@@ -380,16 +380,16 @@ void LogicController::SetSonarData(float left, float center, float right)
   
   //////////////////////////Angel FILTRO//////////////////////////////////////
 
-  this->lefta = filterSonars(SumLeftSensor, left, lefta);
-  this->righta = filterSonars(SumRightSensor, right, righta);
-  this->centera = filterSonars(SumCenterSensor, center, centera);
+  // this->lefta = filterSonars(SumLeftSensor, left, lefta);
+  // this->righta = filterSonars(SumRightSensor, right, righta);
+  // this->centera = filterSonars(SumCenterSensor, center, centera);
 
-  obstacleController.setSonarData(this->lefta, this->centera, this->righta); //change from (lefts,center,right) to (lefta,centera,righta)
-  pickUpController.SetSonarData(centera);
+  // obstacleController.setSonarData(this->lefta, this->centera, this->righta); //change from (lefts,center,right) to (lefta,centera,righta)
+  // pickUpController.SetSonarData(centera);
 
   /////////////////////////////////////////////////////////////////////
 
-  // obstacleController.setSonarData(left,center,right); //change from (lefts,center,right) to (lefta,centera,righta)
+  obstacleController.setSonarData(left,center,right); //change from (lefts,center,right) to (lefta,centera,righta)
 }
 
 // Called once by RosAdapter in guarded init

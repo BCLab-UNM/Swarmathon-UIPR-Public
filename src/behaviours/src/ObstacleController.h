@@ -5,7 +5,16 @@
 #include "Tag.h"
 #include "PID.h"
 #include "DriveController.h"
-#include <angles/angles.h> 
+#include <algorithm> 
+#include <cmath>
+#include <iostream>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/LU>
+#include <Eigen/Eigenvalues>
+#include <Eigen/Dense>
+#include <Eigen/Eigen>
+
 
 class ObstacleController : virtual Controller
 {
@@ -55,8 +64,12 @@ private:
   int size; //reenges vector size
   int minIndex; //min and max indexes for angleMin calc
   int maxIndex; 
-  double angleMin, distMin; //minimun angle and distance between object and rover vars
-  double e, diffE;  //error vars
+  int turnCounter;
+  Point distMin_V1, distMin_V2;
+  Point v1, v2, v_all, u_a, v1_2, v_2, v3;
+  //MatrixXf mt, mtp, mp, mloc, ma, mpp, m_all;
+  double distMin, distMin2, angleMin; //minimun angle and distance between object and rover vars
+  double e, diffE, integE;  //error vars
 
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.

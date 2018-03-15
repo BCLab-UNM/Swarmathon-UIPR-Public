@@ -7,6 +7,9 @@
         "cmath": "cpp",
         "array": "cpp",
         "chrono": "cpp",
-        "limits": "cpp"
+        "limits": "cpp",
+        "algorithm": "cpp",
+        "*.tcc": "cpp",
+        "initializer_list": "cpp"
     }
 }

@@ -1,6 +1,6 @@
 #include "ObstacleController.h"
-#include <cmath>
-#include <iostream>
+
+using namespace Eigen;
 
 ObstacleController::ObstacleController()
 {
@@ -23,10 +23,14 @@ void ObstacleController::Reset()
   direction = 0;
 }
 
-int ObstacleController::getDirection() {
-  if (left < right) {
+int ObstacleController::getDirection()
+{
+  if (left < right)
+  {
     direction = -1;
-  } else {
+  }
+  else
+  {
     direction = 1;
   }
   return direction;
@@ -41,35 +45,317 @@ void ObstacleController::setPIDController(PIDConfig pidC, PIDConfig pidC2)
   this->pidC2 = pidC2;
 }
 
-void ObstacleController::follow_Wall() {
-       
-    //Add distances read to vector so min and max index can be calculated.
-    distRead.push_back(left);
-    distRead.push_back(center);
-    distRead.push_back(right);
+void ObstacleController::follow_Wall()
+{
+  //Add distances read to vector so min and max index can be calculated.
+  distRead.push_back(left);
+  distRead.push_back(center);
+  distRead.push_back(right);
+  sort(distRead.begin(), distRead.end());
+  //Calculate min index
+  // size = distRead.size();
 
-    // Calculate min index
-    size = distRead.size(); 
+  // minIndex = size * (direction + 1) / 4;
+  // maxIndex = size * (direction + 3) / 4;
 
-    minIndex = size*(direction+1)/4;
-    maxIndex = size*(direction+3)/4;
+  // for (int i = 0; i < maxIndex; i++)
+  // {
+  //   if (distRead[i] < distRead[i + 1] && distRead[i] > 0.01)
+  //   {
+  //     minIndex = i;
+  //   }
+  // }
 
-    for (int i = minIndex; i < maxIndex; i++){
-      if (distRead[i] < distRead[i + 1] && distRead[i] > 0.01){
-        minIndex = i;
-      }
-    }
+  //angleMin = (minIndex - (size / 2)) * M_PI / 4;
+  distMin = distRead[0];
+  diffE = (distMin - triggerDistance/2) - e;
+  e = distMin - triggerDistance/2;
+  integE += e;
 
-    angleMin = (minIndex - (size/2)) * M_PI/4;
-    distMin = distRead[minIndex];
-    diffE = (distMin - triggerDistance) - e;
-    e = distMin - triggerDistance;
+  result.type = precisionDriving;
 
-   result.type = precisionDriving;
-   result.pd.cmdAngular = getDirection()*(5*e + 0.01*diffE) + K_angular * (angleMin - M_PI*(getDirection()/2));
-   result.pd.cmdVel = 0.35;
+  if (right < 0.3 || center < 0.3 || left < 0.3)
+  {
+    result.pd.cmdVel = -0.4;
+    result.pd.cmdAngular = getDirection() * 0.5;
+  }
+  else{
+  result.pd.cmdAngular = getDirection() * (1.1 * e + 0.01 * diffE + 0.0001 * integE);
+  result.pd.cmdVel = 0.5;
+  }
+  distRead.clear();
 }
+// void ObstacleController::follow_Wall()
+// {
 
+//   //Add read distances to vector and sort to select the lowest ones
+//   distRead.push_back(left);
+//   distRead.push_back(center);
+//   distRead.push_back(right);
+//   sort(distRead.begin(), distRead.end());
+
+//   distMin = distRead[0];
+//   distMin2 = distRead[1];
+
+//   //Calculate the head of the two distances
+//   if (distMin == left)
+//   {
+//     distMin_V1.x = distMin * cos(currentLocation.theta - M_PI_4);
+//     distMin_V1.y = distMin * sin(currentLocation.theta - M_PI_4);
+
+//     distMin_V2.x = distMin2 * cos(currentLocation.theta);
+//     distMin_V2.y = distMin2 * sin(currentLocation.theta);
+//   }
+//   else if (distMin == right)
+//   {
+//     distMin_V1.x = distMin * cos(currentLocation.theta + M_PI_4);
+//     distMin_V1.y = distMin * sin(currentLocation.theta + M_PI_4);
+
+//     distMin_V2.x = distMin2 * cos(currentLocation.theta);
+//     distMin_V2.y = distMin2 * sin(currentLocation.theta);
+//   }
+//   else if (distMin == center && distMin2 == left)
+//   {
+//     distMin_V1.x = distMin * cos(currentLocation.theta);
+//     distMin_V1.y = distMin * sin(currentLocation.theta);
+
+//     distMin_V2.x = distMin2 * cos(currentLocation.theta - M_PI_4);
+//     distMin_V2.y = distMin2 * sin(currentLocation.theta - M_PI_4);
+//   }
+//   else if (distMin == center && distMin2 == right)
+//   {
+//     distMin_V1.x = distMin * cos(currentLocation.theta);
+//     distMin_V1.y = distMin * sin(currentLocation.theta);
+
+//     distMin_V2.x = distMin2 * cos(currentLocation.theta + M_PI_4);
+//     distMin_V2.y = distMin2 * sin(currentLocation.theta + M_PI_4);
+//   }
+
+//   v1.x = distMin_V2.x - distMin_V1.x;
+//   v1.y = distMin_V2.y - distMin_V1.y;
+
+//   MatrixXf mt;
+//   mt.resize(2, 1);
+//   mt(0, 0) = v1.x;
+//   mt(1, 0) = v1.y;
+//   cout << "mt = " << mt << endl; //Debug
+
+//   MatrixXf mtp;
+//   mtp.resize(2, 1);
+//   mtp = mt / mt.norm();
+//   cout << "mtp = " << mtp << endl; //Debug
+
+//   MatrixXf ma;
+//   ma.resize(2, 1);
+//   ma(0, 0) = distMin_V1.x;
+//   ma(1, 0) = distMin_V1.y;
+
+//   MatrixXf mloc;
+//   mloc.resize(2, 1);
+//   mloc(0, 0) = currentLocation.x;
+//   mloc(1, 0) = currentLocation.y;
+
+//   MatrixXf mp, maTrans, mlocTrans, middleCalc;
+//   mp.resize(2, 1);
+//   maTrans.resize(1, 2);
+//   mlocTrans.resize(1, 2);
+//   maTrans = ma.transpose();
+//   mlocTrans = mloc.transpose();
+
+//   //changes a 1x1 Matrix to a single number
+//   middleCalc.resize(1, 1);
+//   middleCalc = (maTrans - mlocTrans) * mtp;
+//   float middleCal = middleCalc(0, 0);
+
+//   mp = ((ma - mloc) - middleCal * mtp);
+//   cout << "mp = " << mp << endl; //Debug
+
+//   MatrixXf mpp;
+//   mpp.resize(2, 1);
+//   mpp = mp / mp.norm();
+
+//   MatrixXf m_all;
+//   m_all.resize(2, 1);
+//   m_all = triggerDistance * mtp + (mp - triggerDistance * mpp);
+
+//   result.type = precisionDriving;
+
+//   if ((right < triggerDistance && center < triggerDistance) || (left < triggerDistance && center < triggerDistance))
+//   {
+//     result.pd.cmdAngular = getDirection() * 0.5;
+//     result.pd.cmdVel = -0.2;
+//   }
+//   else
+//   {
+//     if (atan2(m_all(1, 0), m_all(0, 0)) > 0 && (right > triggerDistance || center > triggerDistance || left > triggerDistance))
+//     {
+//       result.pd.setPointYaw = atan2(m_all(1, 0), m_all(0, 0)) + 0.7;
+//       cout << "New heading Positive= " << result.pd.setPointYaw << endl; //Debug
+//     }
+//     else if (atan2(m_all(1, 0), m_all(0, 0)) < 0 && (right > triggerDistance || center > triggerDistance || left > triggerDistance))
+//     {
+//       result.pd.setPointYaw = atan2(m_all(1, 0), m_all(0, 0)) - 0.7;
+//       cout << "New heading Negative = " << result.pd.setPointYaw << endl; //Debug
+//     }
+//     else
+//     {
+//       result.pd.setPointYaw = atan2(m_all(1, 0), m_all(0, 0));
+//       cout << "New heading Zero = " << result.pd.setPointYaw << endl; //Debug
+//     }
+
+//     //result.pd.setPointYaw = atan2(m_all(1,0), m_all(0,0)) + 0.7;
+//     // cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
+
+//     diffE = (result.pd.setPointYaw - currentLocation.theta) - e;
+//     //integE = diffE + e;
+//     e = result.pd.setPointYaw - currentLocation.theta;
+//     //cout << "Error before fix = " << e << endl; //Debug
+
+//     e = atan2(sin(e), cos(e));
+
+//     result.pd.cmdAngular = getDirection() * (2.7 * e + 0.01 * diffE);
+//     cout << "Angular Vel = " << result.pd.cmdAngular << endl; //Debug
+//     result.pd.cmdVel = 0.2;
+//   }
+//   distRead.clear();
+// }
+
+// void ObstacleController::follow_Wall()
+// {
+//    result.type = precisionDriving;
+
+//       if (right < 0.3 || center < 0.3 || left < 0.3)
+//   {
+//     result.pd.cmdVel = -0.25;
+//     result.pd.cmdAngular = getDirection() * 0.3;
+//   }
+
+//   else{
+//   result.pd.cmdVel = 0;
+//   result.pd.cmdAngular = 0;
+//   //Add read distances to vector and sort to select the lowest ones
+//   distRead.push_back(left);
+//   distRead.push_back(center);
+//   distRead.push_back(right);
+//   sort(distRead.begin(), distRead.end());
+
+//   distMin = distRead[0];
+//   distMin2 = distRead[1];
+
+//   //Calculate the head of the two distances
+//   if (distMin == left)
+//   {
+//     distMin_V1.x = distMin * cos(currentLocation.theta - M_PI_4);
+//     distMin_V1.y = distMin * sin(currentLocation.theta - M_PI_4);
+
+//     distMin_V2.x = distMin2 * cos(currentLocation.theta);
+//     distMin_V2.y = distMin2 * sin(currentLocation.theta);
+//     cout << "Left is Min!" << endl; //Debug
+//   }
+//   else if (distMin == right)
+//   {
+//     distMin_V1.x = distMin * cos(currentLocation.theta + M_PI_4);
+//     distMin_V1.y = distMin * sin(currentLocation.theta + M_PI_4);
+
+//     distMin_V2.x = distMin2 * cos(currentLocation.theta);
+//     distMin_V2.y = distMin2 * sin(currentLocation.theta);
+//     cout << "Right is Min!" << endl; //Debug
+//   }
+//   else if (distMin == center && distMin2 == left)
+//   {
+//     distMin_V1.x = distMin * cos(currentLocation.theta);
+//     distMin_V1.y = distMin * sin(currentLocation.theta);
+
+//     distMin_V2.x = distMin2 * cos(currentLocation.theta - M_PI_4);
+//     distMin_V2.y = distMin2 * sin(currentLocation.theta - M_PI_4);
+//     cout << "CL is Min!" << endl; //Debug
+//   }
+//   else if (distMin == center && distMin2 == right)
+//   {
+//     distMin_V1.x = distMin * cos(currentLocation.theta);
+//     distMin_V1.y = distMin * sin(currentLocation.theta);
+
+//     distMin_V2.x = distMin2 * cos(currentLocation.theta + M_PI_4);
+//     distMin_V2.y = distMin2 * sin(currentLocation.theta + M_PI_4);
+//     cout << "CR is Min!" << endl; //Debug
+//   }
+
+//   v1.x = distMin_V2.x - distMin_V1.x;
+//   v1.y = distMin_V2.y - distMin_V1.y;
+
+//   //cout << "v1 = " << v1.x << "," << v1.y << endl; //Debug
+
+//   MatrixXf mt;
+//   mt.resize(2, 1);
+//   mt(0, 0) = v1.x;
+//   mt(1, 0) = v1.y;
+//   cout << "mt = " << mt << endl; //Debug
+
+//   MatrixXf mtp;
+//   mtp.resize(2, 1);
+//   mtp = mt / mt.norm();
+//   cout << "mtp = " << mtp << endl; //Debug
+
+//   MatrixXf ma;
+//   ma.resize(2, 1);
+//   ma(0, 0) = distMin_V1.x;
+//   ma(1, 0) = distMin_V1.y;
+
+//   MatrixXf mloc;
+//   mloc.resize(2, 1);
+//   mloc(0, 0) = currentLocation.x;
+//   mloc(1, 0) = currentLocation.y;
+
+//   MatrixXf mp, maTrans, mlocTrans, middleCalc;
+//   mp.resize(2, 1);
+//   maTrans.resize(1, 2);
+//   mlocTrans.resize(1, 2);
+//   maTrans = ma.transpose();
+//   mlocTrans = mloc.transpose();
+
+//   //changes a 1x1 Matrix to a single number
+//   middleCalc.resize(1, 1);
+//   middleCalc = (maTrans - mlocTrans) * mtp;
+//   float middleCal = middleCalc(0, 0);
+
+//   mp = ((ma - mloc) - middleCal * mtp);
+//   cout << "mp = " << mp << endl; //Debug
+
+//   MatrixXf mpp;
+//   mpp.resize(2, 1);
+//   mpp = mp / mp.norm();
+
+//   MatrixXf m_all;
+//   m_all.resize(2, 1);
+//   m_all = triggerDistance * mtp + (mp - triggerDistance * mpp);
+//   cout << "Matrix Values = " << "x = " << m_all(0,0) << " y = " << m_all(1,0) << endl; //Debug
+
+//   // if (atan2(m_all(1, 0), m_all(0, 0)) > 0){
+//   //  result.pd.setPointYaw = atan2(m_all(1, 0), m_all(0, 0)) + 1;
+//   //  cout << "New heading Positive = " << result.pd.setPointYaw << endl; //Debug
+//   // }
+//   // else if (atan2(m_all(1, 0), m_all(0, 0)) < 0){
+//   //  result.pd.setPointYaw = atan2(m_all(1, 0), m_all(0, 0)) - 1;
+//   //  cout << "New heading Negative = " << result.pd.setPointYaw << endl; //Debug
+//   // }
+//   // else{
+//   result.pd.setPointYaw = atan2(m_all(1, 0), m_all(0, 0));
+//   cout << "New heading = " << result.pd.setPointYaw << endl; //Debug
+//                                                                      // }
+//   diffE = (result.pd.setPointYaw - currentLocation.theta) - e;
+//   e = result.pd.setPointYaw - currentLocation.theta;
+//   cout << "Error = " << e << endl; //Debug
+
+//   e = atan2(sin(e), cos(e));
+//   //cout << "Error after fix = " << e << endl; //Debug
+
+//   result.pd.cmdAngular = getDirection() * (2.8 * e + 0.01 * diffE);
+//   cout << "Angular Vel = " << result.pd.cmdAngular << endl; //Debug
+//   result.pd.cmdVel = 0.2;
+
+//   distRead.clear();
+//   }
+// }
 // void ObstacleController::follow_Wall()
 // {
 //   result.type = precisionDriving;
@@ -147,7 +433,7 @@ Result ObstacleController::DoWork()
     follow_Wall();
   }
   //if an obstacle has been avoided
-  if (can_set_waypoint && (right > triggerDistance && center > triggerDistance) || (left > triggerDistance && left > triggerDistance))
+  if (can_set_waypoint)
   {
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
@@ -157,9 +443,9 @@ Result ObstacleController::DoWork()
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;
     //waypoint is directly ahead of current heading
-    forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
-    //result.wpts.waypoints.clear();
+    forward.x = currentLocation.x + (0.4 * cos(currentLocation.theta));
+    forward.y = currentLocation.y + (0.4 * sin(currentLocation.theta));
+    result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
   }
   return result;
@@ -168,7 +454,7 @@ Result ObstacleController::DoWork()
 void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float sonarright)
 {
   left = sonarleft;
-    right = sonarright;
+  right = sonarright;
   center = sonarcenter;
 
   ProcessData();
