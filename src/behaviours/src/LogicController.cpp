@@ -295,7 +295,7 @@ bool LogicController::HasWork()
 
 void LogicController::controllerInterconnect()
 {
-  
+  searchController.setNeedNewPoint(obstacleController.needNewPoint()); //Hector added
   // EDIT
   if(searchController.getVisitedFlag())
   {

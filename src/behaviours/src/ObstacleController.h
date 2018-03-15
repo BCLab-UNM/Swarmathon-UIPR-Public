@@ -25,7 +25,7 @@ public:
   void setIgnoreCenterSonar();
   void setCurrentTimeInMilliSecs( long int time );
   void setTargetHeld ();
-
+  bool needNewPoint();
   //EDITED
   bool getObstacleInfo();
 
@@ -50,9 +50,11 @@ private:
 
   vector<double> distRead; //distances read from sonars
 
-  int direction; //1 for following right wall. -1 for folloeing left wall
+  int    direction; //1 for following right wall. -1 for folloeing left wall
+  int    turnCounter; //count how many times it has tried to get to point
   double distMin; //minimun read distance between object and rover 
   double e, diffE, integE;  //error vars for obstacle avoidance
+  bool   pointInsideObstacle; //true if a searched point is inside obstacle or collection zone
 
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
@@ -61,7 +63,7 @@ private:
   const float K_angular = 1.0; //radians a second turn rate to avoid obstacles
   const float reactivate_center_sonar_threshold = 0.8; //reactive center sonar if it goes back above this distance, assuming it is deactivated
   const int targetCountPivot = 6; ///unused variable
-  const float obstacleDistancePivot = 0.2526; //used in angleMin calc
+  const float obstacleDistancePivot = 0.2526; //unused variable
   const float triggerDistance = 0.8;
 
   /*

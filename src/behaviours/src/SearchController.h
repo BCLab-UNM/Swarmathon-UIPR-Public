@@ -26,7 +26,7 @@ public:
   void SetCurrentLocation(Point currentLocation);
   void SetCenterLocation(Point centerLocation);
   void SetSuccesfullPickup();
-
+  void setNeedNewPoint(bool pointInsideObstacle);
 
   // EDIT
   //** Variables
@@ -73,6 +73,7 @@ private:
   bool outTravel;
   bool searchObstacle;
   bool reached;
+  bool pointInsideObstacle;
   int attemptCount = 0;
   bool leftAdjust;
   bool rightAdjust;

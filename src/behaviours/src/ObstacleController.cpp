@@ -6,8 +6,10 @@ ObstacleController::ObstacleController()
   obstacleAvoided = true;
   obstacleDetected = false;
   obstacleInterrupt = false;
+  pointInsideObstacle = false;
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
   direction = 1;
+  turnCounter = 0;
 }
 
 //note, not a full reset as this could cause a bad state
@@ -19,7 +21,7 @@ void ObstacleController::Reset()
   obstacleInterrupt = false;
   delay = current_time;
   result.PIDMode = CONST_PID;
-  direction = 0;
+  direction = 1;
 }
 
 int ObstacleController::getDirection()
@@ -33,6 +35,10 @@ int ObstacleController::getDirection()
     direction = 1;
   }
   return direction;
+}
+
+bool ObstacleController::needNewPoint(){
+  return pointInsideObstacle;
 }
 
 // Avoid crashing into objects detected by the ultraounds
@@ -61,6 +67,9 @@ void ObstacleController::avoidObstacle()
     result.pd.cmdAngular = getDirection() * (1.1 * e + 0.01 * diffE + 0.0001 * integE);
     result.pd.cmdVel = 0.5;
   }
+
+  result.pd.setPointVel = 0.0;
+  result.pd.setPointYaw = 0;
   distRead.clear();
 }
 
@@ -72,21 +81,20 @@ void ObstacleController::avoidCollectionZone()
   cout << "Base detected" << endl;
   result.type = precisionDriving;
 
-  result.pd.cmdVel = 0.0;
-
   // Decide which side of the rover sees the most april tags and turn away
   // from that side
   if (count_left_collection_zone_tags < count_right_collection_zone_tags)
   {
-    result.pd.cmdAngular = K_angular;
+    result.pd.cmdVel = -0.4;
+    result.pd.cmdAngular = 0.7;
   }
   else
   {
-    result.pd.cmdAngular = -K_angular;
+    result.pd.cmdVel = -0.4;
+    result.pd.cmdAngular = -0.7;
   }
 
   result.pd.setPointVel = 0.0;
-  result.pd.cmdVel = 0.0;
   result.pd.setPointYaw = 0;
 }
 
@@ -120,6 +128,15 @@ Result ObstacleController::DoWork()
     forward.y = currentLocation.y + (0.4 * sin(currentLocation.theta));
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
+    turnCounter++;
+    cout << "TurnCounter = " << turnCounter << endl;
+    if (turnCounter == 3){
+      pointInsideObstacle = true;
+      turnCounter = 0;
+    }
+    else{
+      pointInsideObstacle = false;
+    }
   }
   return result;
 }

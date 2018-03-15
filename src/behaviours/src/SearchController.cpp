@@ -28,6 +28,11 @@ void SearchController::Reset()
   result.reset = false;
 }
 
+void SearchController::setNeedNewPoint(bool pointInsideObstacle)
+{
+  this->pointInsideObstacle = pointInsideObstacle;
+}
+
 Result SearchController::DoWork()
 {
 
@@ -37,13 +42,31 @@ Result SearchController::DoWork()
   {
     reached = true;
   }
-
-  if (reached)
+  if (pointInsideObstacle)
   {
+    cout << "Point is inside obstacle. Creating new Point!" << endl; //Debug
 
     if (myId == 1)
     {
-      //smartRandomSearch(6.8,myId);
+      lawnMowerSearch(-4, myId);
+    }
+
+    else if (myId == 2)
+    {
+      lawnMowerSearch(4, myId);
+    }
+
+    else if (myId == 3)
+    {
+      smartRandomSearch(-4, myId);
+    }
+    reached = false;
+    pointInsideObstacle = false;
+  }
+  else if (reached)
+  {
+    if (myId == 1)
+    {
       lawnMowerSearch(-4, myId);
     }
 
@@ -64,7 +87,7 @@ Result SearchController::DoWork()
     searchLocation = previous;
   }
 
-  //cout << "SL: " << 
+  //cout << "SL: " <<
   result.wpts.waypoints.clear();
   result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
 
@@ -103,88 +126,19 @@ void SearchController::smartRandomSearch(int wallLocation, int myId)
   setVisitedPoint(currentLocation);
   setVisitedPointFlag(true);
 
-  // if(visitedPoints.size() == 0)
-  // {
-  //   cout << "-There are no Published Visited Locations-" << endl;
-  //   //cout << "-Going to first X value-" << endl;
-  //   //number = .1;
-  // }
-  // else{
-  //   cout << "------------------------------------------" << endl;
-  //    for(int i = 0; i <= visitedPoints.size() - 1; i++)
-  //    {
-  //      cout << "Location #" << i + 1 << "(" << visitedPoints.at(i).x << "," << visitedPoints.at(0).y << ")" << endl;
-  //    }
-  //   cout << "------------------------------------------" << endl;
-  // }
-
   if (first_waypoint)
   {
     first_waypoint = false;
     cout << "Searching for first given location!!" << endl;
-    //searchLocation.theta = 0;
     searchLocation.x = -.1;
     searchLocation.y = -.1;
   }
   else
   {
-
-    // while(xAccepted == false)
-    // {
-    //   number = rng->uniformReal(0,-6.5);
-    //   for(int i = 0; i <= (this->visitedPoints.size() - 1); i++)
-    //   {
-    //     cout <<"Verifying numbers" << endl;
-    //     if(abs(number - visitedPoints.at(i).x) <= .1)
-    //     {
-    //       shield = true;
-    //       break;
-    //     }
-    //   }
-    //   if(shield)
-    //   {
-    //     cout << "Generated X value rejected!!" << endl;
-    //     shield = false;
-    //     xAccepted = false;
-    //   }
-    //   else{
-    //     cout << "Generated X value accepted" << endl;
-    //     xAccepted = true;
-    //     }
-    //   }
-
-    number = rng->uniformReal(0, -4);
-    searchLocation.x = number;
-    shield = false;
-
-    // while(yAccepted == false)
-    // {
-    //   number = rng->uniformReal(0,-6.5);
-    //   for(int i = 0; i <= (this->visitedPoints.size() - 1); i++)
-    //   {
-    //     cout <<"Verifying numbers" << endl;
-    //     if(abs(number - visitedPoints.at(i).y) <= .1)
-    //     {
-    //       shield = true;
-    //       break;
-    //     }
-    //   }
-    //   if(shield)
-    //   {
-    //     cout << "Generated Y value rejected!!" << endl;
-    //     shield = false;
-    //     yAccepted = false;
-    //   }
-    //   else{
-    //     cout << "Generated Y value accepted" << endl;
-    //     yAccepted = true;
-    //   }
-    // }
     number = rng->uniformReal(0, -4);
     searchLocation.y = number;
     cout << "Now looking for: (" << searchLocation.x << "," << searchLocation.y << ")" << endl;
   }
-  //this->visitedPoints.push_back(searchLocation);
 }
 
 void SearchController::lawnMowerSearch(int wallLocation, int myId)
@@ -212,25 +166,7 @@ void SearchController::lawnMowerSearch(int wallLocation, int myId)
   }
 
   cout << "Initial Location: (" << currentLocation.x << "," << currentLocation.y << ")" << endl;
-  //setVisitedPoint(currentLocation);
-  //setVisitedPointFlag(true);
 
-  //cout << "-Looking for Published visited locations-" << endl;
-
-  /*
-  if(visitedPoints.size() == 0)
-  {
-    cout << "-There are no Published Visited Locations-" << endl;
-  }
-  else{
-    cout << "------------------------------------------" << endl;
-     for(int i = 0; i <= visitedPoints.size() - 1; i++)
-     {
-       cout << "Location #" << i + 1 << "(" << visitedPoints.at(i).x << "," << visitedPoints.at(0).y << ")" << endl;
-     }
-    cout << "------------------------------------------" << endl;
-   }
-   */
   // first location of each robot
   if (first_waypoint)
   {
@@ -249,7 +185,7 @@ void SearchController::lawnMowerSearch(int wallLocation, int myId)
     case 2:
     {
       searchLocation.x = .5;
-      searchLocation.y =  -5;//(wallLocation / -1 - .5); //Modify when whole map configuration is done.
+      searchLocation.y = -5; //(wallLocation / -1 - .5); //Modify when whole map configuration is done.
     }
     case 3:
     {
