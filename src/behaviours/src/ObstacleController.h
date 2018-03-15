@@ -3,17 +3,9 @@
 
 #include "Controller.h"
 #include "Tag.h"
-#include "PID.h"
-#include "DriveController.h"
 #include <algorithm> 
 #include <cmath>
 #include <iostream>
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <Eigen/LU>
-#include <Eigen/Eigenvalues>
-#include <Eigen/Dense>
-#include <Eigen/Eigen>
 
 
 class ObstacleController : virtual Controller
@@ -42,10 +34,6 @@ public:
   //Asked by logiccontroller to determine if drive controller should have its waypoints cleared
   bool getShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
 
-  PID pid; 
-  PIDConfig pidC, pidC2;
-  void setPIDController(PIDConfig pidC, PIDConfig pidC2);
-
 protected:
 
   void ProcessData();
@@ -54,22 +42,17 @@ private:
 
   // Try not to run over the collection zone
   void avoidCollectionZone();
-
+  
   // Try not to run into a physical object
   void avoidObstacle();
-  void follow_Wall();
-  vector<double> distRead; //distances read from sonars
   int getDirection(); //returns direction (-1 or 1)
-  int direction; //-1 for following right wall. 1 for folloeing left wall
-  int size; //reenges vector size
-  int minIndex; //min and max indexes for angleMin calc
-  int maxIndex; 
-  int turnCounter;
-  Point distMin_V1, distMin_V2;
-  Point v1, v2, v_all, u_a, v1_2, v_2, v3;
-  //MatrixXf mt, mtp, mp, mloc, ma, mpp, m_all;
-  double distMin, distMin2, angleMin; //minimun angle and distance between object and rover vars
-  double e, diffE, integE;  //error vars
+  
+
+  vector<double> distRead; //distances read from sonars
+
+  int direction; //1 for following right wall. -1 for folloeing left wall
+  double distMin; //minimun read distance between object and rover 
+  double e, diffE, integE;  //error vars for obstacle avoidance
 
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
