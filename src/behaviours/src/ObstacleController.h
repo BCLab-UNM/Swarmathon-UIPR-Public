@@ -19,12 +19,14 @@ public:
   Result DoWork() override;
   void setSonarData(float left, float center, float right);
   void setCurrentLocation(Point currentLocation);
+  void setSearchLocation(Point searchLocation);
   void setTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
   void setIgnoreCenterSonar();
   void setCurrentTimeInMilliSecs( long int time );
   void setTargetHeld ();
+  void setDroppedOff(bool dropComplete);
   bool needNewPoint();
   //EDITED
   bool getObstacleInfo();
@@ -55,7 +57,9 @@ private:
   double distMin; //minimun read distance between object and rover 
   double e, diffE, integE;  //error vars for obstacle avoidance
   bool   pointInsideObstacle; //true if a searched point is inside obstacle or collection zone
-
+  Point searchLocation;
+  float distRobotandPoint;
+  bool dropComplete;
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );

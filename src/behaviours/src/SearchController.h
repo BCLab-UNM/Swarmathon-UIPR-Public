@@ -26,7 +26,6 @@ public:
   void SetCurrentLocation(Point currentLocation);
   void SetCenterLocation(Point centerLocation);
   void SetSuccesfullPickup();
-  void setNeedNewPoint(bool pointInsideObstacle);
 
   // EDIT
   //** Variables
@@ -37,7 +36,8 @@ public:
   void setObstacleDetected(bool var);
   void getID(int myId){this->myId = myId;}
   void getTotalIds(int totalIds){this->totalIds = totalIds;}
-
+  void setNeedNewPoint(bool pointInsideObstacle);
+  Point getSearchLocation();
   //Receives point lists. This is only used by Logic Controller.
   void setVisitedVector(std::vector<Point> visitedVector){this->visitedPoints = visitedVector;}
 

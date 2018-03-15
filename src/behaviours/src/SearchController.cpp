@@ -33,6 +33,10 @@ void SearchController::setNeedNewPoint(bool pointInsideObstacle)
   this->pointInsideObstacle = pointInsideObstacle;
 }
 
+Point SearchController::getSearchLocation(){
+  return searchLocation;
+}
+
 Result SearchController::DoWork()
 {
 

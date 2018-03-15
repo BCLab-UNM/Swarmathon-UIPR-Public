@@ -24,7 +24,7 @@ public:
   void SetBlockBlockingUltrasound(bool blockBlock);
   void SetTargetData(vector<Tag> tags);
   bool HasTarget() {return targetHeld;}
-
+  bool getDroppedOff();
   float GetSpinner() {return spinner;}
 
   void UpdateData(vector<Tag> tags);
@@ -110,6 +110,9 @@ private:
 
   //Flag to indicate that we're starting to follow waypoints
   bool startWaypoint;
+
+  //set true if drop off is complete
+  bool dropComplete;
 
   Result result;
 

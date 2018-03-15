@@ -36,6 +36,13 @@ int ObstacleController::getDirection()
   }
   return direction;
 }
+void ObstacleController::setSearchLocation(Point searchLocation){
+  this->searchLocation = searchLocation;
+}
+
+void ObstacleController::setDroppedOff(bool dropComplete){
+  this->dropComplete = dropComplete;
+}
 
 bool ObstacleController::needNewPoint(){
   return pointInsideObstacle;
@@ -123,14 +130,27 @@ Result ObstacleController::DoWork()
 
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;
+
     //waypoint is directly ahead of current heading
     forward.x = currentLocation.x + (0.4 * cos(currentLocation.theta));
     forward.y = currentLocation.y + (0.4 * sin(currentLocation.theta));
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
+
+    //distance between Rover and seachLocation
+    distRobotandPoint = hypot(searchLocation.x - currentLocation.x, searchLocation.y - currentLocation.y);
+    cout << "Distance between Rover and seachLocation = " << distRobotandPoint << endl;
+    
+    //If droped off reset
+    if (dropComplete){
+      turnCounter = 0;
+      pointInsideObstacle = false;
+    }
+
+    //count up each tme the rover finishes avoid methods
     turnCounter++;
     cout << "TurnCounter = " << turnCounter << endl;
-    if (turnCounter == 10){
+    if ((turnCounter > targetCountPivot && distRobotandPoint < 2) || turnCounter > 8){ //if the rover spends to much time trying to avoid, select new point
       pointInsideObstacle = true;
       turnCounter = 0;
     }

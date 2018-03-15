@@ -296,6 +296,8 @@ bool LogicController::HasWork()
 void LogicController::controllerInterconnect()
 {
   searchController.setNeedNewPoint(obstacleController.needNewPoint()); //Hector added
+  obstacleController.setDroppedOff(dropOffController.getDroppedOff()); //Hector added
+  
   // EDIT
   if(searchController.getVisitedFlag())
   {
