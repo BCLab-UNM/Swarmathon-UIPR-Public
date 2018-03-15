@@ -130,7 +130,7 @@ Result ObstacleController::DoWork()
     result.wpts.waypoints.push_back(forward);
     turnCounter++;
     cout << "TurnCounter = " << turnCounter << endl;
-    if (turnCounter == 3){
+    if (turnCounter == 10){
       pointInsideObstacle = true;
       turnCounter = 0;
     }
