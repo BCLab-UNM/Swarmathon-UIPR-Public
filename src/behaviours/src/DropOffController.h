@@ -76,6 +76,9 @@ private:
   int countLeft;
   int countRight;
 
+  int timeCountToDrop;
+  bool toDropTimeOut;
+
   //Center and current locations as of the last call to setLocationData
   Point centerLocation;
   Point currentLocation;
