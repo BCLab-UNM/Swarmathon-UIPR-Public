@@ -60,6 +60,7 @@ private:
   Point searchLocation;
   float distRobotandPoint;
   bool dropComplete;
+  int previousDirection;
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );

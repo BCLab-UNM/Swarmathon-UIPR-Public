@@ -8,8 +8,6 @@ ObstacleController::ObstacleController()
   obstacleInterrupt = false;
   pointInsideObstacle = false;
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
-  direction = 1;
-  turnCounter = 0;
 }
 
 //note, not a full reset as this could cause a bad state
@@ -21,7 +19,6 @@ void ObstacleController::Reset()
   obstacleInterrupt = false;
   delay = current_time;
   result.PIDMode = CONST_PID;
-  direction = 1;
 }
 
 int ObstacleController::getDirection()
@@ -29,11 +26,16 @@ int ObstacleController::getDirection()
   if (left < right)
   {
     direction = -1;
+    
   }
-  else
+  else if (right < left)
   {
     direction = 1;
   }
+  else{
+    direction = previousDirection;
+  }
+  previousDirection = direction;
   return direction;
 }
 void ObstacleController::setSearchLocation(Point searchLocation){
@@ -64,15 +66,19 @@ void ObstacleController::avoidObstacle()
 
   result.type = precisionDriving;
 
-  if (right < 0.3 || center < 0.3 || left < 0.3)
-  {
-    result.pd.cmdVel = -0.4;
-    result.pd.cmdAngular = getDirection() * 0.5;
+  if (right < 0.25 || center < 0.25 || left < 0.25)
+  { 
+    result.pd.cmdVel = -2;
+    result.pd.cmdAngular = getDirection() * K_angular;
+    cout << "Im in reverse!" << endl;
+    cout << "Direction is = " << getDirection() << endl;
   }
   else
   {
-    result.pd.cmdAngular = getDirection() * (1.1 * e + 0.01 * diffE + 0.0001 * integE);
+    result.pd.cmdAngular = getDirection() * (2.1 * e + 0.05 * diffE + 0.0001 * integE);
     result.pd.cmdVel = 0.5;
+    cout << "Im in NOT reverse!" << endl;
+    cout << "Direction is = " << getDirection() << endl;
   }
 
   result.pd.setPointVel = 0.0;
