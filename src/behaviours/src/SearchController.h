@@ -50,14 +50,14 @@ public:
   bool getTagDetectedCatched(){ return TagDetectedCatched; }
 
   void setClusterLocation (std::vector<Point> clusterLocation){this->clusterLocation = clusterLocation;}
-
+  bool getClusterAssigned(){return this->clusterAssigned;}
+  
   // Setters
   void setSdropped(bool Sdropped) { this->Sdropped = Sdropped; }
   void setDeleteVector(bool deleteVector) { this->deleteVector = deleteVector; }
   void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
   void setTagDetectedCatched(bool TagDetectedCatched){ this->TagDetectedCatched = TagDetectedCatched; }
-
-
+  void setClusterAssigned(bool newValue){this->clusterAssigned = newValue;}
   // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
 
   void setObstacleDetected(bool var);
@@ -129,6 +129,7 @@ private:
 
   // EDIT
   //** Variables
+  bool clusterAssigned;
   int myId;
   int totalIds;
   bool publishVisitedPointFlag = true;
@@ -157,7 +158,6 @@ private:
   void displayVector(float magnitude, float angle);
   Point generateRandomTriangleLoc(float firstBound, float secondBound, float triangleSquare);
   float angleTraslation(float newAngle);
-  
   //**
   //
 

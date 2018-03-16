@@ -39,6 +39,8 @@ SearchController::SearchController() {
   sideInit = true; 
   sideOffset = 0;
   finals = false;
+
+  clusterAssigned = false;
 }
 
 void SearchController::Reset() {
@@ -213,10 +215,11 @@ void SearchController::giveTask2Robot()
           this->sideInit = false;
         }
         if (clusterLocation.empty() == false) {
-        this->searchLocation.x = clusterLocation.at(0).x;
-        this->searchLocation.y = clusterLocation.at(0).y;
-        std::cout << "Location Cluster = " << searchLocation.x << ", " << searchLocation.y << '\n';
-        break;
+          this->searchLocation.x = clusterLocation.at(0).x;
+          this->searchLocation.y = clusterLocation.at(0).y;
+          clusterAssigned = true;
+          std::cout << "Location Cluster = " << searchLocation.x << ", " << searchLocation.y << '\n';
+          break;
         }
         if(checkAvailableDistance(sideSel) == false)
         {

@@ -220,7 +220,7 @@ auto start_time = chrono::high_resolution_clock::now();
 auto end_time = chrono::high_resolution_clock::now();
 auto timeWaited = chrono::duration_cast<chrono::microseconds>(end_time - start_time).count();
 Point baseLocation;
-bool clusterClose;
+bool clusterClose = false;
 //**
 
 //
@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
 
   //=========Cluster Public and subscribe initialization=========||
 
-    clusterPointSubs = mNH.subscribe(("/clusterCoord"), 10, clusterHandler);
+    clusterPointSubs = mNH.subscribe(("/clusterCoord"), 50, clusterHandler);
     clusterPointPub = mNH.advertise<std_msgs::Float64MultiArray>("/clusterCoord", 50);
 
   //=============================================================||
@@ -621,56 +621,63 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
       // Pass the position of the AprilTag
       geometry_msgs::PoseStamped tagPose = message->detections[i].pose;
       //====== Detect cluster and publish location ==============
-      if (message->detections.size() > 5) { //&& clusterPointSaved == false) {
-        float distanceToCluster = 0;
-        if (!logicController.clusterPoints.empty()){
-          cout << "Cluster Point size: " << logicController.clusterPoints.size() << endl;
-          distanceToCluster = hypot(logicController.clusterPoints.at(i).x - currentLocation.x, logicController.clusterPoints.at(i).y - currentLocation.y);
-          cout << "Distance to Cluster is: " << distanceToCluster << endl;
-        }
-        cout << "Before for" << endl;
-        for (int i = 0; i < logicController.clusterPoints.size(); i++) {
+      //if (message->detections.size() > 5 && loc.getID() == 0) { //&& clusterPointSaved == false) {
+        // float distanceToCluster = 0;
+        // if (!logicController.clusterPoints.empty()){
+        //   cout << "Cluster Point: (" << logicController.clusterPoints.at(i).x << "," << logicController.clusterPoints.at(i).y << ")" << endl;
+        //   distanceToCluster = hypot(logicController.clusterPoints.at(i).x - currentLocation.x, logicController.clusterPoints.at(i).y - currentLocation.y);
+        //   cout << "Distance to Cluster is: " << distanceToCluster << endl;
+        // }
+        // cout << "Before for" << endl;
+        // for (int i = 0; i < logicController.clusterPoints.size(); i++) {
 
-           if (distanceToCluster < 2.5) {
-             std::cout << "It's close to the same cluster." << '\n';
-             clusterClose = true;
-             break;
-           }
+        //    if (distanceToCluster < 2.5) {
+        //      std::cout << "It's close to the same cluster." << '\n';
+        //      clusterClose = true;
+        //      break;
+        //    }
 
-           else{
-             std::cout << "Not close" << '\n';
-             clusterClose = false;
-           }
-         }
+        //    else{
+        //      std::cout << "Not close" << '\n';
+        //      clusterClose = false;
+        //    }
+        //  }
 
         // if (!clusterClose){
         //   // magnitude = sqrt(pow(currentLocation.x, 2) + pow(currentLocation.y, 2)) + 0.5;
         //   // direction = atan2(currentLocation.y,currentLocation.x);
 
 
-        std::cout << "Cluster!!!" << '\n';
-
-        //clusterPointSaved = true;
-        if (!clusterClose){ 
-      
-          cout << "Pushing Back" << endl;
-
-          clusterCoordArray.data.push_back((0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x));
-          clusterCoordArray.data.push_back((0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y));
-
-          std::cout << "1 currentLocation.x = " << currentLocation.x - baseLocation.x << ", currentLocation.y = " << currentLocation.y - baseLocation.y << endl;
-          std::cout << "2 clusterLocation.x = " << 0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x << ", clusterLocation.y = " << 0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y << endl;
-        
-
-          clusterPointPub.publish(clusterCoordArray);
-
-          clusterCoordArray.data.clear();
-          clusterClose = true;
-        }
-        cout << "End cluster logic" << '\n';
+        //std::cout << "Cluster!!!" << '\n';
+        // if (!logicController.clusterPoints.empty()){
+        //   cout << "Cluster Point: (" << logicController.clusterPoints.at(0).x << "," << logicController.clusterPoints.at(0).y << ")" << endl;
         // }
 
-      }
+        // clusterCoordArray.data.push_back((0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x));
+        // clusterCoordArray.data.push_back((0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y));
+        // clusterPointPub.publish(clusterCoordArray);
+
+        //clusterPointSaved = true;
+        // if (!clusterClose){ 
+      
+        //   cout << "Pushing Back" << endl;
+
+        //   clusterCoordArray.data.push_back((0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x));
+        //   clusterCoordArray.data.push_back((0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y));
+
+        //   std::cout << "1 currentLocation.x = " << currentLocation.x - baseLocation.x << ", currentLocation.y = " << currentLocation.y - baseLocation.y << endl;
+        //   std::cout << "2 clusterLocation.x = " << 0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x << ", clusterLocation.y = " << 0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y << endl;
+        
+
+        //   clusterPointPub.publish(clusterCoordArray);
+
+        //   clusterCoordArray.data.clear();
+        //   clusterClose = true;
+        // }
+        // cout << "End cluster logic" << '\n';
+        // }
+
+      
 
 //===================================================
 
@@ -684,6 +691,32 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 							    tagPose.pose.orientation.z,
 							    tagPose.pose.orientation.w ) );
       tags.push_back(loc);
+    }
+
+    if (message->detections.size() > 5) {
+      bool anyBaseTags = false;
+
+      // Verify if any tag detected is a Base tag, if so don't publish point
+      for (int i = 0; i < tags.size(); i++){
+        if(tags.at(i).getID() == 256){
+          anyBaseTags = true;
+          break;
+        }
+        else{
+          anyBaseTags = false;
+        }
+      }
+      
+      if (!anyBaseTags){ // If no base tags then publish location
+           
+       if (!logicController.clusterPoints.empty()){
+          cout << "Cluster Point: (" << logicController.clusterPoints.at(0).x << "," << logicController.clusterPoints.at(0).y << ")" << endl;
+        }
+
+        clusterCoordArray.data.push_back((0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x));
+        clusterCoordArray.data.push_back((0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y));
+        clusterPointPub.publish(clusterCoordArray);
+      }
     }
 
     logicController.SetAprilTags(tags);
@@ -985,11 +1018,50 @@ void coordHandler(const std_msgs::Float64MultiArray& message){
 }
 
 void clusterHandler(const std_msgs::Float64MultiArray& message){
+  
+  bool samePoint;
+  float distanceToCluster = 0;
   Point clusterPoint;
   clusterPoint.x = message.data[0];
-  clusterPoint.y = message.data[1];
+  clusterPoint.y = message.data[1];  
 
-  logicController.clusterPoints.push_back(clusterPoint);
+
+  for (int i = 0; i < logicController.clusterPoints.size(); i++) {
+
+    if (!logicController.clusterPoints.empty()){
+      //cout << "Cluster Point: (" << logicController.clusterPoints.at(i).x << "," << logicController.clusterPoints.at(i).y << ")" << endl;
+      distanceToCluster = hypot(logicController.clusterPoints.at(i).x - currentLocation.x, logicController.clusterPoints.at(i).y - currentLocation.y);
+      //cout << "Distance to Cluster is: " << distanceToCluster << endl;
+    }
+    if (distanceToCluster < 3) {
+      //std::cout << "It's close to the same cluster." << '\n';
+      clusterClose = true;
+      break;
+    }
+
+    else{
+      //std::cout << "Not close" << '\n';
+      clusterClose = false;
+    }
+  }
+
+    
+  if(clusterClose){
+    //Only add if vector is empty
+    if (logicController.clusterPoints.empty()){
+      cout << "Vector is empty" << endl;
+      logicController.clusterPoints.push_back(clusterPoint);
+    }
+    else {
+      cout << "Point already exists" << endl;
+    }
+  } 
+  else{
+    cout << "Point does NOT exist in vector" << endl;
+    logicController.clusterPoints.push_back(clusterPoint);
+  }
+
+  
   //logicController.itsACluster = true;
 }
 //

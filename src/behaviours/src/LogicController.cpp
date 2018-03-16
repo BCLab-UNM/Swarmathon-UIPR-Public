@@ -271,6 +271,14 @@ void LogicController::controllerInterconnect()
     publishVisitedPointFlag = searchController.getVisitedFlag();
     latestVisitedPoint = searchController.getVisitedPoint();
   }
+
+  if (searchController.getClusterAssigned())
+  {
+    // Erase first cluster location and allow Fieldity to take care of it
+    clusterPoints.erase(clusterPoints.begin());
+    // Reset flag so if robot detects new cluster it can later erase the point
+    searchController.setClusterAssigned(false);
+  }
   //
 
   if (processState == PROCCESS_STATE_SEARCHING)
