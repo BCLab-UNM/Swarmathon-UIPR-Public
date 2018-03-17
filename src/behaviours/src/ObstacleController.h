@@ -18,6 +18,9 @@ public:
   Result DoWork() override;
   void setSonarData(float left, float center, float right);
   void setCurrentLocation(Point currentLocation);
+  
+  void setObstacleLocation(Point ObstacleLocation); //Edited
+  
   void setTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
@@ -96,6 +99,8 @@ private:
   bool ignore_center_sonar = false;
 
   Point currentLocation;
+
+  Point ObstacleLocation; //Edited
 
   long int current_time;
   long int timeSinceTags;

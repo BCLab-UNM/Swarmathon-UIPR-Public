@@ -417,8 +417,8 @@ PIDConfig DriveController::slowVelConfig() {
   PIDConfig config;
 
   config.Kp = 100;
-  config.Ki = 8;
-  config.Kd = 1.1;
+  config.Ki = 55;
+  config.Kd = 5;
   config.satUpper = 255;
   config.satLower = -255;
   config.antiWindup = config.satUpper/2;
@@ -439,8 +439,8 @@ PIDConfig DriveController::slowYawConfig() {
   PIDConfig config;
 
   config.Kp = 70;
-  config.Ki = 16;
-  config.Kd = 10;
+  config.Ki = 18;
+  config.Kd = 9;
   config.satUpper = 255;
   config.satLower = -255;
   config.antiWindup = config.satUpper/4;
@@ -463,8 +463,8 @@ PIDConfig DriveController::constVelConfig() {
   config.Kp = 60;
   config.Ki = 10;
   config.Kd = 2;
-  config.satUpper = 255;
-  config.satLower = -255;
+  config.satUpper = 180;
+  config.satLower = -180;
   config.antiWindup = config.satUpper;
   config.errorHistLength = 4;
   config.alwaysIntegral = true;
@@ -482,11 +482,11 @@ PIDConfig DriveController::constVelConfig() {
 PIDConfig DriveController::constYawConfig() {
   PIDConfig config;
 
-  config.Kp = 5;
-  config.Ki = 5;
-  config.Kd = 0;
-  config.satUpper = 255;
-  config.satLower = -255;
+  config.Kp = 45;
+  config.Ki = 10;
+  config.Kd = 2;
+  config.satUpper = 180;
+  config.satLower = -180;
   config.antiWindup = config.satUpper/4;
   config.errorHistLength = 4;
   config.alwaysIntegral = true;
