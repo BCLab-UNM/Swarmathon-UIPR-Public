@@ -44,7 +44,23 @@ public:
 
 
   void SetCurrentTimeInMilliSecs( long int time );
+  //------------------------------------------------// Jomar-------------------------------------------------------------
 
+  // Getters
+  bool getCantSeeTargetDontRepeat() { return cantSeeTargetDontRepeat; }
+  bool getDontRepeatSeeTarget() { return dontRepeatSeeTarget; }
+
+  // Setters
+  void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
+  void setDontRepeatSeeTarget(bool dontRepeatSeeTarget) { this->dontRepeatSeeTarget = dontRepeatSeeTarget; }
+
+  bool TagDetected() {return seeTarget;}
+
+  // ================== Luis =======================
+  Result CenterTag();
+// ================== Luis =======================
+
+//------------------------------------------------// Jomar-------------------------------------------------------------
 protected:
 
   void ProcessData();
@@ -96,15 +112,11 @@ private:
   //this controller has control~
   bool has_control = false;
 
-  //------------------------------------------------// Jomar-------------------------------------------------------------
-
-  bool seeTarget;
-  bool cantSeeTargetDontRepeat;
+  bool seeTarget, cantSeeTargetDontRepeat;
   bool dontRepeatSeeTarget = true;
-
-  //------------------------------------------------// Jomar-------------------------------------------------------------
-
-
+  bool seetarget;
+  Point currenLocation;
+  
 };
 
 #endif // end header define

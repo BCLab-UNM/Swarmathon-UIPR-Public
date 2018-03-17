@@ -94,7 +94,10 @@ Result LogicController::DoWork() {
       if(result.b == nextProcess) {
         if (processState == _LAST - 1) {
           processState = _FIRST;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4ec7d9a0cedd037e8edab77a61a44b1a75e825c4
           searchController.setTagDetectedCatched(true); // Jomar
           pickUpController.setDontRepeatSeeTarget(true); // Jomar
         }
@@ -196,7 +199,7 @@ void LogicController::UpdateData()
     searchController.getID(myId);
     init = false;
   }
-
+  searchController.setClusterLocation(clusterPoints);
   searchController.getTotalIds(totalIds);
   searchController.setVisitedVector(visitedPoints);
   searchController.setVisitedPointFlag(publishVisitedPointFlag);
@@ -278,6 +281,14 @@ void LogicController::controllerInterconnect()
     publishVisitedPointFlag = searchController.getVisitedFlag();
     latestVisitedPoint = searchController.getVisitedPoint();
   }
+
+  if (searchController.getClusterAssigned())
+  {
+    // Erase first cluster location and allow Fieldity to take care of it
+    clusterPoints.erase(clusterPoints.begin());
+    // Reset flag so if robot detects new cluster it can later erase the point
+    searchController.setClusterAssigned(false);
+  }
   //
 
   if (processState == PROCCESS_STATE_SEARCHING)
@@ -302,8 +313,8 @@ void LogicController::controllerInterconnect()
       searchController.SetSuccesfullPickup();
     }
 
-    // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
 
+    // --------------------------------------------------------------- // Jomar -------------------------------------------------------------------------
     if(pickUpController.TagDetected()){
       searchController.aTagDetected();
     }
@@ -339,8 +350,6 @@ void LogicController::controllerInterconnect()
   }
 
 // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
-
-
   //ask if drop off has released the target from the claws yet
   if (!dropOffController.HasTarget())
   {

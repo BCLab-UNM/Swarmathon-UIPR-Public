@@ -56,6 +56,7 @@ Result DropOffController::DoWork() {
         result.reset = true;
         notHasTag = true; // Jomar
         return result;
+        
       }
       else
       {
