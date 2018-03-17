@@ -1,8 +1,5 @@
 {
     "files.associations": {
-<<<<<<< HEAD
-        "*.ipp": "cpp"
-=======
         "*.ipp": "cpp",
         "system_error": "cpp",
         "array": "cpp",
@@ -41,6 +38,5 @@
         "thread": "cpp",
         "type_traits": "cpp",
         "typeinfo": "cpp"
->>>>>>> 4ec7d9a0cedd037e8edab77a61a44b1a75e825c4
     }
 }
