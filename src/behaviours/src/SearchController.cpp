@@ -421,7 +421,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
 
             else{
 
-              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
               {
                 //first_side_waypoint = true;
                 this->searchLocation = searchLocation;
@@ -445,7 +445,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             }
 
             else{
-              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
               {
                 //first_side_waypoint = true;
                 this->searchLocation = searchLocation;
@@ -472,7 +472,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
 
             else{
               
-              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
               {
                 //first_side_waypoint = true;
                 this->searchLocation = searchLocation;
@@ -497,7 +497,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             }
 
             else{
-              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
               {
                 //first_side_waypoint = true;
                 this->searchLocation = searchLocation;
@@ -522,7 +522,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             }
 
             else{
-              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
               {
                 //first_side_waypoint = true;
                 this->searchLocation = searchLocation;
@@ -547,7 +547,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             }
 
             else{
-              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
               {
                 //first_side_waypoint = true;
                 this->searchLocation = searchLocation;
@@ -572,7 +572,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             }
 
             else{
-              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
               {
                 //first_side_waypoint = true;
                 this->searchLocation = searchLocation;
@@ -598,7 +598,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             }
 
             else{
-              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+              if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
               {
                 //first_side_waypoint = true;
                 this->searchLocation = searchLocation;
@@ -684,7 +684,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare,
 
         else
         {
-           if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+           if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
            {
              //first_side_waypoint = true;
              this->searchLocation = searchLocation;
@@ -721,7 +721,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare,
         }
         else
         {
-          if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+          if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
            {
              //first_side_waypoint = true;
              this->searchLocation = searchLocation;
@@ -758,7 +758,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare,
         }
         else
         {
-          if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+          if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
            {
              //first_side_waypoint = true;
              this->searchLocation = searchLocation;
@@ -796,7 +796,7 @@ void SearchController::sideSearch(int myId,int sideSection,float triangleSquare,
         }
         else
         {
-          if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15)
+          if(hypot(searchLocation.y-currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
            {
              //first_side_waypoint = true;
              this->searchLocation = searchLocation;
