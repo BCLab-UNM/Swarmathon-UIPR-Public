@@ -39,13 +39,7 @@ bool DropOffController::getDroppedOff(){
 }
 Result DropOffController::DoWork() {
 
-<<<<<<< HEAD
   //cout << "8" << endl;
-=======
-  
-
-  cout << "8" << endl;
->>>>>>> 9fa10d4d0a023e548f9ffc1ad2069c7bac64ba9d
 
   //cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
 
@@ -60,13 +54,7 @@ Result DropOffController::DoWork() {
   //to resart our search.
   if(reachedCollectionPoint)
   {
-<<<<<<< HEAD
     //cout << "2" << endl;
-=======
-    //cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
-    
-    cout << "2" << endl;
->>>>>>> 9fa10d4d0a023e548f9ffc1ad2069c7bac64ba9d
     if (timerTimeElapsed >= 5)
     {
       if (finalInterrupt)
@@ -94,12 +82,8 @@ Result DropOffController::DoWork() {
 
       result.pd.cmdVel = -0.3;
       result.pd.cmdAngularError = 0.0;
-<<<<<<< HEAD
-      dropComplete = true;
-=======
       toDropTimeOut = false;
       timeCountToDrop = 0;
->>>>>>> 9fa10d4d0a023e548f9ffc1ad2069c7bac64ba9d
     }
 
     return result;
@@ -107,11 +91,7 @@ Result DropOffController::DoWork() {
 
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
 
-<<<<<<< HEAD
-
-=======
   //cout << "distanceToCenter = " << distanceToCenter << endl;
->>>>>>> 9fa10d4d0a023e548f9ffc1ad2069c7bac64ba9d
 
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
