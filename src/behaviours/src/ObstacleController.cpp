@@ -134,6 +134,7 @@ Result ObstacleController::DoWork()
     result.wpts.waypoints.push_back(forward);
 
     //distance between Rover and seachLocation
+    //TEST
     distRobotandPoint = hypot(searchLocation.x - currentLocation.x, searchLocation.y - currentLocation.y);
     cout << "Distance between Rover and seachLocation = " << distRobotandPoint << endl;
 
