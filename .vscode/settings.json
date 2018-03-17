@@ -8,6 +8,8 @@
         "tuple": "cpp",
         "utility": "cpp",
         "condition_variable": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "*.tcc": "cpp",
+        "slist": "cpp"
     }
 }
