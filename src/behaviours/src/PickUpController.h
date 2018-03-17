@@ -17,12 +17,12 @@ public:
   bool HasWork() override;
   bool SetSonarData(float rangeCenter);
 
-  float getDistance() {return blockDistance;}
-  bool GetLockTarget() {return lockTarget;}
+  float getDistance() { return blockDistance; }
+  bool GetLockTarget() { return lockTarget; }
   void SetUltraSoundData(bool blockBlock);
 
-  bool GetIgnoreCenter() {return ignoreCenterSonar;}
-  bool GetTargetHeld() {return targetHeld;}
+  bool GetIgnoreCenter() { return ignoreCenterSonar; }
+  bool GetTargetHeld() { return targetHeld; }
 
   //------------------------------------------------// Jomar-------------------------------------------------------------
 
@@ -34,35 +34,19 @@ public:
   void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
   void setDontRepeatSeeTarget(bool dontRepeatSeeTarget) { this->dontRepeatSeeTarget = dontRepeatSeeTarget; }
 
-  bool TagDetected() {return seeTarget;}
+  bool TagDetected() { return seeTarget; }
 
   //------------------------------------------------// Jomar-------------------------------------------------------------
 
-
-
-
-
-
-  void SetCurrentTimeInMilliSecs( long int time );
+  void SetCurrentTimeInMilliSecs(long int time);
   //------------------------------------------------// Jomar-------------------------------------------------------------
-
-  // Getters
-  bool getCantSeeTargetDontRepeat() { return cantSeeTargetDontRepeat; }
-  bool getDontRepeatSeeTarget() { return dontRepeatSeeTarget; }
-
-  // Setters
-  void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
-  void setDontRepeatSeeTarget(bool dontRepeatSeeTarget) { this->dontRepeatSeeTarget = dontRepeatSeeTarget; }
-
-  bool TagDetected() {return seeTarget;}
 
   // ================== Luis =======================
   Result CenterTag();
-// ================== Luis =======================
+  // ================== Luis =======================
 
-//------------------------------------------------// Jomar-------------------------------------------------------------
+  //------------------------------------------------// Jomar-------------------------------------------------------------
 protected:
-
   void ProcessData();
 
 private:
@@ -73,7 +57,6 @@ private:
 
   bool targetFound;
   bool targetHeld;
-
 
   // Failsafe state. No legitimate behavior state. If in this state for too long return to searching as default behavior.
   bool timeOut;
@@ -116,7 +99,6 @@ private:
   bool dontRepeatSeeTarget = true;
   bool seetarget;
   Point currenLocation;
-  
 };
 
 #endif // end header define

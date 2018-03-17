@@ -1,5 +1,3 @@
-
-
 #include "SearchController.h"
 #include <angles/angles.h>
 

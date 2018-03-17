@@ -38,17 +38,6 @@ int ObstacleController::getDirection()
   previousDirection = direction;
   return direction;
 }
-void ObstacleController::setSearchLocation(Point searchLocation){
-  this->searchLocation = searchLocation;
-}
-
-void ObstacleController::setDroppedOff(bool dropComplete){
-  this->dropComplete = dropComplete;
-}
-
-bool ObstacleController::needNewPoint(){
-  return pointInsideObstacle;
-}
 
 // Avoid crashing into objects detected by the ultraounds
 void ObstacleController::avoidObstacle()

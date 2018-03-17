@@ -47,6 +47,7 @@ public:
   bool getDeleteVector() { return deleteVector; }
   bool getCantSeeTargetDontRepeat() { return cantSeeTargetDontRepeat; }
   bool getTagDetectedCatched(){ return TagDetectedCatched; }
+  Point getSearchLocation() {return searchLocation; }
 
   void setClusterLocation (std::vector<Point> clusterLocation){this->clusterLocation = clusterLocation;}
   bool getClusterAssigned(){return this->clusterAssigned;}
@@ -57,13 +58,12 @@ public:
   void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
   void setTagDetectedCatched(bool TagDetectedCatched){ this->TagDetectedCatched = TagDetectedCatched; }
   void setClusterAssigned(bool newValue){this->clusterAssigned = newValue;}
+  void setNeedNewPoint (bool pointInsideObstacle){this->pointInsideObstacle = pointInsideObstacle; }
   // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
 
   void setObstacleDetected(bool var);
   void getID(int myId){this->myId = myId;}
   void getTotalIds(int totalIds){this->totalIds = totalIds;}
-  void setNeedNewPoint(bool pointInsideObstacle);
-  Point getSearchLocation();
   //Receives point lists. This is only used by Logic Controller.
   void setVisitedVector(std::vector<Point> visitedVector){this->visitedPoints = visitedVector;}
 
@@ -82,29 +82,6 @@ public:
   //**
   //
   // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
-
-
-  void aTagDetected();
-  void droppedOFF();
-  void cantSeeTarget();
-  void FidelityImprovement();
-
-  // Getters
-	bool getSdropped() { return Sdropped; }
-  bool getDeleteVector() { return deleteVector; }
-  bool getCantSeeTargetDontRepeat() { return cantSeeTargetDontRepeat; }
-  bool getTagDetectedCatched(){ return TagDetectedCatched; }
-
-  // Setters
-  void setSdropped(bool Sdropped) { this->Sdropped = Sdropped; }
-  void setDeleteVector(bool deleteVector) { this->deleteVector = deleteVector; }
-  void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
-  void setTagDetectedCatched(bool TagDetectedCatched){ this->TagDetectedCatched = TagDetectedCatched; }
-
-
-  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
-
-
 protected:
 
   Point setSearchLocation(float x, float y);
@@ -131,7 +108,8 @@ private:
   bool deleteVector = false;
   bool fidImprovement = false;
   bool TagDetectedCatched = true;
-
+  bool pointInsideObstacle  = false;
+  
   float ghostWall;
   float magnitude;
   float angle, unknownAngle;
@@ -189,13 +167,6 @@ private:
   bool x_front_giro_pared = false;
   bool x_front_pared_finish = false;
 
-
-  bool Sdropped = false;
-  bool cantSeeTargetDontRepeat = false;
-  bool arrives = false;
-  bool deleteVector = false;
-  bool fidImprovement = false;
-  bool TagDetectedCatched = true;
 
 // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
 

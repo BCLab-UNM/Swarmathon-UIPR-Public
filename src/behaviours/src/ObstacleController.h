@@ -19,18 +19,15 @@ public:
   Result DoWork() override;
   void setSonarData(float left, float center, float right);
   void setCurrentLocation(Point currentLocation);
-  void setSearchLocation(Point searchLocation);
+  void setSearchLocation(Point searchLocation) { this->searchLocation = searchLocation; }
   void setTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
   void setIgnoreCenterSonar();
   void setCurrentTimeInMilliSecs( long int time );
   void setTargetHeld ();
-  void setDroppedOff(bool dropComplete);
-  bool needNewPoint();
-  //EDITED
-  bool getObstacleInfo();
-
+  void setDroppedOff(bool dropComplete) { this->dropComplete = dropComplete; }
+  bool needNewPoint() { return pointInsideObstacle; }
   // Checks if a target is held and if so resets the state of the obestacle controller otherwise does nothing
   void setTargetHeldClear();
   //Asked by logiccontroller to determine if drive controller should have its waypoints cleared
