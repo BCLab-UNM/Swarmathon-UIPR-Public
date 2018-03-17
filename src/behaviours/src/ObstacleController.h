@@ -61,9 +61,10 @@ private:
   float distMin;            //minimun read distance between object and rover
   float e, diffE, integE;   //error vars for obstacle avoidance
   float distRobotandPoint;  //Distance between robot and derired point
+  float PID;                //holds pid values for OA
   bool pointInsideObstacle; //true if a searched point is inside obstacle or collection zone
   bool dropComplete;        //true if dropoff is complete to reset turnCounter
-  Point searchLocation;
+  Point searchLocation;     //holds las searched location
   // ========================================== Hector =========================================================== //
 
   // Are there AprilTags in the camera view that mark the collection zone

@@ -53,19 +53,27 @@ void ObstacleController::avoidObstacle()
   e = distMin - triggerDistance;           //e
   integE += e;                             //integral error
 
+  PID = getDirection() * (2.1 * e + 0.05 * diffE + 0.0001 * integE);
+  cout << "PID = " << PID << endl;
+  
+  if (PID >= 6 || PID <= -6){
+    PID = 6;
+    cout << "PID Fix!" << endl;
+  } 
+
   result.type = precisionDriving;
 
-  if (right < 0.25 || center < 0.25 || left < 0.25)
+  if (right < 0.2 || center < 0.2 || left < 0.2)
   {
-    result.pd.cmdVel = -2;
-    result.pd.cmdAngular = -1 * getDirection() * 4;
+    result.pd.cmdVel = -0.3;
+    result.pd.cmdAngular = -1 * getDirection() * K_angular;
     cout << "Im in reverse!" << endl;                 //DEBUG
     cout << "Direction = " << getDirection() << endl; //DEBUG
   }
   else
   {
-    result.pd.cmdAngular = 2 * getDirection() * (2.1 * e + 0.05 * diffE + 0.0001 * integE);
-    result.pd.cmdVel = 1.5;
+    result.pd.cmdAngular = PID/6;
+    result.pd.cmdVel = 0.3;
     cout << "Im in NOT reverse!" << endl;
     cout << "Direction = " << getDirection() << endl;
     cout << "Angular Vel = " << result.pd.cmdAngular << endl;
