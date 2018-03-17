@@ -89,8 +89,12 @@ public:
   // EDIT
   //** Variables
   bool init = true;
-  int myId = 0;
-  int totalIds = 0;
+
+  //IDs
+  int myIdPub = 0;  //Public
+  int myIdLoc = 0;  //Local
+  int totalIds = 0; //Total
+  
   bool publishVisitedPointFlag = true;
   Point latestVisitedPoint;
   std::vector<Point> visitedPoints;

@@ -39,7 +39,7 @@
 // Edit
 #include "std_msgs/MultiArrayLayout.h"
 #include "std_msgs/MultiArrayDimension.h"
-#include "std_msgs/Int32MultiArray.h"
+#include "std_msgs/Int64MultiArray.h"
 #include "std_msgs/Float64MultiArray.h"
 #include <std_msgs/Bool.h>
 #include<chrono> // Time measurments
@@ -201,16 +201,30 @@ ros::Publisher idFlagPublisher;
 ros::Subscriber idFlagSubscriber;
 ros::Publisher coordPub;
 ros::Subscriber coordSub;
+ros::Publisher initLocPub;
+ros::Subscriber initLocSub;
+ros::Publisher localIDPublisher;
+ros::Subscriber localIDSubscriber;
+ros::Publisher leadRobotPublisher;
+ros::Subscriber leadRobotSubscriber;
 
 std_msgs::UInt8 idcount;
 std_msgs::Bool ifUseFlag;
+std_msgs::Bool leadRobotFlagPub;
 std_msgs::Float64MultiArray coordArray;
+std_msgs::Float64MultiArray initLoc;
+std_msgs::Int64MultiArray newIds;
 
 void idHandler(const std_msgs::UInt8::ConstPtr& message);
 void idFlagHandler(const std_msgs::Bool::ConstPtr& message);
+void leadFlagHandler(const std_msgs::Bool::ConstPtr& message);
 void coordHandler(const std_msgs::Float64MultiArray& message);
+void initialCoord(const std_msgs::Float64MultiArray& message);
+void localIDHandler(const std_msgs::Int64MultiArray& message);
 
 bool idGlobalFlag;
+bool leadRobotFlag;
+vector<Point> initialLocations;
 //**
 
 //** Other
@@ -221,6 +235,19 @@ auto end_time = chrono::high_resolution_clock::now();
 auto timeWaited = chrono::duration_cast<chrono::microseconds>(end_time - start_time).count();
 Point baseLocation;
 bool clusterClose = false;
+
+vector<Point> startPoints;
+vector<vector<float>> distancesFromPoints;
+vector<bool> idTaken;
+
+int mapSize;
+float ghostWall;
+float triangleSquare;
+
+void setStartPoints();
+Point pointBuilder(float, float);
+
+bool localIDFlag = true;
 //**
 
 //
@@ -269,6 +296,16 @@ int main(int argc, char **argv) {
 
     coordSub = mNH.subscribe(("/coordenates"), 10, coordHandler);
     coordPub = mNH.advertise<std_msgs::Float64MultiArray>("/coordenates", 50);
+
+    initLocSub = mNH.subscribe(("/initialLocations"), 10, initialCoord);
+    initLocPub = mNH.advertise<std_msgs::Float64MultiArray>("/initialLocations", 50);
+
+    localIDSubscriber = mNH.subscribe(("/localIDs"), 10, localIDHandler);
+    localIDPublisher = mNH.advertise<std_msgs::Int64MultiArray>("/localIDs", 50);
+
+    leadRobotSubscriber = mNH.subscribe(("/leadFlag"), 1, leadFlagHandler);
+    leadRobotPublisher = mNH.advertise<std_msgs::Bool>(("/leadFlag"), 1);
+    
   //
 
   //=========Cluster Public and subscribe initialization=========||
@@ -375,6 +412,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
       //cout << "centerMap (" << centerMap.x << ", " << centerMap.y << ")" << endl;
       //cout << "Current Location Mod (" << currentLocation.x - centerOdom.x << ", " << currentLocation.y - centerOdom.y << ")" << endl;
 
+      
+
       idcount.data = 0;
       ifUseFlag.data = false;
       waitTime = 5;//rng->uniformReal(1, 100); // Save random number from 1 to 100
@@ -391,6 +430,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
           if(!idGlobalFlag)
           {
+            cout << "Gonna get ID" << endl;
             // Turn semaphore ON
             ifUseFlag.data = true;
             idFlagPublisher.publish(ifUseFlag);
@@ -400,28 +440,33 @@ void behaviourStateMachine(const ros::TimerEvent&)
             idPublish.publish(idcount);
 
             // Save ID
-            logicController.myId = logicController.totalIds;
+            logicController.myIdPub = logicController.totalIds;
+
+            // Publish Initial location
+            initLoc.data.push_back(currentLocation.x - baseLocation.x);
+            initLoc.data.push_back(currentLocation.y - baseLocation.y);
+
+            Point temp;
+            temp.x = initLoc.data.at(0);
+            temp.y = initLoc.data.at(1);
+
+            initialLocations.push_back(temp);
+
+            initLocPub.publish(initLoc);
 
             // Turn semaphore OFF
             ifUseFlag.data = false;
             idFlagPublisher.publish(ifUseFlag);
 
+            if (logicController.myIdPub == 1){
+              leadRobotFlagPub.data = true;
+              leadRobotPublisher.publish(leadRobotFlagPub);
+            }
+
             // Rover has ID
-            doIHaveID = true;
+            doIHaveID = true;   
 
-            // Still need to implement to get scatter running on multiple robots
-            if(logicController.myId == 1)
-            {
-              // Set random point to scatter
-
-            }
-            else
-            {
-              // Set random point relative to the point from ID 1
-
-            }
-
-
+            cout << "My public ID is: " << logicController.myIdPub << endl;
           }
         }
 
@@ -433,9 +478,111 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
       }
 
-      cout << "Rover ID = " << logicController.myId << endl;
+      
+      cout << "Done with ID" << endl;
+      // Wait 10 seconds
+      // waitTime = 3;
+      // //Timer to allow new rovers to connect and get IDs
+      // start_time = chrono::high_resolution_clock::now();
+      // end_time = chrono::high_resolution_clock::now();
+      // timeWaited = chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
+      // cout << "Gonna start waiting! Start: " << endl;
+      // //Waiting for new rovers
+      // while(timeWaited < waitTime)
+      // {
+      //   end_time = chrono::high_resolution_clock::now();
+      //   timeWaited = chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
+      //   //cout << "Current Time: " << timeWaited << " Wait Time: " << waitTime << endl;
+      //   // Verify if it is possible that there are 6 rovers
+      //   if (timeWaited > waitTime - 1 && logicController.totalIds > 3 && logicController.totalIds < 6)
+      //   {
+      //     cout << "Added 1 to wait time!" << endl;
+      //     // If so, then increment waiting time by one second
+      //     waitTime += 1;
+      //   }
+                
+      // }
 
-      logicController.UpdateData();
+      // //Set starting points on vector
+      // setStartPoints();
+      
+
+      // // Set robot task by where their staring location
+      // if(logicController.myIdPub == 1)
+      // {
+      //   cout << "Starting as leader" << endl;
+      //   newIds.data.resize(initialLocations.size(), 0);
+
+      //   localIDPublisher.publish(newIds);
+
+      //   //Robot with ID 1 works as leader assigning tasks to each robot
+      //   float distanceToInit;
+      //   float savedDistance;
+      //   int savedID;
+      //   int imposibleDistance = 100000000;
+      //   cout << "Gonna start fors " << initialLocations.size() << endl;
+      //   for (int i = 1; i <= initialLocations.size(); i++){
+      //     cout << "Checking IDs" << endl;
+      //     //Ensure the rover picks the first point
+      //     savedDistance = imposibleDistance;
+          
+      //     for (int j = 0; j < startPoints.size(); j++) { 
+      //       cout << "Cheking Points" << endl;
+      //       //Distance from starting location for search to the rover being assigned an ID
+      //       distanceToInit = hypot(startPoints.at(0).x - initialLocations.at(0).x, startPoints.at(0).y - initialLocations.at(0).y);
+
+      //       if (distanceToInit < savedDistance){
+      //         cout << "Smaller distance" << endl;
+      //         ///////////////////
+      //         // Still need to handle if that ID is already taken           //Done
+      //         // Think best way is to hold it until verified entire vector  //Unnnecesary
+      //         // If no startPoint is better compare distance between        //
+      //         // ID already on index and current ID, if current is          //
+      //         // closer repeat but dont allow verifying previous ID         //
+      //         // repeat until all IDs are arranged                          //
+      //         ///////////////////
+
+      //         // IDEA
+      //         // Make logic so robot calculates all distances and chooses one from closest to robot
+
+      //         if (newIds.data.at(j) != 0){
+      //           cout << "Gonna take it!" << endl;
+      //           savedDistance = distanceToInit;
+      //           savedID = j;   
+      //         }
+      //       }
+
+            
+      //     }
+
+      //     // if (savedDistance == imposibleDistance){
+      //     //   for (int k = 0; k < startPoints.size(); k++){
+      //     //     if (newIds )
+      //     //   }            
+      //     // }
+      //     cout << "Saved in vector" << endl;
+      //     // Save "j" on vector to be published on saved ID
+      //     newIds.data.at(savedID) = i;
+      //     //newIds.at(savedID) = i;
+      //   }
+      //   cout << "My local ID is: " << newIds.data.at(0) << endl;
+      //   localIDPublisher.publish(newIds);
+
+      // }
+      // else
+      // {
+      //   cout << "NOT leader" << endl;
+      //   //Every other robot will wait until robot leader assigns work to each one 
+      //   while(logicController.myIdLoc == 0){
+      //     // Wait while lead robot sets IDs
+          
+      //   }
+        
+      // }
+
+      // cout << "Rover ID = " << logicController.myIdLoc << endl;
+
+      
       //
 
     }
@@ -447,9 +594,139 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
   }
 
+  
+  if (localIDFlag) { // Consider removing for condition
+   
+      //Set starting points on vector
+      setStartPoints();
+      
+      cout << "Total IDs: " << logicController.totalIds << endl;
+      // Set robot task by where their staring location
+      if(logicController.myIdPub == 1 && (logicController.totalIds >= 3 && logicController.totalIds <= 6))
+      {
+        //  distancesFromPoints vector of vectors
+        float distance;
+        // Just in case a new robot connects too late
+        // Reason: If a new rover connects then finished vectors
+        // will be missing one or more distances
+        int tempTotal = logicController.totalIds;
+
+        cout << "Starting as leader" << endl;
+        newIds.data.resize(tempTotal, 0);
+
+        localIDPublisher.publish(newIds);
+
+        vector<float> tempVector;
+        distancesFromPoints.resize(tempTotal, tempVector);
+
+        idTaken.resize(tempTotal, false);
+        
+
+        // Create 2D vector for each ID with all distances to all points
+        // Iterate through IDs
+        for (int i = 0; i < tempTotal; i++)
+        {
+          // Iterate through start Points with amount of IDs available
+          for(int j = 0; j < tempTotal; j++){
+            distance = hypot(startPoints.at(j).x - initialLocations.at(i).x, startPoints.at(j).y - initialLocations.at(i).y);
+            distancesFromPoints.at(i).push_back(distance);
+          }
+          
+        }       
+
+        float closestDistance;
+        int closestID; // -1 means no ID has taken point
+
+        // Iterate through each ID one point at a time and save closest robot
+        // Set chosen ID as used so it is not repeated for another point
+        //Iterate through points
+        for (int i = 0; i < tempTotal; i++)
+        {
+          // Reset temp values
+          closestDistance = 1000000;
+          closestID = -1;
+          //Iterate through IDs - Only 1 ID is chosen
+          for (int j = 0; j < tempTotal; j++)
+          {
+            // If Distance is lower than saved closest Distance
+            if (distancesFromPoints.at(j).at(i) < closestDistance)
+            {
+              // If my ID is not taken
+              if (!idTaken.at(j))
+              {
+                // If point is taken
+                if (closestID != -1)
+                {
+                  // Reset previous ID to not taken
+                  idTaken.at(closestID) = false; // This is old ID             
+                  
+                }
+                // Save all values to new ID and set it as taken
+                closestDistance = distancesFromPoints.at(j).at(i);
+                closestID = j;
+                idTaken.at(closestID) = true; // This is new ID
+              }
+
+            }
+          }
+
+          newIds.data.at(i) = closestID;
+          
+        }
+
+        // Save values to newIds
+        // Reorganize values - Exchange index for ID
+        // std_msgs::Int64MultiArray tempIds;
+
+        // for (int i = 0; i < newIds.data.size() + 1; i++)
+        // {
+        //   for()
+        // }
+
+
+        // Iterate through vector and save ID 1 index as new ID for lead robot
+        // Reason: For some reason if this robot publishes data its subscriber
+        // doesn't handle it
+
+
+        
+        cout << "My local ID is: " << endl;
+        localIDPublisher.publish(newIds);
+
+        leadRobotFlagPub.data = false;
+        leadRobotPublisher.publish(leadRobotFlagPub);
+        
+        localIDFlag = false;
+      }
+      else if (logicController.myIdPub == 1)
+      {
+        // Wait for more robots
+        cout << "Waiting for more robots" << endl;
+      }
+      else if(leadRobotFlag) {
+         // Wait until lead robot assigns ID
+         cout << "Waiting for lead to finish" << endl;
+      }
+      else if(logicController.myIdLoc == 0){
+        // Logic so robot takes point closest available point
+        cout << "Have no ID" << endl;
+      }
+      else {
+        cout << "Default" << endl;
+        localIDFlag = false;
+      }
+    
+
+      cout << "Rover Local ID = " << logicController.myIdLoc << endl;
+
+      
+  }
+  
+
   // Robot is in automode
-  if (currentMode == 2 || currentMode == 3)
+  else if (currentMode == 2 || currentMode == 3)
   {
+    //cout << "Started Auto Mode" << endl;
 
     humanTime();
 
@@ -594,6 +871,48 @@ void sendDriveCommand(double left, double right)
 
   // publish the drive commands
   driveControlPublish.publish(velocity);
+}
+
+
+void setStartPoints()
+{
+  if(logicController.totalIds <=3)
+    {
+      cout << "Map Size: 15x15mts" << endl;
+      mapSize = 15; //15mts by 15mts map size.
+    }
+    else{
+      cout << "Map Size: 22x22mts" << endl;
+      mapSize = 22; //22mts by 22mts map size. 
+    }
+
+  ghostWall = .8; //Variable to evade walls.
+
+  if(mapSize == 15) 
+    {
+      triangleSquare = 10; // 10x10mts area for triangle square.(5mts each side)
+    }
+    else // Semi/Finals
+    {
+      // Set area    
+    }
+
+    startPoints.push_back(pointBuilder(1.0, 0.5));
+    startPoints.push_back(pointBuilder(-1.0, -0.5));
+    startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, mapSize/2 - ghostWall));
+    startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, triangleSquare/2));
+    startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, (mapSize/2 - ghostWall) * -1));
+    startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, (mapSize/2 - ghostWall) * -1));
+}
+
+Point pointBuilder(float x, float y)
+{
+  Point newPoint;
+
+  newPoint.x = x;
+  newPoint.y = y;
+
+  return newPoint;
 }
 
 /*************************
@@ -1063,5 +1382,36 @@ void clusterHandler(const std_msgs::Float64MultiArray& message){
 
   
   //logicController.itsACluster = true;
+void initialCoord(const std_msgs::Float64MultiArray& message)
+{
+  Point tempPoint;
+  
+  tempPoint.x = message.data[0];
+  tempPoint.y = message.data[1];
+  cout << "initCoord (" << tempPoint.x << "," << tempPoint.y << ")" << endl;
+  initialLocations.push_back(tempPoint);
+}
+
+void localIDHandler(const std_msgs::Int64MultiArray& message)
+{
+  cout << "ID Handler" << endl;
+  if (message.data.at(0) != 0) 
+  {
+    for (int i = 0; i < message.data.size(); i++){
+      cout << "This ID is: " << message.data.at(i) << endl;
+      if((message.data.at(i) + 1) == logicController.myIdPub)
+      {
+        logicController.myIdLoc = i + 1;
+        break;
+      }
+    }
+    
+    cout << "My local ID is: " << logicController.myIdLoc << endl;
+  }
+  cout << "Exiting Handler" << endl;
+}
+
+void leadFlagHandler(const std_msgs::Bool::ConstPtr& message){
+	leadRobotFlag = message->data;
 }
 //
