@@ -1,6 +1,5 @@
 #include "ObstacleController.h"
 
-
 ObstacleController::ObstacleController()
 {
   obstacleAvoided = true;
@@ -20,19 +19,19 @@ void ObstacleController::Reset()
   delay = current_time;
   result.PIDMode = CONST_PID;
 }
-
+// return direction value (-1 or 1) depending on sonar readings
 int ObstacleController::getDirection()
 {
   if (left < right)
   {
     direction = 1;
-    
   }
   else if (right < left)
   {
     direction = -1;
   }
-  else{
+  else
+  {
     direction = previousDirection;
   }
   previousDirection = direction;
@@ -42,25 +41,26 @@ int ObstacleController::getDirection()
 // Avoid crashing into objects detected by the ultraounds
 void ObstacleController::avoidObstacle()
 {
-  //Add distances read to vector so min and max index can be calculated.
+  //Add read distances to vector so min distance is stored
   distRead.push_back(left);
   distRead.push_back(center);
   distRead.push_back(right);
-  sort(distRead.begin(), distRead.end());
+  sort(distRead.begin(), distRead.end()); //sort in ascending order
 
+  //calculate errord for PID controller (controll Angular vel only)
   distMin = distRead[0];
-  diffE = (distMin - triggerDistance) - e;
-  e = distMin - triggerDistance;
-  integE += e;
+  diffE = (distMin - triggerDistance) - e; //e_d
+  e = distMin - triggerDistance;           //e
+  integE += e;                             //integral error
 
   result.type = precisionDriving;
 
   if (right < 0.25 || center < 0.25 || left < 0.25)
-  { 
+  {
     result.pd.cmdVel = -2;
     result.pd.cmdAngular = -1 * getDirection() * 4;
-    cout << "Im in reverse!" << endl; //Debug
-    cout << "Direction = " << getDirection() << endl; //Debug
+    cout << "Im in reverse!" << endl;                 //DEBUG
+    cout << "Direction = " << getDirection() << endl; //DEBUG
   }
   else
   {
@@ -71,8 +71,8 @@ void ObstacleController::avoidObstacle()
     cout << "Angular Vel = " << result.pd.cmdAngular << endl;
   }
 
-  // result.pd.setPointVel = 0.0;
-  // result.pd.setPointYaw = 0;
+  result.pd.setPointVel = 0.0;
+  result.pd.setPointYaw = 0;
   distRead.clear();
 }
 
@@ -81,11 +81,11 @@ void ObstacleController::avoidObstacle()
 void ObstacleController::avoidCollectionZone()
 {
 
-  cout << "Base detected" << endl;
+  cout << "Base detected" << endl; //DEBUG
   result.type = precisionDriving;
 
   // Decide which side of the rover sees the most april tags and turn away
-  // from that side
+  // from that side and reverse
   if (count_left_collection_zone_tags < count_right_collection_zone_tags)
   {
     result.pd.cmdVel = -0.4;
@@ -136,21 +136,24 @@ Result ObstacleController::DoWork()
     //distance between Rover and seachLocation
     distRobotandPoint = hypot(searchLocation.x - currentLocation.x, searchLocation.y - currentLocation.y);
     cout << "Distance between Rover and seachLocation = " << distRobotandPoint << endl;
-    
-    //If droped off reset
-    if (dropComplete || obstacleAvoided){
+
+    //If droped off reset counter and bool
+    if (dropComplete)
+    {
       turnCounter = 0;
       pointInsideObstacle = false;
     }
 
-    //count up each tme the rover finishes avoid methods
-    turnCounter++;
-    cout << "TurnCounter = " << turnCounter << endl;
-    if ((turnCounter > targetCountPivot && distRobotandPoint < 2) || turnCounter > 8){ //if the rover spends to much time trying to avoid, select new point
+    cout << "TurnCounter = " << turnCounter << endl; //DEBUG
+    //if the rover spends to much time trying to avoid, select new point
+    if ((turnCounter == 3 && distRobotandPoint <= 1.5) || turnCounter >= 5)
+    { 
       pointInsideObstacle = true;
       turnCounter = 0;
     }
-    else{
+    else //else keep counting
+    {
+      turnCounter++;
       pointInsideObstacle = false;
     }
   }
