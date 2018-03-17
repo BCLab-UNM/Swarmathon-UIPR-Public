@@ -25,12 +25,12 @@ int ObstacleController::getDirection()
 {
   if (left < right)
   {
-    direction = -1;
+    direction = 1;
     
   }
   else if (right < left)
   {
-    direction = 1;
+    direction = -1;
   }
   else{
     direction = previousDirection;
@@ -60,8 +60,8 @@ void ObstacleController::avoidObstacle()
   sort(distRead.begin(), distRead.end());
 
   distMin = distRead[0];
-  diffE = (distMin - triggerDistance / 2) - e;
-  e = distMin - triggerDistance / 2;
+  diffE = (distMin - triggerDistance) - e;
+  e = distMin - triggerDistance;
   integE += e;
 
   result.type = precisionDriving;
@@ -69,20 +69,21 @@ void ObstacleController::avoidObstacle()
   if (right < 0.25 || center < 0.25 || left < 0.25)
   { 
     result.pd.cmdVel = -2;
-    result.pd.cmdAngular = getDirection() * K_angular;
-    cout << "Im in reverse!" << endl;
-    cout << "Direction is = " << getDirection() << endl;
+    result.pd.cmdAngular = -1 * getDirection() * 4;
+    cout << "Im in reverse!" << endl; //Debug
+    cout << "Direction = " << getDirection() << endl; //Debug
   }
   else
   {
-    result.pd.cmdAngular = getDirection() * (2.1 * e + 0.05 * diffE + 0.0001 * integE);
-    result.pd.cmdVel = 0.5;
+    result.pd.cmdAngular = 2 * getDirection() * (2.1 * e + 0.05 * diffE + 0.0001 * integE);
+    result.pd.cmdVel = 1.5;
     cout << "Im in NOT reverse!" << endl;
-    cout << "Direction is = " << getDirection() << endl;
+    cout << "Direction = " << getDirection() << endl;
+    cout << "Angular Vel = " << result.pd.cmdAngular << endl;
   }
 
-  result.pd.setPointVel = 0.0;
-  result.pd.setPointYaw = 0;
+  // result.pd.setPointVel = 0.0;
+  // result.pd.setPointYaw = 0;
   distRead.clear();
 }
 
@@ -138,8 +139,8 @@ Result ObstacleController::DoWork()
     Point forward;
 
     //waypoint is directly ahead of current heading
-    forward.x = currentLocation.x + (0.4 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (0.4 * sin(currentLocation.theta));
+    forward.x = currentLocation.x + (0.2 * cos(currentLocation.theta));
+    forward.y = currentLocation.y + (0.2 * sin(currentLocation.theta));
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
 
@@ -148,7 +149,7 @@ Result ObstacleController::DoWork()
     cout << "Distance between Rover and seachLocation = " << distRobotandPoint << endl;
     
     //If droped off reset
-    if (dropComplete){
+    if (dropComplete || obstacleAvoided){
       turnCounter = 0;
       pointInsideObstacle = false;
     }

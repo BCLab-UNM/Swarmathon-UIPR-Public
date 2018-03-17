@@ -182,8 +182,8 @@ void SearchController::lawnMowerSearch(int wallLocation, int myId)
     {
     case 1:
     {
-      searchLocation.x = -.5;
-      searchLocation.y = 5;
+      searchLocation.x = -.2;
+      searchLocation.y = 15;
       break;
     }
     case 2:
