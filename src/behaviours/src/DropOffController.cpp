@@ -17,6 +17,9 @@ DropOffController::DropOffController() {
   seenEnoughCenterTags = false;
   prevCount = 0;
 
+  timeCountToDrop = -1;
+  toDropTimeOut = false;
+
   countLeft = 0;
   countRight = 0;
 
@@ -36,12 +39,19 @@ bool DropOffController::getDroppedOff(){
 }
 Result DropOffController::DoWork() {
 
+<<<<<<< HEAD
   //cout << "8" << endl;
+=======
+  
+
+  cout << "8" << endl;
+>>>>>>> 9fa10d4d0a023e548f9ffc1ad2069c7bac64ba9d
+
+  //cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
 
   int count = countLeft + countRight;
 
   if(timerTimeElapsed > -1) {
-
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
@@ -50,7 +60,13 @@ Result DropOffController::DoWork() {
   //to resart our search.
   if(reachedCollectionPoint)
   {
+<<<<<<< HEAD
     //cout << "2" << endl;
+=======
+    //cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
+    
+    cout << "2" << endl;
+>>>>>>> 9fa10d4d0a023e548f9ffc1ad2069c7bac64ba9d
     if (timerTimeElapsed >= 5)
     {
       if (finalInterrupt)
@@ -78,7 +94,12 @@ Result DropOffController::DoWork() {
 
       result.pd.cmdVel = -0.3;
       result.pd.cmdAngularError = 0.0;
+<<<<<<< HEAD
       dropComplete = true;
+=======
+      toDropTimeOut = false;
+      timeCountToDrop = 0;
+>>>>>>> 9fa10d4d0a023e548f9ffc1ad2069c7bac64ba9d
     }
 
     return result;
@@ -86,7 +107,11 @@ Result DropOffController::DoWork() {
 
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
 
+<<<<<<< HEAD
 
+=======
+  //cout << "distanceToCenter = " << distanceToCenter << endl;
+>>>>>>> 9fa10d4d0a023e548f9ffc1ad2069c7bac64ba9d
 
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
@@ -111,6 +136,8 @@ Result DropOffController::DoWork() {
     nextSpinPoint.x = centerLocation.x + (initialSpinSize + spinSizeIncrease) * cos(spinner);
     nextSpinPoint.y = centerLocation.y + (initialSpinSize + spinSizeIncrease) * sin(spinner);
     nextSpinPoint.theta = atan2(nextSpinPoint.y - currentLocation.y, nextSpinPoint.x - currentLocation.x);
+
+    //cout << "nextSpinPoint = " << nextSpinPoint.x << ", " << nextSpinPoint.y << ", " << nextSpinPoint.theta << endl; 
 
     result.type = waypoint;
     result.wpts.waypoints.clear();
@@ -160,6 +187,13 @@ Result DropOffController::DoWork() {
 
     if (seenEnoughCenterTags) //if we have seen enough tags
     {
+      cout << "countLeft - 5 = " << countLeft - 5 << endl;
+      cout << "countRight - 5 = " << countRight - 5 << endl;
+
+      cout << "countLeft = " << countLeft << endl;
+      cout << "countRight = " << countRight << endl;
+
+      
       if ((countLeft-5) > countRight) //and there are too many on the left
       {
         right = false; //then we say none on the right to cause us to turn right
@@ -179,21 +213,58 @@ Result DropOffController::DoWork() {
 
     //otherwise turn till tags on both sides of image then drive straight
     if (left && right) {
-      result.pd.cmdVel = searchVelocity;
-      result.pd.cmdAngularError = 0.0;
+      result.pd.cmdVel = 1;
+      toDropTimeOut = true;
+
+      cout << "left && right detected" << endl;
+
+      if ((countLeft - 5) > countRight){
+        result.pd.cmdAngularError = -0.3;
+      }
+
+      else if ((countRight - 5) > countLeft){
+        result.pd.cmdAngularError = 0.3;
+      }
+
+      else{
+        result.pd.cmdAngularError = 0.0;
+      }
+
+      if (timeCountToDrop > 8)
+      {
+        reachedCollectionPoint = true;
+        centerApproach = false;
+        returnTimer = current_time;
+      }
+
+      
     }
     else if (right) {
+      // result.pd.cmdVel = 0.7;      
+      // result.pd.setPointYaw = atan2 (centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
+      // result.pd.cmdAngular = -1;
       result.pd.cmdVel = -0.1 * turnDirection;
-      result.pd.cmdAngularError = -centeringTurnRate*turnDirection;
+      result.pd.cmdAngularError = -0.8;//-centeringTurnRate*turnDirection;
+
+      cout << "right detected" << endl;      
     }
     else if (left){
+      // result.pd.cmdVel = 0.7;      
+      // result.pd.setPointYaw = atan2 (centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
+      // result.pd.cmdAngular = 1;
       result.pd.cmdVel = -0.1 * turnDirection;
-      result.pd.cmdAngularError = centeringTurnRate*turnDirection;
+      result.pd.cmdAngularError = 0.8; //centeringTurnRate*turnDirection;     
     }
     else
     {
+      cout << "Nothing detected" << endl; 
       result.pd.cmdVel = searchVelocity;
       result.pd.cmdAngularError = 0.0;
+    }
+
+    if (toDropTimeOut)
+    {      
+      timeCountToDrop++;
     }
 
     //must see greater than this many tags before assuming we are driving into the center and not along an edge.
