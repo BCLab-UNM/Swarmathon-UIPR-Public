@@ -15,6 +15,9 @@ public:
   Result DoWork() override;
   void setSonarData(float left, float center, float right);
   void setCurrentLocation(Point currentLocation);
+  
+  void setObstacleLocation(Point ObstacleLocation); //Edited
+  
   void setTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
@@ -22,8 +25,8 @@ public:
   void setCurrentTimeInMilliSecs( long int time );
   void setTargetHeld ();
 
-  //EDITED
-  bool getObstacleInfo();
+
+  bool getObstacleInfo(); //Edited
 
   // Checks if a target is held and if so resets the state of the obestacle controller otherwise does nothing
   void setTargetHeldClear();
@@ -35,6 +38,8 @@ protected:
   void ProcessData();
 
 private:
+
+  vector<Point> ObstaclePoints; //Edited
 
   // Try not to run over the collection zone
   void avoidCollectionZone();
@@ -73,6 +78,8 @@ private:
   bool ignore_center_sonar = false;
 
   Point currentLocation;
+
+  Point ObstacleLocation; //Edited
 
   long int current_time;
   long int timeSinceTags;

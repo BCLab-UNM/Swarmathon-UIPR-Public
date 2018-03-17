@@ -20,16 +20,26 @@ void ObstacleController::Reset() {
 
 bool ObstacleController::getObstacleInfo()
 {
-  return obstacleDetected;
+  return obstacleDetected; // Obstacle flag
 }
 
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
+  float minDistance = 0.8;
 
     //always turn left to avoid obstacles
-    if (right < 0.8 || center < 0.8 || left < 0.8) {
-      cout << "Pared encontrada en (" << currentLocation.x << "," << currentLocation.y << ")";
+    if (right < minDistance || center < minDistance || left < minDistance) {
+      
       obstacleDetected = true;
+      
+      ObstacleLocation.x = currentLocation.x;
+      ObstacleLocation.y = currentLocation.y;
+
+      cout << "Location.x: " << ObstacleLocation.x << endl;
+      cout << "Location.y: " << ObstacleLocation.y << endl;
+
+      ObstaclePoints.push_back(ObstacleLocation);
+
       result.type = precisionDriving;
 
       result.pd.cmdAngular = -K_angular;
@@ -37,6 +47,9 @@ void ObstacleController::avoidObstacle() {
       result.pd.setPointVel = 0.0;
       result.pd.cmdVel = 0.0;
       result.pd.setPointYaw = 0;
+    }
+    else{
+      obstacleDetected = false;
     }
 }
 
@@ -107,6 +120,12 @@ void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float 
 
 void ObstacleController::setCurrentLocation(Point currentLocation) {
   this->currentLocation = currentLocation;
+}
+
+//Edited
+// Set the obstacle location point coordinates
+void ObstacleController::setObstacleLocation(Point ObstacleLocation) {
+  this->ObstacleLocation = ObstacleLocation;
 }
 
 void ObstacleController::ProcessData() {
