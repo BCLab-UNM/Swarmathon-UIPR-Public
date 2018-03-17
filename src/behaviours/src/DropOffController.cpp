@@ -22,6 +22,7 @@ DropOffController::DropOffController() {
 
   isPrecisionDriving = false;
   startWaypoint = false;
+  dropComplete = false;
   timerTimeElapsed = -1;
 
 }
@@ -30,6 +31,9 @@ DropOffController::~DropOffController() {
 
 }
 
+bool DropOffController::getDroppedOff(){
+  return dropComplete;
+}
 Result DropOffController::DoWork() {
 
   //cout << "8" << endl;
@@ -74,6 +78,7 @@ Result DropOffController::DoWork() {
 
       result.pd.cmdVel = -0.3;
       result.pd.cmdAngularError = 0.0;
+      dropComplete = true;
     }
 
     return result;

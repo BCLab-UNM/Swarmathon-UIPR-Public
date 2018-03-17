@@ -3,6 +3,10 @@
 
 #include "Controller.h"
 #include "Tag.h"
+#include <algorithm> 
+#include <cmath>
+#include <iostream>
+
 
 class ObstacleController : virtual Controller
 {
@@ -15,13 +19,15 @@ public:
   Result DoWork() override;
   void setSonarData(float left, float center, float right);
   void setCurrentLocation(Point currentLocation);
+  void setSearchLocation(Point searchLocation);
   void setTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
   void setIgnoreCenterSonar();
   void setCurrentTimeInMilliSecs( long int time );
   void setTargetHeld ();
-
+  void setDroppedOff(bool dropComplete);
+  bool needNewPoint();
   //EDITED
   bool getObstacleInfo();
 
@@ -38,10 +44,23 @@ private:
 
   // Try not to run over the collection zone
   void avoidCollectionZone();
-
+  
   // Try not to run into a physical object
   void avoidObstacle();
+  int getDirection(); //returns direction (-1 or 1)
+  
 
+  vector<double> distRead; //distances read from sonars
+
+  int    direction; //1 for following right wall. -1 for folloeing left wall
+  int    turnCounter; //count how many times it has tried to get to point
+  double distMin; //minimun read distance between object and rover 
+  double e, diffE, integE;  //error vars for obstacle avoidance
+  bool   pointInsideObstacle; //true if a searched point is inside obstacle or collection zone
+  Point searchLocation;
+  float distRobotandPoint;
+  bool dropComplete;
+  int previousDirection;
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );
@@ -49,7 +68,7 @@ private:
   const float K_angular = 1.0; //radians a second turn rate to avoid obstacles
   const float reactivate_center_sonar_threshold = 0.8; //reactive center sonar if it goes back above this distance, assuming it is deactivated
   const int targetCountPivot = 6; ///unused variable
-  const float obstacleDistancePivot = 0.2526; ///unused variable
+  const float obstacleDistancePivot = 0.2526; //unused variable
   const float triggerDistance = 0.8;
 
   /*

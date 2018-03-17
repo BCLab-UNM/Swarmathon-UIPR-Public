@@ -80,7 +80,7 @@ Result DriveController::DoWork()
 
   case STATE_MACHINE_WAYPOINTS:
   {
-
+    cout << "Using DriveController" << endl;
     //Handles route planning and navigation as well as making sure all waypoints are valid.
 
     bool tooClose = true;
@@ -234,7 +234,16 @@ bool DriveController::ShouldInterrupt()
 
 bool DriveController::HasWork() {   }
 
-
+//Students Code!
+// PID DriveController::getPID(){
+//   return this->fastPID;
+// }
+PIDConfig DriveController::getPIDVelConfig(){
+  return this->constVelConfig();
+}
+PIDConfig DriveController::getPIDYawConfig(){
+  return this->constYawConfig();
+}
 
 void DriveController::ProcessData()
 {
@@ -261,7 +270,7 @@ void DriveController::ProcessData()
     //calculate inputs into the PIDS for precision driving
     if (result.PIDMode == FAST_PID)
     {
-      float vel = result.pd.cmdVel -linearVelocity;
+      float vel = result.pd.cmdVel - linearVelocity;
       float setVel = result.pd.cmdVel;
       fastPID(vel,result.pd.cmdAngularError, setVel, result.pd.setPointYaw);
     }

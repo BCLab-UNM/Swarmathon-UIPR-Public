@@ -19,6 +19,9 @@ public:
   void SetResultData(Result result) {this->result = result;}
   void SetVelocityData(float linearVelocity,float angularVelocity);
   void SetCurrentLocation(Point currentLocation) {this->currentLocation = currentLocation;}
+  PIDConfig getPIDVelConfig();
+  PIDConfig getPIDYawConfig();
+  PID getPID();
 
 private:
 
@@ -33,7 +36,7 @@ private:
 
   float rotateOnlyAngleTolerance = 0.05;  //May be too low?
   float finalRotationTolerance = 0.1; //dead code not used
-  const float waypointTolerance = 0.15; //15 cm tolerance.
+  const float waypointTolerance = 0.2; //15 cm tolerance.
 
   //0.65 MAX value
   float searchVelocity = 0.35; // meters/second
@@ -58,7 +61,7 @@ private:
   PIDConfig slowVelConfig();
   PIDConfig slowYawConfig();
   PIDConfig constVelConfig();
-  PIDConfig constYawConfig();
+  PIDConfig constYawConfig();  
 
   void fastPID(float errorVel,float errorYaw, float setPointVel, float setPointYaw);
   void slowPID(float errorVel,float errorYaw, float setPointVel, float setPointYaw);

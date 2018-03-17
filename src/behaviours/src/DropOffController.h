@@ -116,6 +116,9 @@ private:
   //Flag to indicate that we're starting to follow waypoints
   bool startWaypoint;
 
+  //set true if drop off is complete
+  bool dropComplete;
+
   Result result;
 
   long int current_time;

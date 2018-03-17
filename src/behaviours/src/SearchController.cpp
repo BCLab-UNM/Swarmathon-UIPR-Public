@@ -4,10 +4,6 @@
 #include <angles/angles.h>
 
 SearchController::SearchController() {
-<<<<<<< HEAD
-
-=======
->>>>>>> 4ec7d9a0cedd037e8edab77a61a44b1a75e825c4
   currentLocation.x = 0;
   currentLocation.y = 0;
   currentLocation.theta = 0;
