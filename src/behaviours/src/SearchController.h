@@ -110,7 +110,7 @@ private:
   bool TagDetectedCatched = true;
   bool pointInsideObstacle  = false;
   bool firstClusterCommand = true;
-  bool clustred = false;
+  bool clustered = false;
   
   float ghostWall;
   float magnitude;

@@ -240,7 +240,7 @@ void SearchController::giveTask2Robot()
       std::cout << "Location Cluster = " << searchLocation.x << ", " << searchLocation.y << '\n';
       break;
     }
-    if (clustred)
+    if (clustered)
     {
       this->searchLocation = previousLoc;
       clustered = !clustered;
