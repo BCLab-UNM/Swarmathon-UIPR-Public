@@ -33,7 +33,7 @@ public:
 
   void SetCurrentTimeInMilliSecs( long int time );
 
-  bool getDroppedOff() {return dropComplete; }
+  bool getDroppedOff() {return  droppOff; }
 
 private:
 
@@ -119,7 +119,7 @@ private:
   bool startWaypoint;
 
   //set true if drop off is complete
-  bool dropComplete;
+  bool droppOff;
 
   Result result;
 

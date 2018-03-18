@@ -26,7 +26,7 @@ DropOffController::DropOffController()
 
   isPrecisionDriving = false;
   startWaypoint = false;
-  dropComplete = false;
+  droppOff = false;
   timerTimeElapsed = -1;
 }
 
@@ -44,7 +44,8 @@ Result DropOffController::DoWork()
   //cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
 
   int count = countLeft + countRight;
-
+  droppOff = true;
+  
   if(timerTimeElapsed > -1) {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed / 1e3; // Convert from milliseconds to seconds
@@ -63,6 +64,7 @@ Result DropOffController::DoWork()
         result.b = nextProcess;
         result.reset = true;
         notHasTag = true; // Jomar
+        droppOff = false; //Hector Added
         return result;
       }
       else
