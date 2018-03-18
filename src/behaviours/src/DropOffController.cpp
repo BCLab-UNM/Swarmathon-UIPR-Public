@@ -203,14 +203,14 @@ Result DropOffController::DoWork() {
       }
 
       else if ((countRight - 5) > countLeft){
-        result.pd.cmdAngularError = 0.3;
+        result.pd.cmdAngularError = 0.25; //0.3
       }
 
       else{
         result.pd.cmdAngularError = 0.0;
       }
 
-      if (timeCountToDrop > 8)
+      if (timeCountToDrop > 9) // 8
       {
         reachedCollectionPoint = true;
         centerApproach = false;
