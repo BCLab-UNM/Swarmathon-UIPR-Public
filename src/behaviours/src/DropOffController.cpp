@@ -19,6 +19,7 @@ DropOffController::DropOffController()
 
   timeCountToDrop = -1;
   toDropTimeOut = false;
+  leftAndRightDetected = false;
 
   countLeft = 0;
   countRight = 0;
@@ -36,14 +37,15 @@ DropOffController::~DropOffController()
 Result DropOffController::DoWork()
 {
 
+  cout << "centerLocation = " << centerLocation.x << ", " << centerLocation.y << endl;
+
   //cout << "8" << endl;
 
   //cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
 
   int count = countLeft + countRight;
 
-  if (timerTimeElapsed > -1)
-  {
+  if(timerTimeElapsed > -1) {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed / 1e3; // Convert from milliseconds to seconds
   }
@@ -79,9 +81,9 @@ Result DropOffController::DoWork()
 
       result.pd.cmdVel = -0.3;
       result.pd.cmdAngularError = 0.0;
-      dropComplete = true;
       toDropTimeOut = false;
       timeCountToDrop = 0;
+      leftAndRightDetected = false;
     }
 
     return result;
@@ -115,7 +117,7 @@ Result DropOffController::DoWork()
     nextSpinPoint.y = centerLocation.y + (initialSpinSize + spinSizeIncrease) * sin(spinner);
     nextSpinPoint.theta = atan2(nextSpinPoint.y - currentLocation.y, nextSpinPoint.x - currentLocation.x);
 
-    //cout << "nextSpinPoint = " << nextSpinPoint.x << ", " << nextSpinPoint.y << ", " << nextSpinPoint.theta << endl;
+    //cout << "nextSpinPoint = " << nextSpinPoint.x << ", " << nextSpinPoint.y << ", " << nextSpinPoint.theta << endl; 
 
     result.type = waypoint;
     result.wpts.waypoints.clear();
@@ -165,13 +167,8 @@ Result DropOffController::DoWork()
 
     if (seenEnoughCenterTags) //if we have seen enough tags
     {
-      cout << "countLeft - 5 = " << countLeft - 5 << endl;
-      cout << "countRight - 5 = " << countRight - 5 << endl;
-
-      cout << "countLeft = " << countLeft << endl;
-      cout << "countRight = " << countRight << endl;
-
-      if ((countLeft - 5) > countRight) //and there are too many on the left
+      
+      if ((countLeft-5) > countRight) //and there are too many on the left
       {
         right = false; //then we say none on the right to cause us to turn right
       }
@@ -190,62 +187,70 @@ Result DropOffController::DoWork()
     result.type = precisionDriving;
 
     //otherwise turn till tags on both sides of image then drive straight
-    if (left && right)
-    {
+    if (left && right) {
       result.pd.cmdVel = 1;
       toDropTimeOut = true;
+      leftAndRightDetected = true;
 
       cout << "left && right detected" << endl;
+     
 
-      if ((countLeft - 5) > countRight)
-      {
+      if ((countLeft - 5) > countRight){
         result.pd.cmdAngularError = -0.3;
       }
 
-      else if ((countRight - 5) > countLeft)
-      {
-        result.pd.cmdAngularError = 0.25; //0.3
+      else if ((countRight - 5) > countLeft){
+        result.pd.cmdAngularError = 0.25; 
       }
 
-      else
-      {
+      else{
         result.pd.cmdAngularError = 0.0;
       }
 
-      if (timeCountToDrop > 9) // 8
+
+      if (timeCountToDrop > 14)
       {
         reachedCollectionPoint = true;
         centerApproach = false;
         returnTimer = current_time;
       }
-    }
-    else if (right)
-    {
-      // result.pd.cmdVel = 0.7;
-      // result.pd.setPointYaw = atan2 (centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
-      // result.pd.cmdAngular = -1;
-      result.pd.cmdVel = -0.1 * turnDirection;
-      result.pd.cmdAngularError = -0.8; //-centeringTurnRate*turnDirection;
 
-      cout << "right detected" << endl;
+      
     }
-    else if (left)
-    {
-      // result.pd.cmdVel = 0.7;
-      // result.pd.setPointYaw = atan2 (centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
-      // result.pd.cmdAngular = 1;
-      result.pd.cmdVel = -0.1 * turnDirection;
-      result.pd.cmdAngularError = 0.8; //centeringTurnRate*turnDirection;
+    else if (right) {
+
+      if (leftAndRightDetected && timeCountToDrop > 7){
+        result.pd.cmdVel = -0.1 * turnDirection;
+        result.pd.cmdAngularError = 0.8;
+      }
+
+      else{
+        result.pd.cmdVel = -0.1 * turnDirection;
+        result.pd.cmdAngularError = -0.8;
+      }
+
+      cout << "right detected" << endl;      
+    }
+    else if (left){
+      if (leftAndRightDetected && timeCountToDrop > 7){
+        result.pd.cmdVel = -0.1 * turnDirection;
+        result.pd.cmdAngularError = -0.8;
+      }
+
+      else{
+        result.pd.cmdVel = -0.1 * turnDirection;
+        result.pd.cmdAngularError = 0.8;
+      }  
     }
     else
     {
-      cout << "Nothing detected" << endl;
+      cout << "Nothing detected" << endl; 
       result.pd.cmdVel = searchVelocity;
       result.pd.cmdAngularError = 0.0;
     }
 
     if (toDropTimeOut)
-    {
+    {      
       timeCountToDrop++;
     }
 
