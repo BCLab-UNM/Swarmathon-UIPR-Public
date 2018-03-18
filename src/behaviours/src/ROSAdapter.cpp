@@ -237,6 +237,9 @@ Point baseLocation;
 bool clusterClose = false;
 
 vector<Point> startPoints;
+vector<float> startPointsDistance;
+vector<int> startPointRearranged;
+
 vector<vector<float>> distancesFromPoints;
 vector<bool> idTaken;
 
@@ -245,8 +248,11 @@ float ghostWall;
 float triangleSquare;
 
 void setStartPoints();
+bool totalIDsChanged(int);
 Point pointBuilder(float, float);
 
+int tempTotal;
+int counterForRobots;
 bool localIDFlag = true;
 //**
 
@@ -452,7 +458,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
             initialLocations.push_back(temp);
 
-            initLocPub.publish(initLoc);
+            
 
             // Turn semaphore OFF
             ifUseFlag.data = false;
@@ -461,6 +467,11 @@ void behaviourStateMachine(const ros::TimerEvent&)
             if (logicController.myIdPub == 1){
               leadRobotFlagPub.data = true;
               leadRobotPublisher.publish(leadRobotFlagPub);
+              
+              counterForRobots = 0; 
+            }
+            else{
+              initLocPub.publish(initLoc);
             }
 
             // Rover has ID
@@ -477,113 +488,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
         }
 
       }
-
       
       cout << "Done with ID" << endl;
-      // Wait 10 seconds
-      // waitTime = 3;
-      // //Timer to allow new rovers to connect and get IDs
-      // start_time = chrono::high_resolution_clock::now();
-      // end_time = chrono::high_resolution_clock::now();
-      // timeWaited = chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
-      // cout << "Gonna start waiting! Start: " << endl;
-      // //Waiting for new rovers
-      // while(timeWaited < waitTime)
-      // {
-      //   end_time = chrono::high_resolution_clock::now();
-      //   timeWaited = chrono::duration_cast<chrono::seconds>(end_time - start_time).count();
-      //   //cout << "Current Time: " << timeWaited << " Wait Time: " << waitTime << endl;
-      //   // Verify if it is possible that there are 6 rovers
-      //   if (timeWaited > waitTime - 1 && logicController.totalIds > 3 && logicController.totalIds < 6)
-      //   {
-      //     cout << "Added 1 to wait time!" << endl;
-      //     // If so, then increment waiting time by one second
-      //     waitTime += 1;
-      //   }
-                
-      // }
-
-      // //Set starting points on vector
-      // setStartPoints();
-      
-
-      // // Set robot task by where their staring location
-      // if(logicController.myIdPub == 1)
-      // {
-      //   cout << "Starting as leader" << endl;
-      //   newIds.data.resize(initialLocations.size(), 0);
-
-      //   localIDPublisher.publish(newIds);
-
-      //   //Robot with ID 1 works as leader assigning tasks to each robot
-      //   float distanceToInit;
-      //   float savedDistance;
-      //   int savedID;
-      //   int imposibleDistance = 100000000;
-      //   cout << "Gonna start fors " << initialLocations.size() << endl;
-      //   for (int i = 1; i <= initialLocations.size(); i++){
-      //     cout << "Checking IDs" << endl;
-      //     //Ensure the rover picks the first point
-      //     savedDistance = imposibleDistance;
-          
-      //     for (int j = 0; j < startPoints.size(); j++) { 
-      //       cout << "Cheking Points" << endl;
-      //       //Distance from starting location for search to the rover being assigned an ID
-      //       distanceToInit = hypot(startPoints.at(0).x - initialLocations.at(0).x, startPoints.at(0).y - initialLocations.at(0).y);
-
-      //       if (distanceToInit < savedDistance){
-      //         cout << "Smaller distance" << endl;
-      //         ///////////////////
-      //         // Still need to handle if that ID is already taken           //Done
-      //         // Think best way is to hold it until verified entire vector  //Unnnecesary
-      //         // If no startPoint is better compare distance between        //
-      //         // ID already on index and current ID, if current is          //
-      //         // closer repeat but dont allow verifying previous ID         //
-      //         // repeat until all IDs are arranged                          //
-      //         ///////////////////
-
-      //         // IDEA
-      //         // Make logic so robot calculates all distances and chooses one from closest to robot
-
-      //         if (newIds.data.at(j) != 0){
-      //           cout << "Gonna take it!" << endl;
-      //           savedDistance = distanceToInit;
-      //           savedID = j;   
-      //         }
-      //       }
-
-            
-      //     }
-
-      //     // if (savedDistance == imposibleDistance){
-      //     //   for (int k = 0; k < startPoints.size(); k++){
-      //     //     if (newIds )
-      //     //   }            
-      //     // }
-      //     cout << "Saved in vector" << endl;
-      //     // Save "j" on vector to be published on saved ID
-      //     newIds.data.at(savedID) = i;
-      //     //newIds.at(savedID) = i;
-      //   }
-      //   cout << "My local ID is: " << newIds.data.at(0) << endl;
-      //   localIDPublisher.publish(newIds);
-
-      // }
-      // else
-      // {
-      //   cout << "NOT leader" << endl;
-      //   //Every other robot will wait until robot leader assigns work to each one 
-      //   while(logicController.myIdLoc == 0){
-      //     // Wait while lead robot sets IDs
-          
-      //   }
-        
-      // }
-
-      // cout << "Rover ID = " << logicController.myIdLoc << endl;
-
-      
-      //
 
     }
 
@@ -595,113 +501,128 @@ void behaviourStateMachine(const ros::TimerEvent&)
   }
 
   
-  if (localIDFlag) { // Consider removing for condition
+  if (localIDFlag) 
+  { 
    
       //Set starting points on vector
       setStartPoints();
       
       cout << "Total IDs: " << logicController.totalIds << endl;
       // Set robot task by where their staring location
-      if(logicController.myIdPub == 1 && (logicController.totalIds >= 3 && logicController.totalIds <= 6))
+      if(logicController.myIdPub == 1 && (logicController.totalIds == 3 || logicController.totalIds == 6))
       {
-        //  distancesFromPoints vector of vectors
+        counterForRobots++;
+        cout << "Counter: " << counterForRobots <<endl;
         float distance;
         // Just in case a new robot connects too late
         // Reason: If a new rover connects then finished vectors
         // will be missing one or more distances
-        int tempTotal = logicController.totalIds;
-
-        cout << "Starting as leader" << endl;
-        newIds.data.resize(tempTotal, 0);
-
-        localIDPublisher.publish(newIds);
-
-        vector<float> tempVector;
-        distancesFromPoints.resize(tempTotal, tempVector);
-
-        idTaken.resize(tempTotal, false);
-        
-
-        // Create 2D vector for each ID with all distances to all points
-        // Iterate through IDs
-        for (int i = 0; i < tempTotal; i++)
+        if (counterForRobots >= 1)                // Init
         {
-          // Iterate through start Points with amount of IDs available
-          for(int j = 0; j < tempTotal; j++){
-            distance = hypot(startPoints.at(j).x - initialLocations.at(i).x, startPoints.at(j).y - initialLocations.at(i).y);
-            distancesFromPoints.at(i).push_back(distance);
-          }
-          
-        }       
+          tempTotal = logicController.totalIds;
 
-        float closestDistance;
-        int closestID; // -1 means no ID has taken point
+          cout << "Starting as leader" << endl;
+          newIds.data.resize(tempTotal, 0);
 
-        // Iterate through each ID one point at a time and save closest robot
-        // Set chosen ID as used so it is not repeated for another point
-        //Iterate through points
-        for (int i = 0; i < tempTotal; i++)
-        {
-          // Reset temp values
-          closestDistance = 1000000;
-          closestID = -1;
-          //Iterate through IDs - Only 1 ID is chosen
-          for (int j = 0; j < tempTotal; j++)
-          {
-            // If Distance is lower than saved closest Distance
-            if (distancesFromPoints.at(j).at(i) < closestDistance)
-            {
-              // If my ID is not taken
-              if (!idTaken.at(j))
-              {
-                // If point is taken
-                if (closestID != -1)
-                {
-                  // Reset previous ID to not taken
-                  idTaken.at(closestID) = false; // This is old ID             
-                  
-                }
-                // Save all values to new ID and set it as taken
-                closestDistance = distancesFromPoints.at(j).at(i);
-                closestID = j;
-                idTaken.at(closestID) = true; // This is new ID
-              }
+          //localIDPublisher.publish(newIds);
 
-            }
-          }
+          vector<float> tempVector;
+          distancesFromPoints.resize(tempTotal, tempVector);
 
-          newIds.data.at(i) = closestID;
-          
+          idTaken.resize(tempTotal, false);
         }
 
-        // Save values to newIds
-        // Reorganize values - Exchange index for ID
-        // std_msgs::Int64MultiArray tempIds;
+        // Reset Counter if a new robot connects to ROS
+        if (totalIDsChanged(tempTotal))
+        {
+          cout << "First reset" << endl;
+          counterForRobots = 0;
+        }
 
-        // for (int i = 0; i < newIds.data.size() + 1; i++)
-        // {
-        //   for()
-        // }
+        if (counterForRobots >= 90 || (logicController.totalIds == 6 &&  counterForRobots != 0))            // After 1 second
+        {
+          cout << "Reached 90" << endl;
+          // Create 2D vector for each ID with all distances to all points
+          // Iterate through IDs
+          cout << "SP Size: " << startPoints.size() << endl;
+          
+          vector<float> pointDistances;
+          //vector<int> idByDistances;
+          //Iterate through start Points with amount of IDs available
+          for (int i = 0; i < tempTotal; i++) 
+          {
+            cout << "SP: " << startPoints.at(i).x << "," << startPoints.at(i).y << endl;
+            cout << "IL: " << initialLocations.at(i).x << "," << initialLocations.at(i).y << endl;
+            // Iterate through ID init Locations
+            for(int j = 0; j < tempTotal; j++)
+            {              
+              distance = hypot(startPoints.at(i).x - initialLocations.at(j).x, startPoints.at(i).y - initialLocations.at(j).y);
+              //distancesFromPoints.at(i).push_back(distance);
+              pointDistances.push_back(distance);
+              cout << "Distance: " << distance << endl;
+            }
 
+            float closestDistance = 1000000;
+            int closestID = -1; // -1 means no ID has taken point
 
-        // Iterate through vector and save ID 1 index as new ID for lead robot
-        // Reason: For some reason if this robot publishes data its subscriber
-        // doesn't handle it
+            //Assign ID to closest Point 
+            for (int j = 0; j < tempTotal; j++)
+            {
+              if (pointDistances.at(j) < closestDistance)
+              {
+                cout << "Compared: " << pointDistances.at(j) << " | " << closestDistance << endl;
+                if (!idTaken.at(j))
+                {     
+                  cout << "ID taking: " << j << endl;             
+                  // If point is taken
+                  if (closestID != -1)
+                  {
+                    // Reset previous ID to not taken
+                    idTaken.at(closestID) = false; // This is old ID             
+                    
+                  }
+                  //else {
+                    cout << "Taking Point" << endl;
+                    // Save all values to new ID and set it as taken
+                    closestDistance = pointDistances.at(j);
+                    closestID = j;
+                    idTaken.at(closestID) = true; // This is new ID
+                  //}
+                }
+              }
+            }
+            
+            cout << "Selected: " << closestID << endl;
+            //idByDistances.push_back(idByDistances);
+            newIds.data.at(i) = closestID;
 
+            pointDistances.clear();
+          }
+          
+          cout << "All IDs in reverse" << endl;
+          reverse(newIds.data.begin(), newIds.data.end());
 
-        
-        cout << "My local ID is: " << endl;
-        localIDPublisher.publish(newIds);
+          // Add 1 to match public IDs
+          for (int i = 0; i < newIds.data.size(); i++)
+          {
+            newIds.data.at(i) = newIds.data.at(i) + 1;
+            cout << "ID: " << newIds.data.at(i) << endl;
+          }
+          
+          localIDPublisher.publish(newIds);
 
-        leadRobotFlagPub.data = false;
-        leadRobotPublisher.publish(leadRobotFlagPub);
-        
-        localIDFlag = false;
+          leadRobotFlagPub.data = false;
+          leadRobotPublisher.publish(leadRobotFlagPub);
+          localIDFlag = false;
+        }
+
       }
       else if (logicController.myIdPub == 1)
       {
         // Wait for more robots
         cout << "Waiting for more robots" << endl;
+        //counterForRobots++;
+        cout << "Counter: " << counterForRobots <<endl;
       }
       else if(leadRobotFlag) {
          // Wait until lead robot assigns ID
@@ -710,13 +631,15 @@ void behaviourStateMachine(const ros::TimerEvent&)
       else if(logicController.myIdLoc == 0){
         // Logic so robot takes point closest available point
         cout << "Have no ID" << endl;
+        
       }
       else {
         cout << "Default" << endl;
         localIDFlag = false;
       }
-    
 
+      // Clear vector for next iteration
+      startPoints.clear();
       cout << "Rover Local ID = " << logicController.myIdLoc << endl;
 
       
@@ -873,6 +796,19 @@ void sendDriveCommand(double left, double right)
   driveControlPublish.publish(velocity);
 }
 
+bool totalIDsChanged(int previousTotal)
+{
+  bool sameAmount;
+
+  if (previousTotal != logicController.totalIds){
+    sameAmount = true;  
+  }
+  else{
+    sameAmount = false;
+  }
+  cout << "Checking Total" << endl;
+  return sameAmount;
+}
 
 void setStartPoints()
 {
@@ -897,12 +833,48 @@ void setStartPoints()
       // Set area    
     }
 
-    startPoints.push_back(pointBuilder(1.0, 0.5));
-    startPoints.push_back(pointBuilder(-1.0, -0.5));
-    startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, mapSize/2 - ghostWall));
-    startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, triangleSquare/2));
-    startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, (mapSize/2 - ghostWall) * -1));
-    startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, (mapSize/2 - ghostWall) * -1));
+    if (logicController.totalIds <=3){
+      startPoints.push_back(pointBuilder(1.0, 0.5));
+      startPoints.push_back(pointBuilder(-1.0, -0.5));
+      startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, mapSize/2 - ghostWall));
+      //startPointRearranged = {1, 2, 3};
+    }
+    if (logicController.totalIds >= 4){
+      startPoints.push_back(pointBuilder(1.0, 0.5));
+      startPoints.push_back(pointBuilder(-1.0, -0.5));
+      startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, mapSize/2 - ghostWall));
+      startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, triangleSquare/2));
+      startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, (mapSize/2 - ghostWall) * -1));
+      startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, (mapSize/2 - ghostWall) * -1));
+      //startPointRearranged = {1, 2, 3, 4, 5, 6};
+    }
+
+    // for (int i = 0; i < startPoints.size(); i++)
+    // {
+    //   startPointsDistance.push_back(hypot(startPoints.at(i).x, startPoints.at(i).y));
+    // }
+
+
+    
+    // float distance;
+    // vector<float> tempSPD;
+
+    // for (int i = 0; i < startPointsDistance.size(); i++)
+    // {
+      
+    //   for(int j = 0; j < startPointsDistance.size(); j++)
+    //   {
+    //     if(startPointsDistance.at(j) )
+    //     {
+          
+    //     }
+    //   }
+      
+    // }
+    // //sort(startPointsDistance.begin(), startPointsDistance.end(), greater<float>());
+
+    reverse(startPoints.begin(), startPoints.end());
+
 }
 
 Point pointBuilder(float x, float y)
@@ -1379,7 +1351,7 @@ void clusterHandler(const std_msgs::Float64MultiArray& message){
     cout << "Point does NOT exist in vector" << endl;
     logicController.clusterPoints.push_back(clusterPoint);
   }
-
+}
   
   //logicController.itsACluster = true;
 void initialCoord(const std_msgs::Float64MultiArray& message)
@@ -1395,11 +1367,18 @@ void initialCoord(const std_msgs::Float64MultiArray& message)
 void localIDHandler(const std_msgs::Int64MultiArray& message)
 {
   cout << "ID Handler" << endl;
+  // cout << "Size: " << message.data.size() << endl;
+
+  // for (int i = 0; i < message.data.size(); i++)
+  // {
+  //   cout << "ID: " << message.data.at(i) << endl;
+  // }
+
   if (message.data.at(0) != 0) 
   {
     for (int i = 0; i < message.data.size(); i++){
       cout << "This ID is: " << message.data.at(i) << endl;
-      if((message.data.at(i) + 1) == logicController.myIdPub)
+      if((message.data.at(i)) == logicController.myIdPub)
       {
         logicController.myIdLoc = i + 1;
         break;

@@ -416,7 +416,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             if(first_waypoint) 
             {
               cout << "--Looking for first given location.--" << endl;
-              this->searchLocation = setSearchLocation(-5,1);
+              this->searchLocation = setSearchLocation(1,0.5);
               first_waypoint = false;
               break;
             }
