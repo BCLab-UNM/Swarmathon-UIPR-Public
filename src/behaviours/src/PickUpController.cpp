@@ -178,7 +178,7 @@ void PickUpController::ProcessData()
   {
     //set gripper;
     result.fingerAngle = M_PI_2;
-    result.wristAngle = 1.25; //1.5 real -- 1.25 sim
+    result.wristAngle = 1.5; //1.5 real -- 1.25 sim -- Hector
     cout << "WRIST ANGLE: " << result.wristAngle << endl;
   }
 }
@@ -220,7 +220,7 @@ Result PickUpController::CenterTag()
 
   if (blockYawError < -0.08 || blockYawError > 0.08) {
     result.pd.cmdVel = 0;
-    result.pd.cmdAngularError = -blockYawError * 0.2; //0.2 sim -- 1.4 real
+    result.pd.cmdAngularError = -blockYawError * 1.4; //0.2 sim -- 1.4 real -- Hector
 
   }
 

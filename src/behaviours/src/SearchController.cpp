@@ -414,7 +414,7 @@ void SearchController::triangleSearch(int myId,int triangularSection, float tria
             if(first_waypoint) 
             {
               cout << "--Looking for first given location.--" << endl;
-              this->searchLocation = setSearchLocation(-5,1);
+              this->searchLocation = setSearchLocation(1,0.5); //Hector changed
               first_waypoint = false;
               break;
             }
@@ -629,7 +629,7 @@ int SearchController::getMapSize()
     if(totalIds <=3)
     {
       cout << "Map Size: 15x15mts" << endl;
-      this->mapSize = 15; //15mts by 15mts map size.
+      this->mapSize = 15/2; //15mts by 15mts map size. -- Hector changed for physical test!!!
     }
     else{
       cout << "Map Size: 22x22mts" << endl;
