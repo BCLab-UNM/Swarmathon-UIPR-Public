@@ -33,7 +33,7 @@ public:
   // Setters
   void setCantSeeTargetDontRepeat(bool cantSeeTargetDontRepeat) { this->cantSeeTargetDontRepeat = cantSeeTargetDontRepeat; }
   void setDontRepeatSeeTarget(bool dontRepeatSeeTarget) { this->dontRepeatSeeTarget = dontRepeatSeeTarget; }
-
+  void setCurrentLocation (Point currentLocation) {this->currentLocation  = currentLocation; }
   bool TagDetected() { return seeTarget; }
 
   //------------------------------------------------// Jomar-------------------------------------------------------------
@@ -98,7 +98,7 @@ private:
   bool seeTarget, cantSeeTargetDontRepeat;
   bool dontRepeatSeeTarget = true;
   bool seetarget;
-  Point currenLocation;
+  Point currentLocation;
 };
 
 #endif // end header define

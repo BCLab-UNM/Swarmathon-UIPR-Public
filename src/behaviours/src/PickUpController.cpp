@@ -25,6 +25,8 @@ PickUpController::~PickUpController() { /*Destructor*/  }
 void PickUpController::SetTagData(vector<Tag> tags)
 {
 
+
+
   if (tags.size() > 0)
   {
 
@@ -120,14 +122,18 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
   }
 
+
+
 }
 
 
 bool PickUpController::SetSonarData(float rangeCenter)
 {
 
+
   if (rangeCenter < 0.12 && targetFound)
   {
+    std::cout << "if (rangeCenter < 0.12 && targetFound)" << '\n';
     result.type = behavior;
     result.b = nextProcess;
     result.reset = true;
@@ -138,6 +144,8 @@ bool PickUpController::SetSonarData(float rangeCenter)
   return false;
 
 }
+
+
 
 void PickUpController::ProcessData()
 {
@@ -170,7 +178,8 @@ void PickUpController::ProcessData()
   {
     //set gripper;
     result.fingerAngle = M_PI_2;
-    result.wristAngle = 2;
+    result.wristAngle = 1.5;
+    cout << "WRIST ANGLE: " << result.wristAngle << endl;
   }
 }
 
@@ -204,6 +213,33 @@ bool PickUpController::ShouldInterrupt(){
   }
 }
 
+Result PickUpController::CenterTag()
+{
+  cout << "CENTERING TAG\n";
+  cout << "Block yaw error: " << blockYawError << endl;;
+
+  if (blockYawError < -0.08 || blockYawError > 0.08) {
+    result.pd.cmdVel = 0;
+    result.pd.cmdAngularError = -blockYawError * 1.4;
+
+  }
+
+  else {
+
+    // this is a 3-line P controller, where Kp = 0.15
+    float vel = blockDistance * 0.15;
+    if (vel < 0.1) vel = 0.1;
+    if (vel > 0.2) vel = 0.2;
+
+    result.pd.cmdVel = vel;
+    result.pd.cmdAngularError = 0;
+  }
+
+  timeOut = false;
+  return result;
+}
+
+
 Result PickUpController::DoWork()
 {
 
@@ -213,6 +249,7 @@ Result PickUpController::DoWork()
   {
     //threshold distance to be from the target block before attempting pickup
     float targetDistance = 0.15; //meters
+    //std::cout << "targetDistance = " << targetDistance << '\n';
 
     // -----------------------------------------------------------
     // millisecond time = current time if not in a counting state
@@ -251,8 +288,7 @@ Result PickUpController::DoWork()
     // If we don't see any blocks or cubes turn towards the location of the last cube we saw.
     // I.E., try to re-aquire the last cube we saw.
 
-    // default = 1.5
-    float grasp_time_begin = 1.5; // edit
+    float grasp_time_begin = 1.5;
     float raise_time_begin = 2.0;
     float lower_gripper_time_begin = 4.0;
     float target_reaquire_begin= 4.2;
@@ -274,7 +310,7 @@ Result PickUpController::DoWork()
     }
 
 
-    if (nTargetsSeen == 0 && !lockTarget)
+    if (nTargetsSeen == 0 && !lockTarget) // No ve nada
     {
       // This if statement causes us to time out if we don't re-aquire a block within the time limit.
       if(!timeOut)
@@ -290,8 +326,11 @@ Result PickUpController::DoWork()
 
         // Rotate towards the block that we are seeing.
         // The error is negated in order to turn in a way that minimizes error.
+
+
         result.pd.cmdAngularError = -blockYawError;
       }
+
       //If in a counting state and has been counting for 1 second.
       else if (Td > 1.0 && Td < target_pickup_task_time_limit)
       {
@@ -299,12 +338,14 @@ Result PickUpController::DoWork()
         result.pd.cmdVel = -0.15;
         result.pd.cmdAngularError= 0.0;
       }
+
     }
+
     else if (blockDistance > targetDistance && !lockTarget) //if a target is detected but not locked, and not too close.
     {
-      // this is a 3-line P controller, where Kp = 0.20
       return CenterTag();
     }
+
     else if (!lockTarget) //if a target hasn't been locked lock it and enter a counting state while slowly driving forward.
     {
       lockTarget = true;
@@ -317,7 +358,7 @@ Result PickUpController::DoWork()
     {
       result.pd.cmdVel = -0.15;
       result.pd.cmdAngularError= 0.0;
-      result.wristAngle = 0;
+      result.wristAngle = -0.5;
     }
     else if (Td > grasp_time_begin) //close the fingers and stop driving
     {
@@ -374,9 +415,6 @@ void PickUpController::Reset() {
   blockYawError = 0;
   blockDistance = 0;
 
-
-
-
   targetFound = false;
   interupted = false;
   targetHeld = false;
@@ -399,29 +437,4 @@ void PickUpController::SetCurrentTimeInMilliSecs( long int time )
   current_time = time;
 }
 
-Result PickUpController::CenterTag()
-{
-  //cout << "CENTERING TAG\n";
-  //cout << "Block yaw error: " << blockYawError << endl;;
-
-  if (blockYawError < -0.08 || blockYawError > 0.08) {
-    result.pd.cmdVel = 0;
-    result.pd.cmdAngularError = -blockYawError *0.2;//Virtual //1.6; Physical
-
-  }
-
-  else {
-
-    // this is a 3-line P controller, where Kp = 0.15
-    float vel = blockDistance * 0.15;
-    if (vel < 0.1) vel = 0.1;
-    if (vel > 0.2) vel = 0.2;
-
-    result.pd.cmdVel = vel;
-    result.pd.cmdAngularError = 0;
-  }
-
-  timeOut = false;
-  return result;
-}
 
