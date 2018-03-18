@@ -33,7 +33,7 @@ public:
 
   void SetCurrentTimeInMilliSecs( long int time );
 
-  bool getDroppedOff();
+  bool getDroppedOff() {return dropComplete; }
 
 private:
 
@@ -77,6 +77,9 @@ private:
   //Count of tags on the left and right, respectively
   int countLeft;
   int countRight;
+
+  int timeCountToDrop;
+  bool toDropTimeOut;
 
   //Center and current locations as of the last call to setLocationData
   Point centerLocation;
