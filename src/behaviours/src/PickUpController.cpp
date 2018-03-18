@@ -178,7 +178,7 @@ void PickUpController::ProcessData()
   {
     //set gripper;
     result.fingerAngle = M_PI_2;
-    result.wristAngle = 1.5;
+    result.wristAngle = 1.25; //1.5 real -- 1.25 sim
     cout << "WRIST ANGLE: " << result.wristAngle << endl;
   }
 }
@@ -220,7 +220,7 @@ Result PickUpController::CenterTag()
 
   if (blockYawError < -0.08 || blockYawError > 0.08) {
     result.pd.cmdVel = 0;
-    result.pd.cmdAngularError = -blockYawError * 1.4;
+    result.pd.cmdAngularError = -blockYawError * 0.2; //0.2 sim -- 1.4 real
 
   }
 
@@ -356,9 +356,9 @@ Result PickUpController::DoWork()
     }
     else if (Td > raise_time_begin) //raise the wrist
     {
-      result.pd.cmdVel = -0.15;
+      result.pd.cmdVel = -0.1; //changed from -0.15 to -0.1
       result.pd.cmdAngularError= 0.0;
-      result.wristAngle = -0.5;
+      result.wristAngle = -0.5; 
     }
     else if (Td > grasp_time_begin) //close the fingers and stop driving
     {
