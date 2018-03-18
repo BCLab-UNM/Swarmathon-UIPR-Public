@@ -41,26 +41,6 @@ int ObstacleController::getDirection()
 // Avoid crashing into objects detected by the ultraounds
 void ObstacleController::avoidObstacle()
 {
-  //Add read distances to vector so min distance is stored
-  distRead.push_back(left);
-  distRead.push_back(center);
-  distRead.push_back(right);
-  sort(distRead.begin(), distRead.end()); //sort in ascending order
-
-  //calculate errord for PID controller (controll Angular vel only)
-  distMin = distRead[0];
-  diffE = (distMin - triggerDistance) - e; //e_d
-  e = distMin - triggerDistance;           //e
-  integE += e;                             //integral error
-
-  PID = getDirection() * (1.8 * e + 0.05 * diffE + 0.0001 * integE);
-  cout << "PID = " << PID << endl;
-  
-  if (PID > K_angular || PID < -K_angular){
-    PID = K_angular;
-    cout << "PID Fix!" << endl;
-  } 
-
   result.type = precisionDriving;
 
   if (right < 0.2 || center < 0.2 || left < 0.2)
@@ -70,18 +50,46 @@ void ObstacleController::avoidObstacle()
     cout << "Im in reverse!" << endl;                 //DEBUG
     cout << "Direction = " << getDirection() << endl; //DEBUG
   }
+
   else
   {
+    //Add read distances to vector so min distance is stored
+    distRead.push_back(left);
+    distRead.push_back(center);
+    distRead.push_back(right);
+    sort(distRead.begin(), distRead.end()); //sort in ascending order
+
+    //calculate errord for PID controller (controll Angular vel only)
+    distMin = distRead[0];
+    diffE = (distMin - triggerDistance) - e; //e_d
+    e = distMin - triggerDistance;           //e
+    integE += e;                             //integral error
+
+    PID = getDirection() * (1.8 * e + 0.05 * diffE + 0.0001 * integE);
+    cout << "PID = " << PID << endl;
+
+    if (PID > K_angular)
+    {
+      PID = K_angular;
+      cout << "PID Fix Possitive!" << endl; //DEBUG
+    }
+    else if (PID < -K_angular)
+    {
+      PID = -K_angular;
+      cout << "PID Fix Negative!" << endl; //DEBUG
+    }
+    // else
+    // {
     result.pd.cmdAngular = PID;
     result.pd.cmdVel = 0.3;
-    cout << "Im in NOT reverse!" << endl;
-    cout << "Direction = " << getDirection() << endl;
-    cout << "Angular Vel = " << result.pd.cmdAngular << endl;
+    cout << "Im in NOT reverse!" << endl;                     //DEBUG
+    cout << "Direction = " << getDirection() << endl;         //DEBUG
+    cout << "Angular Vel = " << result.pd.cmdAngular << endl; //DEBUG
+    // }
+    result.pd.setPointVel = 0.0;
+    result.pd.setPointYaw = 0;
+    distRead.clear();
   }
-
-  result.pd.setPointVel = 0.0;
-  result.pd.setPointYaw = 0;
-  distRead.clear();
 }
 
 // A collection zone was seen in front of the rover and we are not carrying a target
@@ -155,7 +163,7 @@ Result ObstacleController::DoWork()
     cout << "TurnCounter = " << turnCounter << endl; //DEBUG
     //if the rover spends to much time trying to avoid, select new point
     if ((turnCounter == 3 && distRobotandPoint <= 1.5) || turnCounter >= 5)
-    { 
+    {
       pointInsideObstacle = true;
       turnCounter = 0;
     }
