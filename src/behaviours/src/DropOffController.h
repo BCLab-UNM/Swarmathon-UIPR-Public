@@ -81,6 +81,12 @@ private:
   int timeCountToDrop;
   bool toDropTimeOut;
 
+  int leftAndRightDetectedTimer;
+
+  bool leftAndRightDetected;
+
+
+
   //Center and current locations as of the last call to setLocationData
   Point centerLocation;
   Point currentLocation;
@@ -128,8 +134,6 @@ private:
   bool finalInterrupt = false;
   bool first_center = true;
   bool notHasTag = false; // Jomar
-
-
 
 
 };
