@@ -93,7 +93,7 @@ protected:
   
 private:
 
-  Point currentLocation, centerLocation, searchLocation;
+  Point currentLocation, centerLocation, searchLocation, previousLoc;
   Result result;
   random_numbers::RandomNumberGenerator* rng;
 
@@ -109,6 +109,8 @@ private:
   bool fidImprovement = false;
   bool TagDetectedCatched = true;
   bool pointInsideObstacle  = false;
+  bool firstClusterCommand = true;
+  bool clustred = false;
   
   float ghostWall;
   float magnitude;
