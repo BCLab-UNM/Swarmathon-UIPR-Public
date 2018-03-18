@@ -78,14 +78,13 @@ void ObstacleController::avoidObstacle()
       PID = -K_angular;
       cout << "PID Fix Negative!" << endl; //DEBUG
     }
-    // else
-    // {
+
     result.pd.cmdAngular = PID;
     result.pd.cmdVel = 0.3;
     cout << "Im in NOT reverse!" << endl;                     //DEBUG
     cout << "Direction = " << getDirection() << endl;         //DEBUG
     cout << "Angular Vel = " << result.pd.cmdAngular << endl; //DEBUG
-    // }
+
     result.pd.setPointVel = 0.0;
     result.pd.setPointYaw = 0;
     distRead.clear();
@@ -154,23 +153,25 @@ Result ObstacleController::DoWork()
     cout << "Distance between Rover and seachLocation = " << distRobotandPoint << endl;
 
     //If droped off reset counter and bool
-    if (dropComplete)
+    if (seeTarget || dropComplete)
     {
       turnCounter = 0;
-      pointInsideObstacle = false;
+      this->pointInsideObstacle = false;
+      this->dropComplete = false;
+      this->seeTarget = false;
     }
 
     cout << "TurnCounter = " << turnCounter << endl; //DEBUG
     //if the rover spends to much time trying to avoid, select new point
     if ((turnCounter == 3 && distRobotandPoint <= 1.5) || turnCounter >= 5)
     {
-      pointInsideObstacle = true;
+      this->pointInsideObstacle = true;
       turnCounter = 0;
     }
     else //else keep counting
     {
       turnCounter++;
-      pointInsideObstacle = false;
+      this->pointInsideObstacle = false;
     }
   }
   return result;

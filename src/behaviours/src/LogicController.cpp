@@ -44,9 +44,6 @@ Result LogicController::DoWork()
 {
   Result result;
 
-  
-
-
   //first a loop runs through all the controllers who have a priority of 0 or above witht he largest number being
   //most important. A priority of less than 0 is an ignored controller use -1 for standards sake.
   //if any controller needs and interrupt the logic state is changed to interrupt
@@ -121,7 +118,7 @@ Result LogicController::DoWork()
         if (processState == _LAST - 1)
         {
           processState = _FIRST;
-          searchController.setTagDetectedCatched(true); // Jomar
+          searchController.setTagDetectedCatched(true);  // Jomar
           pickUpController.setDontRepeatSeeTarget(true); // Jomar
         }
         else
@@ -129,7 +126,6 @@ Result LogicController::DoWork()
           processState = (ProcessState)((int)processState + 1);
         }
       }
-
 
       //ask for the procces state to change to the previouse state or loop around to the end
       else if (result.b == prevProcess)
@@ -305,9 +301,9 @@ void LogicController::controllerInterconnect()
 {
   searchController.setNeedNewPoint(obstacleController.needNewPoint()); //Hector added
   obstacleController.setDroppedOff(dropOffController.getDroppedOff()); //Hector added
-  
+  obstacleController.setTagDetected(pickUpController.TagDetected());   //Hector added
   // EDIT
-  if(searchController.getVisitedFlag())
+  if (searchController.getVisitedFlag())
   {
     publishVisitedPointFlag = searchController.getVisitedFlag();
     latestVisitedPoint = searchController.getVisitedPoint();
@@ -324,63 +320,65 @@ void LogicController::controllerInterconnect()
 
   if (processState == PROCCESS_STATE_SEARCHING)
   {
-/*
+    /*
     if(obstacleController.getObstacleInfo() == true)
     {
       searchController.setObstacleDetected(true);
     }
 */
     //obstacle needs to know if the center ultrasound should be ignored
-    if(pickUpController.GetIgnoreCenter())
+    if (pickUpController.GetIgnoreCenter())
     {
       obstacleController.setIgnoreCenterSonar();
     }
 
     //pickup controller annouces it has pickedup a target
-    if(pickUpController.GetTargetHeld())
+    if (pickUpController.GetTargetHeld())
     {
       dropOffController.SetTargetPickedUp();
       obstacleController.setTargetHeld();
       searchController.SetSuccesfullPickup();
     }
 
-
     // --------------------------------------------------------------- // Jomar -------------------------------------------------------------------------
-    if(pickUpController.TagDetected()){
+    if (pickUpController.TagDetected())
+    {
       searchController.aTagDetected();
     }
 
-
-    if (pickUpController.getCantSeeTargetDontRepeat()) {
+    if (pickUpController.getCantSeeTargetDontRepeat())
+    {
       searchController.setCantSeeTargetDontRepeat(true);
     }
 
-    else{
+    else
+    {
       searchController.setCantSeeTargetDontRepeat(false);
     }
 
-    if (searchController.getCantSeeTargetDontRepeat()) {
+    if (searchController.getCantSeeTargetDontRepeat())
+    {
       pickUpController.setCantSeeTargetDontRepeat(true);
     }
 
-    else{
+    else
+    {
       pickUpController.setCantSeeTargetDontRepeat(false);
     }
 
     // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
-
   }
 
-
-// --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
   if (processState == PROCCESS_STATE_DROP_OFF)
   {
-    if (dropOffController.NotHasTag()) {
+    if (dropOffController.NotHasTag())
+    {
       searchController.droppedOFF();
     }
   }
 
-// --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
+  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
   //ask if drop off has released the target from the claws yet
   if (!dropOffController.HasTarget())
   {
@@ -388,14 +386,11 @@ void LogicController::controllerInterconnect()
     obstacleController.setTargetHeldClear();
   }
 
-
-
   //obstacle controller is running driveController needs to clear its waypoints
-  if(obstacleController.getShouldClearWaypoints())
+  if (obstacleController.getShouldClearWaypoints())
   {
     driveController.Reset();
   }
-
 }
 
 // Recieves position in the world inertial frame (should rename to SetOdomPositionData)
@@ -432,7 +427,7 @@ void LogicController::SetAprilTags(vector<Tag> tags)
 
 void LogicController::SetSonarData(float left, float center, float right)
 {
-  
+
   //////////////////////////Angel FILTRO//////////////////////////////////////
 
   // this->lefta = filterSonars(SumLeftSensor, left, lefta);
@@ -444,12 +439,12 @@ void LogicController::SetSonarData(float left, float center, float right)
 
   /////////////////////////////////////////////////////////////////////
 
-  obstacleController.setSonarData(left,center,right); //change from (lefts,center,right) to (lefta,centera,righta)
+  obstacleController.setSonarData(left, center, right); //change from (lefts,center,right) to (lefta,centera,righta)
 }
 
 // Called once by RosAdapter in guarded init
 void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
-{  
+{
 
   centerAvg.x += centerLocationOdom.x;
   centerAvg.y += centerLocationOdom.y;
@@ -457,13 +452,13 @@ void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
   centerCounter++;
   if (centerCounter == 30)
   {
-    centerAvg.x = centerAvg.x/30;
-    centerAvg.y = centerAvg.y/30;
-    
+    centerAvg.x = centerAvg.x / 30;
+    centerAvg.y = centerAvg.y / 30;
+
     cout << "CLO: (" << centerAvg.x << "," << centerAvg.y << ")" << endl;
     searchController.SetCenterLocation(centerAvg);
     dropOffController.SetCenterLocation(centerAvg);
-    
+
     centerAvg.x = 0;
     centerAvg.y = 0;
     centerCounter = 0;
@@ -500,8 +495,7 @@ void LogicController::SetCenterLocationMap(Point centerLocationMap)
 {
 }
 
-
-void LogicController::SetCurrentTimeInMilliSecs( long int time )
+void LogicController::SetCurrentTimeInMilliSecs(long int time)
 {
   current_time = time;
   dropOffController.SetCurrentTimeInMilliSecs(time);

@@ -28,6 +28,7 @@ public:
   // ========================================== Hector =========================================================== //
   void setSearchLocation(Point searchLocation) { this->searchLocation = searchLocation; } //sets current searched location
   void setDroppedOff(bool dropComplete) { this->dropComplete = dropComplete; }            //true if traget was droppedoff and obstacles were avoided
+  void setTagDetected(bool seeTarget) {this->seeTarget = seeTarget; }                     //true if target is found
   bool needNewPoint() { return pointInsideObstacle; }                                     //true if too many (6 or 8) tries to avoid obstacle
   // ========================================== Hector =========================================================== //
 
@@ -63,6 +64,7 @@ private:
   float distRobotandPoint;  //Distance between robot and derired point
   float PID;                //holds pid values for OA
   bool pointInsideObstacle; //true if a searched point is inside obstacle or collection zone
+  bool seeTarget;           //true if target is found
   bool dropComplete;        //true if dropoff is complete to reset turnCounter
   Point searchLocation;     //holds las searched location
   // ========================================== Hector =========================================================== //
