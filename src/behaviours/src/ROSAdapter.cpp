@@ -928,7 +928,7 @@ Point updateCenterLocation()
   Point tmp;
   tmp.x = centerLocationOdom.x - baseLocation.x;
   tmp.y = centerLocationOdom.y - baseLocation.y;
-
+  
   return tmp;
 }
 

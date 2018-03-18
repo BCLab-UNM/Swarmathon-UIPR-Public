@@ -19,7 +19,6 @@ DropOffController::DropOffController() {
 
   timeCountToDrop = -1;
   toDropTimeOut = false;
-  leftAndRightDetectedTimer = -1;
   leftAndRightDetected = false;
 
   countLeft = 0;
@@ -40,6 +39,8 @@ bool DropOffController::getDroppedOff(){
   return dropComplete;
 }
 Result DropOffController::DoWork() {
+
+  cout << "centerLocation = " << centerLocation.x << ", " << centerLocation.y << endl;
 
   //cout << "8" << endl;
 
@@ -194,7 +195,6 @@ Result DropOffController::DoWork() {
       result.pd.cmdVel = 1;
       toDropTimeOut = true;
       leftAndRightDetected = true;
-      leftAndRightDetectedTimer++;
 
       cout << "left && right detected" << endl;
 
@@ -205,7 +205,7 @@ Result DropOffController::DoWork() {
       }
 
       else if ((countRight - 5) > countLeft){
-        result.pd.cmdAngularError = 0.25; //0.3
+        result.pd.cmdAngularError = 0.25; 
       }
 
       else{
@@ -223,34 +223,28 @@ Result DropOffController::DoWork() {
       
     }
     else if (right) {
-      // result.pd.cmdVel = 0.7;      
-      // result.pd.setPointYaw = atan2 (centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
-      // result.pd.cmdAngular = -1;
 
       if (leftAndRightDetected && timeCountToDrop > 7){
         result.pd.cmdVel = -0.1 * turnDirection;
-        result.pd.cmdAngularError = 0.8;//-centeringTurnRate*turnDirection;
+        result.pd.cmdAngularError = 0.8;
       }
 
       else{
         result.pd.cmdVel = -0.1 * turnDirection;
-        result.pd.cmdAngularError = -0.8;//-centeringTurnRate*turnDirection;
+        result.pd.cmdAngularError = -0.8;
       }
 
       cout << "right detected" << endl;      
     }
     else if (left){
-      // result.pd.cmdVel = 0.7;      
-      // result.pd.setPointYaw = atan2 (centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
-      // result.pd.cmdAngular = 1;
       if (leftAndRightDetected && timeCountToDrop > 7){
         result.pd.cmdVel = -0.1 * turnDirection;
-        result.pd.cmdAngularError = -0.8;//-centeringTurnRate*turnDirection;
+        result.pd.cmdAngularError = -0.8;
       }
 
       else{
         result.pd.cmdVel = -0.1 * turnDirection;
-        result.pd.cmdAngularError = 0.8;//-centeringTurnRate*turnDirection;
+        result.pd.cmdAngularError = 0.8;
       }  
     }
     else

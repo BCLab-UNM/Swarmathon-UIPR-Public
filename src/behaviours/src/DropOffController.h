@@ -81,8 +81,6 @@ private:
   int timeCountToDrop;
   bool toDropTimeOut;
 
-  int leftAndRightDetectedTimer;
-
   bool leftAndRightDetected;
 
 
