@@ -19,6 +19,8 @@ DropOffController::DropOffController() {
 
   timeCountToDrop = -1;
   toDropTimeOut = false;
+  leftAndRightDetectedTimer = -1;
+  leftAndRightDetected = false;
 
   countLeft = 0;
   countRight = 0;
@@ -84,6 +86,7 @@ Result DropOffController::DoWork() {
       result.pd.cmdAngularError = 0.0;
       toDropTimeOut = false;
       timeCountToDrop = 0;
+      leftAndRightDetected = false;
     }
 
     return result;
@@ -167,11 +170,6 @@ Result DropOffController::DoWork() {
 
     if (seenEnoughCenterTags) //if we have seen enough tags
     {
-      cout << "countLeft - 5 = " << countLeft - 5 << endl;
-      cout << "countRight - 5 = " << countRight - 5 << endl;
-
-      cout << "countLeft = " << countLeft << endl;
-      cout << "countRight = " << countRight << endl;
 
       
       if ((countLeft-5) > countRight) //and there are too many on the left
@@ -195,8 +193,12 @@ Result DropOffController::DoWork() {
     if (left && right) {
       result.pd.cmdVel = 1;
       toDropTimeOut = true;
+      leftAndRightDetected = true;
+      leftAndRightDetectedTimer++;
 
       cout << "left && right detected" << endl;
+
+      
 
       if ((countLeft - 5) > countRight){
         result.pd.cmdAngularError = -0.3;
@@ -210,7 +212,8 @@ Result DropOffController::DoWork() {
         result.pd.cmdAngularError = 0.0;
       }
 
-      if (timeCountToDrop > 8)
+
+      if (timeCountToDrop > 14)
       {
         reachedCollectionPoint = true;
         centerApproach = false;
@@ -223,8 +226,16 @@ Result DropOffController::DoWork() {
       // result.pd.cmdVel = 0.7;      
       // result.pd.setPointYaw = atan2 (centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
       // result.pd.cmdAngular = -1;
-      result.pd.cmdVel = -0.1 * turnDirection;
-      result.pd.cmdAngularError = -0.8;//-centeringTurnRate*turnDirection;
+
+      if (leftAndRightDetected && timeCountToDrop > 7){
+        result.pd.cmdVel = -0.1 * turnDirection;
+        result.pd.cmdAngularError = 0.8;//-centeringTurnRate*turnDirection;
+      }
+
+      else{
+        result.pd.cmdVel = -0.1 * turnDirection;
+        result.pd.cmdAngularError = -0.8;//-centeringTurnRate*turnDirection;
+      }
 
       cout << "right detected" << endl;      
     }
@@ -232,8 +243,15 @@ Result DropOffController::DoWork() {
       // result.pd.cmdVel = 0.7;      
       // result.pd.setPointYaw = atan2 (centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
       // result.pd.cmdAngular = 1;
-      result.pd.cmdVel = -0.1 * turnDirection;
-      result.pd.cmdAngularError = 0.8; //centeringTurnRate*turnDirection;     
+      if (leftAndRightDetected && timeCountToDrop > 7){
+        result.pd.cmdVel = -0.1 * turnDirection;
+        result.pd.cmdAngularError = -0.8;//-centeringTurnRate*turnDirection;
+      }
+
+      else{
+        result.pd.cmdVel = -0.1 * turnDirection;
+        result.pd.cmdAngularError = 0.8;//-centeringTurnRate*turnDirection;
+      }  
     }
     else
     {
