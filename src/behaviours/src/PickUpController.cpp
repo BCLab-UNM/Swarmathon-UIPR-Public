@@ -349,7 +349,7 @@ Result PickUpController::DoWork()
     else if (!lockTarget) //if a target hasn't been locked lock it and enter a counting state while slowly driving forward.
     {
       lockTarget = true;
-      result.pd.cmdVel = 0.18;
+      result.pd.cmdVel = 0.1; //changed from 0.18 to 0.10
       result.pd.cmdAngularError= 0.0;
       timeOut = true;
       ignoreCenterSonar = true;
