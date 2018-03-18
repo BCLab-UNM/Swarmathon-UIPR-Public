@@ -53,11 +53,11 @@ void ObstacleController::avoidObstacle()
   e = distMin - triggerDistance;           //e
   integE += e;                             //integral error
 
-  PID = getDirection() * (2.1 * e + 0.05 * diffE + 0.0001 * integE);
+  PID = getDirection() * (1.8 * e + 0.05 * diffE + 0.0001 * integE);
   cout << "PID = " << PID << endl;
   
-  if (PID >= 6 || PID <= -6){
-    PID = 6;
+  if (PID > K_angular || PID < -K_angular){
+    PID = K_angular;
     cout << "PID Fix!" << endl;
   } 
 
@@ -72,7 +72,7 @@ void ObstacleController::avoidObstacle()
   }
   else
   {
-    result.pd.cmdAngular = PID/6;
+    result.pd.cmdAngular = PID;
     result.pd.cmdVel = 0.3;
     cout << "Im in NOT reverse!" << endl;
     cout << "Direction = " << getDirection() << endl;
