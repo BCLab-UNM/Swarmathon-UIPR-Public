@@ -220,7 +220,7 @@ Result PickUpController::CenterTag()
 
   if (blockYawError < -0.08 || blockYawError > 0.08) {
     result.pd.cmdVel = 0;
-    result.pd.cmdAngularError = -blockYawError * 1.4; //0.2 sim -- 1.4 real -- Hector
+    result.pd.cmdAngularError = -blockYawError * 0.7; //0.2 sim -- 1.4 real -- Hector
 
   }
 
@@ -232,7 +232,7 @@ Result PickUpController::CenterTag()
     if (vel > 0.2) vel = 0.2;
 
     result.pd.cmdVel = vel;
-    result.pd.cmdAngularError = 0;
+    result.pd.cmdAngularError = -blockYawError;
   }
 
   timeOut = false;
@@ -358,7 +358,7 @@ Result PickUpController::DoWork()
     {
       result.pd.cmdVel = -0.1; //changed from -0.15 to -0.1
       result.pd.cmdAngularError= 0.0;
-      result.wristAngle = -0.5; 
+      result.wristAngle = -0.5; // change from -0.5 to  
     }
     else if (Td > grasp_time_begin) //close the fingers and stop driving
     {

@@ -7,7 +7,7 @@ DropOffController::DropOffController()
 
   result.type = behavior;
   result.b = wait;
-  result.wristAngle = 0.7;
+  result.wristAngle = 1;
   result.reset = false;
   interrupt = false;
 
