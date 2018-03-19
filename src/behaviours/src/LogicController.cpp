@@ -435,7 +435,7 @@ void LogicController::SetSonarData(float left, float center, float right)
   // this->centera = filterSonars(SumCenterSensor, center, centera);
 
   // obstacleController.setSonarData(this->lefta, this->centera, this->righta); //change from (lefts,center,right) to (lefta,centera,righta)
-  // pickUpController.SetSonarData(centera);
+  pickUpController.SetSonarData(center);
 
   /////////////////////////////////////////////////////////////////////
 

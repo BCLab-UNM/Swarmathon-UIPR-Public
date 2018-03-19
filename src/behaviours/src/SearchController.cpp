@@ -134,9 +134,9 @@ Result SearchController::DoWork()
 
   cout << "Total IDs " << totalIds << endl;
 
-  if (getMapSize() == 15) //Preliminars?
+  if (getMapSize() == 10) //Preliminars?
   {
-    setTriangleSquareArea(10); // 10x10mts area for triangle square.(5mts each side)
+    setTriangleSquareArea(4); // 10x10mts area for triangle square.(5mts each side) -- Hector Changed
     this->finals = false;
   }
   else
@@ -673,7 +673,7 @@ int SearchController::getMapSize()
   if (totalIds <= 3)
   {
     cout << "Map Size: 15x15mts" << endl;
-    this->mapSize = 15 / 2; //15mts by 15mts map size. -- Hector changed for physical test!!!
+    this->mapSize = 10; //15mts by 15mts map size. -- Hector changed for physical test!!!
   }
   else
   {
