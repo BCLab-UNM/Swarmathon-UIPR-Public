@@ -131,14 +131,15 @@ bool SearchController::checkAvailableDistance(int sideSel)
 }
 Result SearchController::DoWork()
 {
-  if (needReverse){
-    result.type = precisionDriving;
-    result.pd.cmdVel = -0.3;
-    needReverse = false;
-  }
+  cout << "Searching for new Location!!" << endl;
+  // if (needReverse){
+  //   result.type = precisionDriving;
+  //   result.pd.cmdVel = -0.3;
+  //   needReverse = false;
+  // }
   
   //cout << "Total IDs " << totalIds << endl;
-  else {
+ // else {
 
   if (getMapSize() == 10) //Preliminars?
   {
@@ -162,7 +163,7 @@ Result SearchController::DoWork()
 
   result.wpts.waypoints.clear();
   result.wpts.waypoints.insert(result.wpts.waypoints.begin(), this->searchLocation);
-  }
+  //}
   return result;
 }
 

@@ -242,7 +242,7 @@ Result PickUpController::CenterTag()
 
 Result PickUpController::DoWork()
 {
-
+  cout << "Trying to pick up a resource!" << endl;
   has_control = true;
 
   if (!targetHeld)

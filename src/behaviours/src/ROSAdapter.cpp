@@ -504,7 +504,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
   }
 
   
-  if (localIDFlag) 
+  if (false)//(localIDFlag) 
   { 
    
       //Set starting points on vector
@@ -1134,8 +1134,8 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
   angularVelocity = message->twist.twist.angular.z;
 
   Point curr_loc;
-  curr_loc.x = currentLocationMap.x - baseLocation.x;
-  curr_loc.y = currentLocationMap.y - baseLocation.y;
+  curr_loc.x = currentLocationMap.x - centerLocationOdom.x; //baseLocation.x;
+  curr_loc.y = currentLocationMap.y - centerLocationOdom.y; //baseLocation.y;
   curr_loc.theta = currentLocationMap.theta;
   logicController.SetMapPositionData(curr_loc);
   logicController.SetMapVelocityData(linearVelocity, angularVelocity);
@@ -1217,10 +1217,10 @@ Point updateCenterLocation()
   transformMapCentertoOdom();
 
   Point tmp;
-  tmp.x = 0;
-  tmp.y = 0;
-  //tmp.x = centerLocationOdom.x - baseLocation.x;
-  //tmp.y = centerLocationOdom.y - baseLocation.y;
+  //tmp.x = 0;
+  //tmp.y = 0;
+  tmp.x = centerLocationOdom.x; // - baseLocation.x;
+  tmp.y = centerLocationOdom.y; //- baseLocation.y;
 
   return tmp;
 }

@@ -28,6 +28,7 @@ DropOffController::DropOffController()
   startWaypoint = false;
   droppOff = false;
   timerTimeElapsed = -1;
+  firstRun = true;
 }
 
 DropOffController::~DropOffController()
@@ -36,12 +37,18 @@ DropOffController::~DropOffController()
 
 Result DropOffController::DoWork()
 {
-
+cout << "Dropping Resource" << endl;
   cout << "centerLocation = " << centerLocation.x << ", " << centerLocation.y << endl;
 
   //cout << "8" << endl;
 
   //cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
+
+  if (firstRun)
+  {
+    firstRun = false;
+    collectionLocation = currentLocation;
+  }
 
   int count = countLeft + countRight;
   droppOff = true;
@@ -98,6 +105,11 @@ Result DropOffController::DoWork()
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0))
   {
+
+    if(distanceToCenter < 2)
+    {
+      result.PIDMode = CONST_PID;
+    }
 
     result.type = waypoint;
     result.wpts.waypoints.clear();
@@ -191,6 +203,7 @@ Result DropOffController::DoWork()
     //otherwise turn till tags on both sides of image then drive straight
     if (left && right) {
       result.pd.cmdVel = 1;
+
       toDropTimeOut = true;
       leftAndRightDetected = true;
 
@@ -210,7 +223,7 @@ Result DropOffController::DoWork()
       }
 
 
-      if (timeCountToDrop > 14)
+      if (timeCountToDrop > 9)
       {
         reachedCollectionPoint = true;
         centerApproach = false;
@@ -223,12 +236,12 @@ Result DropOffController::DoWork()
 
       if (leftAndRightDetected && timeCountToDrop > 7){
         result.pd.cmdVel = -0.1 * turnDirection;
-        result.pd.cmdAngularError = 0.8;
+        result.pd.cmdAngularError = 0.3;
       }
 
       else{
         result.pd.cmdVel = -0.1 * turnDirection;
-        result.pd.cmdAngularError = -0.8;
+        result.pd.cmdAngularError = -0.3;
       }
 
       cout << "right detected" << endl;      
@@ -236,12 +249,12 @@ Result DropOffController::DoWork()
     else if (left){
       if (leftAndRightDetected && timeCountToDrop > 7){
         result.pd.cmdVel = -0.1 * turnDirection;
-        result.pd.cmdAngularError = -0.8;
+        result.pd.cmdAngularError = -0.3;
       }
 
       else{
         result.pd.cmdVel = -0.1 * turnDirection;
-        result.pd.cmdAngularError = 0.8;
+        result.pd.cmdAngularError = 0.3;
       }  
     }
     else
@@ -341,6 +354,8 @@ void DropOffController::Reset()
   result.wristAngle = 0.7;
   result.reset = false;
   result.wpts.waypoints.clear();
+  result.PIDMode = FAST_PID;
+
   spinner = 0;
   spinSizeIncrease = 0;
   prevCount = 0;

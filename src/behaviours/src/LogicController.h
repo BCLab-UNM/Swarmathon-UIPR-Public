@@ -95,7 +95,7 @@ public:
 
   //IDs
   int myIdPub = 0;  //Public
-  int myIdLoc = 0;  //Local
+  int myIdLoc = 3;  //Local --Hector
   int totalIds = 0; //Total
   
   bool publishVisitedPointFlag = true;

@@ -118,6 +118,7 @@ void ObstacleController::avoidCollectionZone()
 
 Result ObstacleController::DoWork()
 {
+  cout << "Avoiding Obstacle!" << endl;
 
   clearWaypoints = true;
   set_waypoint = true;
