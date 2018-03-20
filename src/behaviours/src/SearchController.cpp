@@ -124,7 +124,8 @@ bool SearchController::checkAvailableDistance(int sideSel)
 
   default:
   {
-    cout << "NO here" << endl;
+    cout << "Trying to verify available distance. Emergency side change!" << endl;
+    return false;
     break;
   }
   }
@@ -132,25 +133,18 @@ bool SearchController::checkAvailableDistance(int sideSel)
 Result SearchController::DoWork()
 {
   cout << "Searching for new Location!!" << endl;
-  // if (needReverse){
-  //   result.type = precisionDriving;
-  //   result.pd.cmdVel = -0.3;
-  //   needReverse = false;
-  // }
-  
-  //cout << "Total IDs " << totalIds << endl;
- // else {
 
-  if (getMapSize() == 10) //Preliminars?
+  if (getMapSize() == 15) //Preliminars?
   {
-    setTriangleSquareArea(4); // 10x10mts area for triangle square.(5mts each side) -- Hector Changed
+    setTriangleSquareArea(10); // 10x10mts area for triangle square.(5mts each side) -- Hector Changed
     this->finals = false;
   }
   else
   {                            // Semi/Finals?
-    setTriangleSquareArea(11); // 10x10mts area for triangle square.(5mts each side)
+    setTriangleSquareArea(16); // 10x10mts area for triangle square.(5mts each side)
     this->finals = true;
   }
+
   if (fidImprovement)
   {
     cout << "Using Fidelity" << endl;
@@ -163,7 +157,6 @@ Result SearchController::DoWork()
 
   result.wpts.waypoints.clear();
   result.wpts.waypoints.insert(result.wpts.waypoints.begin(), this->searchLocation);
-  //}
   return result;
 }
 
@@ -259,10 +252,17 @@ void SearchController::giveTask2Robot()
       if (checkAvailableDistance(sideSel) == false)
       {
         first_side_waypoint = true;
-        this->sideOffset = getSideOffset();
+        if(this->finals)
+        {
+          this->sideOffset = getSideOffset();
+        }
         if (sideSel == 4)
         {
           sideSel = 1;
+          if(this->finals == false)
+          {
+            this->sideOffset = getSideOffset();
+          }
         }
         else
         {
@@ -350,7 +350,8 @@ void SearchController::giveTask2Robot()
 
   default:
   {
-    //Randomizer
+    cout << "Did not received an ID. Random walking" << endl;
+    randomWalk();
     break;
   }
 
@@ -361,17 +362,23 @@ void SearchController::randomWalk()
   result.type = waypoint;
   switch (this->myId)
   {
-  case 1:
-  {
-    this->searchLocation = generateRandomTriangleLoc(0.2, 3, mapSize / 2 - 2.5);
-    break;
-  }
+    case 1:
+    {
+      this->searchLocation = generateRandomTriangleLoc(0.2, 3, mapSize / 2 - 2.5);
+      break;
+    }
 
-  case 2:
-  {
-    this->searchLocation = generateRandomTriangleLoc(3.3, 6.1, mapSize / 2 - 2.5);
-    break;
-  }
+    case 2:
+    {
+      this->searchLocation = generateRandomTriangleLoc(3.3, 6.1, mapSize / 2 - 2.5);
+      break;
+    }
+
+    default:
+    {
+      this->searchLocation = generateRandomTriangleLoc(.2,6.1, mapSize/2 - 2.5);
+      break;
+    }
   }
 }
 float SearchController::getSideOffset()
@@ -382,7 +389,7 @@ float SearchController::getSideOffset()
   }
   else
   {
-    return .5;
+    return .4;
   }
 }
 
@@ -435,7 +442,7 @@ Point SearchController::generateRandomTriangleLoc(float firstBound, float second
   unknownedAngle = 180 - (newAngle - angleTraslation(newAngle) + 90);
 
   unknownedAngle = degToRad(unknownedAngle);
-  magnituded = rng->uniformReal(1, (sin(M_PI / 2) * maxBoundary) / sin(unknownedAngle));
+  magnituded = rng->uniformReal(1.5, (sin(M_PI / 2) * maxBoundary) / sin(unknownedAngle));
 
   displayVector(magnituded, newAngle);
   newAngle = degToRad(newAngle);
@@ -665,7 +672,8 @@ void SearchController::triangleSearch(int myId, int triangularSection, float tri
   }
   default:
   {
-    cout << "Error in Triangular Section!!" << endl;
+    cout << "Did not received triangulsr section. Random Walking" << endl;
+    randomWalk();
     break;
   }
   }
@@ -681,7 +689,7 @@ int SearchController::getMapSize()
   if (totalIds <= 3)
   {
     cout << "Map Size: 15x15mts" << endl;
-    this->mapSize = 10; //15mts by 15mts map size. -- Hector changed for physical test!!!
+    this->mapSize = 15; //15mts by 15mts map size. -- Hector changed for physical test!!!
   }
   else
   {
@@ -728,7 +736,8 @@ void SearchController::sideSearch(int myId, int sideSection, float triangleSquar
     if (first_side_waypoint)
     {
       cout << "Looking for first location" << endl;
-      first_side_waypoint = false;
+    this->sideOffset = getSideOffset();  
+    first_side_waypoint = false;
       this->searchLocation = setSearchLocation(mapSize / 2 - this->ghostWall - offset, mapSize / 2 - this->ghostWall);
       goLeft = true;
       break;
@@ -876,6 +885,7 @@ void SearchController::sideSearch(int myId, int sideSection, float triangleSquar
   }
   default:
   {
+
   }
   }
 }
@@ -969,8 +979,16 @@ void SearchController::FidelityImprovement()
     {
       setDeleteVector(true); // if not, enter again to the statement.
     }
-    result.wpts.waypoints.clear();
-    result.wpts.waypoints.insert(result.wpts.waypoints.begin(), SavedPointsVector[SavedPointsVector.size() - 1]);
+
+    if (hypot(searchLocation.y - currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
+      {
+        //first_side_waypoint = true;
+        this->searchLocation = searchLocation;
+
+      }
+    //result.wpts.waypoints.clear();
+    //result.wpts.waypoints.insert(result.wpts.waypoints.begin(), SavedPointsVector[SavedPointsVector.size() - 1]);
+    this->searchLocation = SavedPointsVector[SavedPointsVector.size() -1];
     std::cout << "Dropped: Getting Back to: " << SavedPointsVector[SavedPointsVector.size() - 1].x << ", " << SavedPointsVector[SavedPointsVector.size() - 1].y << "\n\n";
   }
 

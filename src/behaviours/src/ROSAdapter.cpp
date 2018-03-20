@@ -257,6 +257,9 @@ Point pointBuilder(float, float);
 int tempTotal;
 int counterForRobots;
 bool localIDFlag = true;
+int recenterCounter = 0;
+bool firstOffSet = true;
+
 //**
 
 //
@@ -504,7 +507,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
   }
 
   
-  if (false)//(localIDFlag) 
+  if (localIDFlag) 
   { 
    
       //Set starting points on vector
@@ -1217,11 +1220,20 @@ Point updateCenterLocation()
   transformMapCentertoOdom();
 
   Point tmp;
-  //tmp.x = 0;
-  //tmp.y = 0;
-  tmp.x = centerLocationOdom.x; // - baseLocation.x;
-  tmp.y = centerLocationOdom.y; //- baseLocation.y;
 
+  tmp.x = centerLocationOdom.x - baseLocation.x; // - baseLocation.x;
+  tmp.y = centerLocationOdom.y - baseLocation.y; //- baseLocation.y;
+
+  recenterCounter++;
+
+  if (firstOffSet || recenterCounter == 600)
+  {
+    firstOffSet = false;
+    recenterCounter = 0;
+    baseLocation.x = centerLocationOdom.x;
+    baseLocation.y = centerLocationOdom.y;
+
+  }
   return tmp;
 }
 
