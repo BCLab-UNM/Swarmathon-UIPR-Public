@@ -111,6 +111,7 @@ private:
   bool pointInsideObstacle  = false;
   bool firstClusterCommand = true;
   bool clustered = false;
+  bool needReverse = true;
   
   float ghostWall;
   float magnitude;

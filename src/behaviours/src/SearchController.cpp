@@ -131,8 +131,14 @@ bool SearchController::checkAvailableDistance(int sideSel)
 }
 Result SearchController::DoWork()
 {
-
-  cout << "Total IDs " << totalIds << endl;
+  if (needReverse){
+    result.type = precisionDriving;
+    result.pd.cmdVel = -0.3;
+    needReverse = false;
+  }
+  
+  //cout << "Total IDs " << totalIds << endl;
+  else {
 
   if (getMapSize() == 10) //Preliminars?
   {
@@ -156,7 +162,7 @@ Result SearchController::DoWork()
 
   result.wpts.waypoints.clear();
   result.wpts.waypoints.insert(result.wpts.waypoints.begin(), this->searchLocation);
-
+  }
   return result;
 }
 
@@ -212,6 +218,7 @@ void SearchController::giveTask2Robot()
     }
     else
     {
+
       triangleSearch(myId, triangleSel2, triangleSquare);
     }
 
@@ -797,7 +804,7 @@ void SearchController::sideSearch(int myId, int sideSection, float triangleSquar
       first_side_waypoint = false;
       goLeft = true;
       cout << "Looking for first location" << endl;
-      this->searchLocation = setSearchLocation((mapSize / 2 - this->ghostWall + offset) * -1, (mapSize / 2 - this->ghostWall) * -1);
+     this->searchLocation = setSearchLocation((mapSize / 2 - this->ghostWall + offset) * -1, (mapSize / 2 - this->ghostWall) * -1);
       break;
     }
     else
