@@ -5,18 +5,6 @@ LogicController::LogicController()
 
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
-  /////////////////////////////////////////ANGEL////////////////////////////////
-  LPF_BETA = 0.25f;
-  lefta = 0;
-  righta = 0;
-  centera = 0;
-
-  SumLeftSensor.resize(10, 3);
-  SumRightSensor.resize(10, 3);
-  SumCenterSensor.resize(10, 3);
-
-  AveSensor = 0;
-  //////////////////////////////////////////////////////////////////////////////
 
   ProcessData();
 
@@ -340,7 +328,6 @@ void LogicController::controllerInterconnect()
       searchController.SetSuccesfullPickup();
     }
 
-    // --------------------------------------------------------------- // Jomar -------------------------------------------------------------------------
     if (pickUpController.TagDetected())
     {
       searchController.aTagDetected();
@@ -366,10 +353,8 @@ void LogicController::controllerInterconnect()
       pickUpController.setCantSeeTargetDontRepeat(false);
     }
 
-    // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
   }
 
-  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
   if (processState == PROCCESS_STATE_DROP_OFF)
   {
     if (dropOffController.NotHasTag())
@@ -378,7 +363,6 @@ void LogicController::controllerInterconnect()
     }
   }
 
-  // --------------------------------------------------------------- // Jomar --------------------------------------------------------------------------
   //ask if drop off has released the target from the claws yet
   if (!dropOffController.HasTarget())
   {
@@ -428,16 +412,8 @@ void LogicController::SetAprilTags(vector<Tag> tags)
 void LogicController::SetSonarData(float left, float center, float right)
 {
 
-  //////////////////////////Angel FILTRO//////////////////////////////////////
-
-  // this->lefta = filterSonars(SumLeftSensor, left, lefta);
-  // this->righta = filterSonars(SumRightSensor, right, righta);
-  // this->centera = filterSonars(SumCenterSensor, center, centera);
-
-  // obstacleController.setSonarData(this->lefta, this->centera, this->righta); //change from (lefts,center,right) to (lefta,centera,righta)
   pickUpController.SetSonarData(center);
 
-  /////////////////////////////////////////////////////////////////////
 
   obstacleController.setSonarData(left, center, right); //change from (lefts,center,right) to (lefta,centera,righta)
 }

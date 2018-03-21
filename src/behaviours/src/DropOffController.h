@@ -130,7 +130,6 @@ private:
   bool finalInterrupt = false;
   bool first_center = true;
   bool notHasTag = false; // Jomar
-  bool firstRun;
   Point collectionLocation;
 
 };

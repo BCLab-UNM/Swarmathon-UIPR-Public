@@ -7,7 +7,7 @@ DropOffController::DropOffController()
 
   result.type = behavior;
   result.b = wait;
-  result.wristAngle = 1;
+  result.wristAngle = 0.8;
   result.reset = false;
   interrupt = false;
 
@@ -28,7 +28,6 @@ DropOffController::DropOffController()
   startWaypoint = false;
   droppOff = false;
   timerTimeElapsed = -1;
-  firstRun = true;
 }
 
 DropOffController::~DropOffController()
@@ -43,12 +42,6 @@ cout << "Dropping Resource" << endl;
   //cout << "8" << endl;
 
   //cout << "timerTimeElapsed = " << timerTimeElapsed << endl;
-
-  if (firstRun)
-  {
-    firstRun = false;
-    collectionLocation = currentLocation;
-  }
 
   int count = countLeft + countRight;
   droppOff = true;
@@ -88,7 +81,7 @@ cout << "Dropping Resource" << endl;
       result.fingerAngle = M_PI_2; //open fingers
       result.wristAngle = 0;       //raise wrist
 
-      result.pd.cmdVel = -0.3;
+      result.pd.cmdVel = -0.15;
       result.pd.cmdAngularError = 0.0;
       toDropTimeOut = false;
       timeCountToDrop = 0;
@@ -105,11 +98,6 @@ cout << "Dropping Resource" << endl;
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0))
   {
-
-    if(distanceToCenter < 2)
-    {
-      result.PIDMode = CONST_PID;
-    }
 
     result.type = waypoint;
     result.wpts.waypoints.clear();
@@ -351,10 +339,9 @@ void DropOffController::Reset()
   result.pd.cmdVel = 0;
   result.pd.cmdAngularError = 0;
   result.fingerAngle = -1;
-  result.wristAngle = 0.7;
+  result.wristAngle = 0.8;
   result.reset = false;
   result.wpts.waypoints.clear();
-  result.PIDMode = FAST_PID;
 
   spinner = 0;
   spinSizeIncrease = 0;

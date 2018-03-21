@@ -39,6 +39,7 @@ SearchController::SearchController()
   sideOffset = 0;
   finals = false;
 
+  reachedFidelity = false;
   clusterAssigned = false;
 }
 
@@ -148,7 +149,16 @@ Result SearchController::DoWork()
   if (fidImprovement)
   {
     cout << "Using Fidelity" << endl;
-    FidelityImprovement();
+
+    if (hypot(fidelitySavedPoint.x - currentLocation.x, fidelitySavedPoint.y - currentLocation.y) > 0.2 && reachedFidelity)
+    {
+      this->searchLocation = this->fidelitySavedPoint;
+    }
+    else{
+      reachedFidelity = false;
+      FidelityImprovement();
+      this->fidelitySavedPoint = this->searchLocation;
+    }
   }
   else
   {
@@ -957,9 +967,10 @@ void SearchController::SetSuccesfullPickup()
 void SearchController::FidelityImprovement()
 { //Enters when detects a Tag
 
+
   if (getSdropped())
   { // if drops the tag, go to the saved location
-
+    reachedFidelity = true;
     cout << "S-1" << '\n';
 
     if (getDeleteVector())
@@ -977,15 +988,10 @@ void SearchController::FidelityImprovement()
 
     else
     {
+      reachedFidelity = false;
       setDeleteVector(true); // if not, enter again to the statement.
     }
 
-    if (hypot(searchLocation.y - currentLocation.y, searchLocation.x - currentLocation.x) >= .15 && pointInsideObstacle == false)
-      {
-        //first_side_waypoint = true;
-        this->searchLocation = searchLocation;
-
-      }
     //result.wpts.waypoints.clear();
     //result.wpts.waypoints.insert(result.wpts.waypoints.begin(), SavedPointsVector[SavedPointsVector.size() - 1]);
     this->searchLocation = SavedPointsVector[SavedPointsVector.size() -1];
@@ -1042,7 +1048,7 @@ void SearchController::droppedOFF()
   {
     std::cout << "SearchController::droppedOFF()" << '\n';
     fidImprovement = true;
-
+    
     Sdropped = true;
     setTagDetectedCatched(true);
   }

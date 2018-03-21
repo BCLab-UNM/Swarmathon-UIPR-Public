@@ -162,7 +162,7 @@ Result ObstacleController::DoWork()
 
     cout << "TurnCounter = " << turnCounter << endl; //DEBUG
     //if the rover spends to much time trying to avoid, select new point
-    if ((turnCounter == 3 && distRobotandPoint <= 1.5) || turnCounter >= 5)
+    if ((turnCounter == 5 && distRobotandPoint <= 1.5) || turnCounter > 7)
     {
       turnCounter = 0;
       this->pointInsideObstacle = true;

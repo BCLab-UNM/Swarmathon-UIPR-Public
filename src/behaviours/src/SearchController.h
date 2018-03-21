@@ -139,6 +139,8 @@ private:
   int totalIds;
   bool publishVisitedPointFlag = true;
   vector<Point> clusterLocation;
+  Point fidelitySavedPoint;
+  bool reachedFidelity;
   //This Struct is used to share a Visited point with Logic Controller.
   Point latestVisitedPoint;
   //This Vector is used to know all the points that were published into Master.
