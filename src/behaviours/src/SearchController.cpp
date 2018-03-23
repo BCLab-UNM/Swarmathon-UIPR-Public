@@ -55,12 +55,12 @@ Result SearchController::DoWork()
 
   if (getMapSize() == 14) //Preliminars?
   {
-    setTriangleSquareArea(8.5); // 10x10mts area for triangle square.(5mts each side) -- Hector Changed
+    setTriangleSquareArea(8.5); // 8.5x8.5mts area for triangle square.(4.25mts each side)
     this->finals = false;
   }
   else
   {                            // Semi/Finals?
-    setTriangleSquareArea(16); // 10x10mts area for triangle square.(5mts each side)
+    setTriangleSquareArea(16); // 16x16mts area for triangle square.(8mts each side)
     this->finals = true;
   }
 

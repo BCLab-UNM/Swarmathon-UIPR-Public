@@ -37,6 +37,7 @@
 #include <exception> // For exception handling
 
 // Edit
+#include <stdlib.h>
 #include "std_msgs/MultiArrayLayout.h"
 #include "std_msgs/MultiArrayDimension.h"
 #include "std_msgs/Int64MultiArray.h"
@@ -238,7 +239,7 @@ auto end_time = chrono::high_resolution_clock::now();
 auto timeWaited = chrono::duration_cast<chrono::microseconds>(end_time - start_time).count();
 Point baseLocation;
 bool clusterClose = false;
-
+int idCounter = 0;
 vector<Point> startPoints;
 vector<float> startPointsDistance;
 vector<int> startPointRearranged;
@@ -254,12 +255,12 @@ void setStartPoints();
 bool totalIDsChanged(int);
 Point pointBuilder(float, float);
 
-int tempTotal;
+int tempTotal = 0;
 int counterForRobots;
 bool localIDFlag = true;
 int recenterCounter = 0;
 bool firstOffSet = true;
-
+bool enoughIDs = false;
 //**
 
 //
@@ -391,7 +392,9 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
     if (timerTimeElapsed > startDelayInSeconds)
     {
-
+      cout << "Initializing Robots....." << endl;
+      cout << "Please ensure that all rovers are deployed at the same time." << endl;
+      cout << "This will ensure a sucessful communication and rover ID distribution." << endl;
       // initialization has run
       initilized = true;
       //TODO: this just sets center to 0 over and over and needs to change
@@ -471,7 +474,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
             else{
               initLocPub.publish(initLoc);
             }
-
+            
             // Rover has ID
             doIHaveID = true;   
 
@@ -488,7 +491,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       }
       
       cout << "Done with ID" << endl;
-
+      tempTotal = logicController.totalIds;
     }
 
     else
@@ -496,11 +499,30 @@ void behaviourStateMachine(const ros::TimerEvent&)
       return;
     }
 
+    
+
   }
 
-  
+  if (!enoughIDs)
+  {
+    if(idCounter == 1100)
+    {
+      cout << "Calculating new number:!!" << endl;
+      localIDFlag = false;
+      srand(time(NULL));
+      logicController.myIdLoc = rand() % 7 + 1;
+      idCounter = 0;
+      cout << "My New Emergency ID: " << logicController.myIdLoc << endl;
+    }
+    else if (totalIDsChanged(tempTotal) || logicController.totalIds > 1)
+    {
+      enoughIDs = true;
+    }
+  }
+
   if (localIDFlag) 
   { 
+
    
       //Set starting points on vector
       setStartPoints();
@@ -537,9 +559,9 @@ void behaviourStateMachine(const ros::TimerEvent&)
           counterForRobots = 0;
         }
 
-        if (counterForRobots >= 90 || (logicController.totalIds == 6 &&  counterForRobots != 0))            // After 1 second
+        if (counterForRobots >= 100 || (logicController.totalIds == 6 &&  counterForRobots != 0))            // After 1 second
         {
-          cout << "Reached 90" << endl;
+          cout << "Reached 100" << endl;
           // Create 2D vector for each ID with all distances to all points
           // Iterate through IDs
           cout << "SP Size: " << startPoints.size() << endl;
@@ -640,7 +662,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       startPoints.clear();
       cout << "Rover Local ID = " << logicController.myIdLoc << endl;
 
-      
+      idCounter++;
   }
   
 
@@ -796,16 +818,16 @@ void sendDriveCommand(double left, double right)
 
 bool totalIDsChanged(int previousTotal)
 {
-  bool sameAmount;
+  bool diffAmount;
 
   if (previousTotal != logicController.totalIds){
-    sameAmount = true;  
+    diffAmount = true;  
   }
   else{
-    sameAmount = false;
+    diffAmount = false;
   }
   cout << "Checking Total" << endl;
-  return sameAmount;
+  return diffAmount;
 }
 
 void setStartPoints()
@@ -813,22 +835,23 @@ void setStartPoints()
   if(logicController.totalIds <=3)
     {
       cout << "Map Size: 15x15mts" << endl;
-      mapSize = 15; //15mts by 15mts map size.
+      mapSize = 14; //15mts by 15mts map size.
     }
     else{
       cout << "Map Size: 22x22mts" << endl;
-      mapSize = 22; //22mts by 22mts map size. 
+      mapSize = 21; //22mts by 22mts map size. 
     }
 
   ghostWall = .8; //Variable to evade walls.
 
-  if(mapSize == 15) 
+  if(mapSize == 14) 
     {
-      triangleSquare = 10; // 10x10mts area for triangle square.(5mts each side)
+      triangleSquare = 8.5; // 10x10mts area for triangle square.(5mts each side)
     }
     else // Semi/Finals
     {
-      // Set area    
+      // Set area
+      triangleSquare = 16;    
     }
 
     if (logicController.totalIds <=3){

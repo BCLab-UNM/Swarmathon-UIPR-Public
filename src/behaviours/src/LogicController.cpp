@@ -15,8 +15,6 @@ LogicController::~LogicController() {}
 
 void LogicController::Reset()
 {
-
-  std::cout << "LogicController.Reset()" << std::endl;
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
 
@@ -133,7 +131,8 @@ Result LogicController::DoWork()
       {
         ProcessData();
         result.b = wait;
-        driveController.Reset(); //it is assumed that the drive controller may be in a bad state if interrupted so reset it
+        driveController.Reset(); // It is assumed that the drive controller may
+                                 // be in a bad state if interrupted, so reset it.
       }
       break;
     }
@@ -154,10 +153,17 @@ Result LogicController::DoWork()
 
       logicState = LOGIC_STATE_WAITING;
       driveController.SetResultData(result);
-      //fall through on purpose
+      // Fall through on purpose to "case LOGIC_STATE_WAITING:"
     }
 
-  } //end of interupt case***************************************************************************************
+  }
+  // ***************************************************************************
+  // END LOGIC_STATE_INTERUPT
+  // ***************************************************************************
+
+  // ***************************************************************************
+  // BEGIN LOGIC_STATE_WAITING
+  // ***************************************************************************
 
     //this case is primarly when logic controller is waiting for drive controller to reach its last waypoint
   case LOGIC_STATE_WAITING:
@@ -182,15 +188,16 @@ Result LogicController::DoWork()
   case LOGIC_STATE_PRECISION_COMMAND:
   {
 
-    //unlike waypoints precision commands change every update tick so we ask the
-    //controller for new commands on every update tick.
+    // Unlike waypoints, precision commands change every update tick, so we ask
+    // the controller for new commands on every update tick.
     result = control_queue.top().controller->DoWork();
 
-    //pass the driving commands to the drive controller so it can interpret them
+    // Pass the driving commands to the drive controller so it can interpret them.
     driveController.SetResultData(result);
 
-    //the interoreted commands are turned into properinitial_spiral_offset motor commands to be passed the ROS Adapter
-    //as left and right wheel PWM values in the result struct.
+    // The interpreted commands are turned into proper initial_spiral_offset
+    // motor commands to be passed the ROS Adapter such as left and right wheel
+    // PWM values in the result struct.
     result = driveController.DoWork();
     break;
 
@@ -198,12 +205,12 @@ Result LogicController::DoWork()
   } //end switch statment******************************************************************************************
 
   // bad! causes node to crash
-  // cout << "logic state " << logicState << " top controller " << control_queue.top().priority << " Proccess " << processState <<endl;
 
-  //now using proccess logic allow the controller to communicate data between eachother
+  // Allow the controllers to communicate data between each other,
+  // depending on the processState.
   controllerInterconnect();
 
-  //give the ROSAdapter the final decision on how it should drive
+  // Give the ROSAdapter the final decision on how it should drive.
   return result;
 }
 
@@ -277,11 +284,15 @@ bool LogicController::ShouldInterrupt()
 {
   ProcessData();
 
+  // The logic controller is the top level controller and will never have to
+  // interrupt. It is only the lower level controllers that may need to interupt.
   return false;
 }
 
 bool LogicController::HasWork()
 {
+  // The LogicController class is a special case. It will never have work to
+  // do because it is always handling the work of the other controllers.
   return false;
 }
 
@@ -308,12 +319,6 @@ void LogicController::controllerInterconnect()
 
   if (processState == PROCCESS_STATE_SEARCHING)
   {
-    /*
-    if(obstacleController.getObstacleInfo() == true)
-    {
-      searchController.setObstacleDetected(true);
-    }
-*/
     //obstacle needs to know if the center ultrasound should be ignored
     if (pickUpController.GetIgnoreCenter())
     {
@@ -321,11 +326,17 @@ void LogicController::controllerInterconnect()
     }
 
     //pickup controller annouces it has pickedup a target
-    if (pickUpController.GetTargetHeld())
+    if (dropOffController.getDroppedOff()){ //Hector Changed
+
+    if(!pickUpController.GetTargetHeld())
     {
+      obstacleController.setTargetHeldClear();
+    }
+    else{
       dropOffController.SetTargetPickedUp();
       obstacleController.setTargetHeld();
-      searchController.SetSuccesfullPickup();
+    }
+      
     }
 
     if (pickUpController.TagDetected())
@@ -414,7 +425,6 @@ void LogicController::SetSonarData(float left, float center, float right)
 
   pickUpController.SetSonarData(center);
 
-
   obstacleController.setSonarData(left, center, right); //change from (lefts,center,right) to (lefta,centera,righta)
 }
 
@@ -431,7 +441,6 @@ void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
     centerAvg.x = centerAvg.x / 30;
     centerAvg.y = centerAvg.y / 30;
 
-    cout << "CLO: (" << centerAvg.x << "," << centerAvg.y << ")" << endl;
     searchController.SetCenterLocation(centerAvg);
     dropOffController.SetCenterLocation(centerAvg);
 

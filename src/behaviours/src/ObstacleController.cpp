@@ -6,6 +6,7 @@ ObstacleController::ObstacleController()
   obstacleDetected = false;
   obstacleInterrupt = false;
   pointInsideObstacle = false;
+  dropComplete = false;
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
 }
 
@@ -47,8 +48,6 @@ void ObstacleController::avoidObstacle()
   {
     result.pd.cmdVel = -0.3;
     result.pd.cmdAngular = -1 * getDirection() * K_angular;
-    cout << "Im in reverse!" << endl;                 //DEBUG
-    cout << "Direction = " << getDirection() << endl; //DEBUG
   }
 
   else
@@ -66,25 +65,18 @@ void ObstacleController::avoidObstacle()
     integE += e;                             //integral error
 
     PID = getDirection() * (1.8 * e + 0.05 * diffE + 0.0001 * integE);
-    cout << "PID = " << PID << endl;
 
     if (PID > K_angular)
     {
       PID = K_angular;
-      cout << "PID Fix Possitive!" << endl; //DEBUG
     }
     else if (PID < -K_angular)
     {
       PID = -K_angular;
-      cout << "PID Fix Negative!" << endl; //DEBUG
     }
 
     result.pd.cmdAngular = PID;
     result.pd.cmdVel = 0.3;
-    cout << "Im in NOT reverse!" << endl;                     //DEBUG
-    cout << "Direction = " << getDirection() << endl;         //DEBUG
-    cout << "Angular Vel = " << result.pd.cmdAngular << endl; //DEBUG
-
     result.pd.setPointVel = 0.0;
     result.pd.setPointYaw = 0;
     distRead.clear();
@@ -95,8 +87,6 @@ void ObstacleController::avoidObstacle()
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone()
 {
-
-  cout << "Base detected" << endl; //DEBUG
   result.type = precisionDriving;
 
   // Decide which side of the rover sees the most april tags and turn away
@@ -118,12 +108,11 @@ void ObstacleController::avoidCollectionZone()
 
 Result ObstacleController::DoWork()
 {
-  cout << "Avoiding Obstacle!" << endl;
-
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
   // The obstacle is an april tag marking the collection zone
+
   if (collection_zone_seen)
   {
     avoidCollectionZone();
@@ -151,7 +140,6 @@ Result ObstacleController::DoWork()
 
     //distance between Rover and seachLocation
     distRobotandPoint = hypot(searchLocation.x - currentLocation.x, searchLocation.y - currentLocation.y);
-    cout << "Distance between Rover and seachLocation = " << distRobotandPoint << endl;
 
     //If droped off reset counter and bool
     if (seeTarget || dropComplete)
@@ -159,8 +147,6 @@ Result ObstacleController::DoWork()
       turnCounter = 0;
       this->pointInsideObstacle = false;
     }
-
-    cout << "TurnCounter = " << turnCounter << endl; //DEBUG
     //if the rover spends to much time trying to avoid, select new point
     if ((turnCounter == 5 && distRobotandPoint <= 1.5) || turnCounter > 7)
     {
