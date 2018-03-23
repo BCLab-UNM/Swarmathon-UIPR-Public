@@ -1,11 +1,21 @@
+// This file deals with the rover's ability to drop off cubes to the center collection disk
+// There are only two forms of driving: precision driving and waypoints
+// Precision Driving == any controller (drive, pickup, dropoff, obstacle)
+// continously feeding data into the feedback loop needed for drive controls
+// has more precise control over rover's movements, more accurate of less than 1cm
+
+// Waypoint Driving == drive controller feeding one data point (waypoint coordinates)
+// with an accuracy of at least 15cm
+
 #include "DropOffController.h"
 
 DropOffController::DropOffController()
 {
 
   reachedCollectionPoint = false;
-
+  // The result object is from the Result struct (see Result.h for more information)
   result.type = behavior;
+  // The b is of the BehaviorTrigger enum
   result.b = wait;
   result.wristAngle = 0.8;
   result.reset = false;
@@ -91,6 +101,7 @@ cout << "Dropping Resource" << endl;
     return result;
   }
 
+  // Calculates the shortest distance to the center location from the current location
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
 
   //cout << "distanceToCenter = " << distanceToCenter << endl;
@@ -100,11 +111,15 @@ cout << "Dropping Resource" << endl;
   {
 
     result.type = waypoint;
+    // Clears all the waypoints in the vector
     result.wpts.waypoints.clear();
+    // Adds the current location's point into the waypoint vector
     result.wpts.waypoints.push_back(this->centerLocation);
+    // Do not start following waypoints
     startWaypoint = false;
+    // Disable precision driving
     isPrecisionDriving = false;
-
+    // Reset elapsed time
     timerTimeElapsed = 0;
 
     return result;
@@ -156,6 +171,7 @@ cout << "Dropping Resource" << endl;
 
     //cout << "9" << endl;
     centerSeen = true;
+
 
     if (first_center && isPrecisionDriving)
     {
@@ -264,7 +280,7 @@ cout << "Dropping Resource" << endl;
       seenEnoughCenterTags = true; //we have driven far enough forward to be in and aligned with the circle.
       lastCenterTagThresholdTime = current_time;
     }
-    if (count > 0) //reset gaurd to prevent drop offs due to loosing tracking on tags for a frame or 2.
+    if (count > 0) // Reset gaurd to prevent drop offs due to loosing tracking on tags for a frame or 2.
     {
       lastCenterTagThresholdTime = current_time;
     }
@@ -293,7 +309,7 @@ cout << "Dropping Resource" << endl;
     float timeSinceSeeingEnoughCenterTags = elapsed / 1e3; // Convert from milliseconds to seconds
     if (timeSinceSeeingEnoughCenterTags > lostCenterCutoff)
     {
-      cout << "4" << endl;
+      //cout << "4" << endl;
       //go back to drive to center base location instead of drop off attempt
       reachedCollectionPoint = false;
       seenEnoughCenterTags = false;
@@ -446,32 +462,36 @@ bool DropOffController::HasWork()
   return ((startWaypoint || isPrecisionDriving));
 }
 
-bool DropOffController::IsChangingMode()
-{
+// Checking function to see if the driving mode (precision or waypoint) has been changed
+bool DropOffController::IsChangingMode() {
   return isPrecisionDriving;
 }
 
-void DropOffController::SetCenterLocation(Point center)
-{
+// Setter function to set the center location (the collection disk)
+// Of the Point class (x, y, theta)
+void DropOffController::SetCenterLocation(Point center) {
   centerLocation = center;
 }
 
-void DropOffController::SetCurrentLocation(Point current)
-{
+// Setter function to set the current location of the Point class (x, y, theta)
+void DropOffController::SetCurrentLocation(Point current) {
   currentLocation = current;
 }
 
-void DropOffController::SetTargetPickedUp()
-{
+// Setter function to set the variable to true if a target (cube) has been picked up
+// And that it is currently holding the target (cube)
+void DropOffController::SetTargetPickedUp() {
   targetHeld = true;
 }
 
-void DropOffController::SetBlockBlockingUltrasound(bool blockBlock)
-{
+// Setter function to stop the ultrasound from being blocked
+// In other words, to block the ultrasound or not
+void DropOffController::SetBlockBlockingUltrasound(bool blockBlock) {
   targetHeld = targetHeld || blockBlock;
 }
 
-void DropOffController::SetCurrentTimeInMilliSecs(long int time)
+// Setter function to set the current time (in milliseconds)
+void DropOffController::SetCurrentTimeInMilliSecs( long int time )
 {
   current_time = time;
 }
