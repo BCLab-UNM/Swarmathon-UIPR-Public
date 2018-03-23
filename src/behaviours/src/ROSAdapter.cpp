@@ -1117,7 +1117,7 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
 
 void publishStatusTimerEventHandler(const ros::TimerEvent&) {
   std_msgs::String msg;
-  msg.data = "UIPR";
+  msg.data = "UIPR - Bayamón";
   status_publisher.publish(msg);
 }
 
