@@ -15,8 +15,6 @@ LogicController::~LogicController() {}
 
 void LogicController::Reset()
 {
-
-  std::cout << "LogicController.Reset()" << std::endl;
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
 
@@ -208,7 +206,6 @@ Result LogicController::DoWork()
   } //end switch statment******************************************************************************************
 
   // bad! causes node to crash
-  // cout << "logic state " << logicState << " top controller " << control_queue.top().priority << " Proccess " << processState <<endl;
 
   // Allow the controllers to communicate data between each other,
   // depending on the processState.
@@ -223,6 +220,7 @@ void LogicController::UpdateData()
   // EDIT
   if (init)
   {
+    cout << "My Id Loc:" << myIdLoc << endl;
     searchController.getID(myIdLoc);
     init = false;
   }
@@ -333,12 +331,6 @@ void LogicController::controllerInterconnect()
 
   if (processState == PROCCESS_STATE_SEARCHING)
   {
-    /*
-    if(obstacleController.getObstacleInfo() == true)
-    {
-      searchController.setObstacleDetected(true);
-    }
-*/
     //obstacle needs to know if the center ultrasound should be ignored
     if (pickUpController.GetIgnoreCenter())
     {
@@ -346,11 +338,17 @@ void LogicController::controllerInterconnect()
     }
 
     //pickup controller annouces it has pickedup a target
-    if (pickUpController.GetTargetHeld())
+    if (dropOffController.getDroppedOff()){ //Hector Changed
+
+    if(!pickUpController.GetTargetHeld())
     {
+      obstacleController.setTargetHeldClear();
+    }
+    else{
       dropOffController.SetTargetPickedUp();
       obstacleController.setTargetHeld();
-      searchController.SetSuccesfullPickup();
+    }
+      
     }
 
     if (pickUpController.TagDetected())
@@ -439,7 +437,6 @@ void LogicController::SetSonarData(float left, float center, float right)
 
   pickUpController.SetSonarData(center);
 
-
   obstacleController.setSonarData(left, center, right); //change from (lefts,center,right) to (lefta,centera,righta)
 }
 
@@ -456,7 +453,6 @@ void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
     centerAvg.x = centerAvg.x / 30;
     centerAvg.y = centerAvg.y / 30;
 
-    cout << "CLO: (" << centerAvg.x << "," << centerAvg.y << ")" << endl;
     searchController.SetCenterLocation(centerAvg);
     dropOffController.SetCenterLocation(centerAvg);
 
@@ -523,20 +519,4 @@ void LogicController::SetModeManual()
     control_queue = priority_queue<PrioritizedController>();
     driveController.Reset();
   }
-}
-
-float LogicController::filterSonars(vector<float> &sonarVector, float newSonarData, float &sensor)
-{
-  sonarVector.erase(sonarVector.begin());
-  sonarVector.push_back(newSonarData);
-  AveSensor = sonarVector[0];
-
-  for (int i = 1; i <= sonarVector.size(); i++)
-  {
-    AveSensor += sonarVector[i];
-  }
-
-  AveSensor = AveSensor / sonarVector.size();
-
-  return sensor + LPF_BETA * (AveSensor - sensor);
 }

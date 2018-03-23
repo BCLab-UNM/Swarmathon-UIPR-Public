@@ -3,7 +3,6 @@
 
 #include <random_numbers/random_numbers.h>
 #include "Controller.h"
-#include "Triangle.h"
 
 /**
  * This class implements the search control algorithm for the rovers. The code

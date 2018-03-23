@@ -37,27 +37,29 @@
 #include <exception> // For exception handling
 
 // Edit
+#include <stdlib.h>
 #include "std_msgs/MultiArrayLayout.h"
 #include "std_msgs/MultiArrayDimension.h"
 #include "std_msgs/Int64MultiArray.h"
 #include "std_msgs/Float64MultiArray.h"
 #include <std_msgs/Bool.h>
-#include<chrono> // Time measurments
+#include <chrono> // Time measurments
 //
 
 using namespace std;
 
-
 // Define Exceptions
 // Define an exception to be thrown if the user tries to create
 // a RangeShape using invalid dimensions
-class ROSAdapterRangeShapeInvalidTypeException : public std::exception {
+class ROSAdapterRangeShapeInvalidTypeException : public std::exception
+{
 public:
-  ROSAdapterRangeShapeInvalidTypeException(std::string msg) {
+  ROSAdapterRangeShapeInvalidTypeException(std::string msg)
+  {
     this->msg = msg;
   }
 
-  virtual const char* what() const throw()
+  virtual const char *what() const throw()
   {
     std::string message = "Invalid RangeShape type provided: " + msg;
     return message.c_str();
@@ -74,83 +76,78 @@ ros::Publisher clusterPointPub;
 
 std_msgs::Float64MultiArray clusterCoordArray;
 bool clusterPointSaved = false;
-void clusterHandler(const std_msgs::Float64MultiArray& message);
+void clusterHandler(const std_msgs::Float64MultiArray &message);
 
 // Random number generator
-random_numbers::RandomNumberGenerator* rng;
+random_numbers::RandomNumberGenerator *rng;
 
 // Create logic controller
 
 LogicController logicController;
 
-
-
 void humanTime();
 
 // Behaviours Logic Functions
 void sendDriveCommand(double linearVel, double angularVel);
-void openFingers(); 	// Open fingers to 90 degrees
-void closeFingers();	// Close fingers to 0 degrees
-void raiseWrist();  	// Return wrist back to 0 degrees
-void lowerWrist();  	// Lower wrist to 50 degrees
-void resultHandler();	// Not Used/Dead Code, prototype has no definition
+void openFingers();   // Open fingers to 90 degrees
+void closeFingers();  // Close fingers to 0 degrees
+void raiseWrist();    // Return wrist back to 0 degrees
+void lowerWrist();    // Lower wrist to 50 degrees
+void resultHandler(); // Not Used/Dead Code, prototype has no definition
 
-
-Point updateCenterLocation();		//calls transformMapCenterToOdom, returns a center location in ODOM frame
-void transformMapCentertoOdom();	//checks ODOMs perceived idea of where the center is with a stored GPS center coordinate and adjusts ODOM center value to account for drift
-
+Point updateCenterLocation();    //calls transformMapCenterToOdom, returns a center location in ODOM frame
+void transformMapCentertoOdom(); //checks ODOMs perceived idea of where the center is with a stored GPS center coordinate and adjusts ODOM center value to account for drift
 
 // Numeric Variables for rover positioning
-geometry_msgs::Pose2D currentLocation;		//current location using ODOM
-geometry_msgs::Pose2D currentLocationMap;	//current location using GPS
-geometry_msgs::Pose2D currentLocationAverage;	//an average of the robots current location
+geometry_msgs::Pose2D currentLocation;        //current location using ODOM
+geometry_msgs::Pose2D currentLocationMap;     //current location using GPS
+geometry_msgs::Pose2D currentLocationAverage; //an average of the robots current location
 
-geometry_msgs::Pose2D centerLocation;		//Not used, dead code
-geometry_msgs::Pose2D centerLocationMap;	//A GPS point of the center location, used to help reduce drift from ODOM
-geometry_msgs::Pose2D centerLocationOdom;	//The centers location based on ODOM
-geometry_msgs::Pose2D centerLocationMapRef;	//Variable used in TransformMapCenterToOdom, can be moved to make it local instead of global
+geometry_msgs::Pose2D centerLocation;       //Not used, dead code
+geometry_msgs::Pose2D centerLocationMap;    //A GPS point of the center location, used to help reduce drift from ODOM
+geometry_msgs::Pose2D centerLocationOdom;   //The centers location based on ODOM
+geometry_msgs::Pose2D centerLocationMapRef; //Variable used in TransformMapCenterToOdom, can be moved to make it local instead of global
 
 int currentMode = 0;
-const float behaviourLoopTimeStep = 0.1; 	//time between the behaviour loop calls
-const float status_publish_interval = 1;	//time between publishes
-const float heartbeat_publish_interval = 2;	//time between heartbeat publishes
-const float waypointTolerance = 0.1; 		//10 cm tolerance.
+const float behaviourLoopTimeStep = 0.1;    //time between the behaviour loop calls
+const float status_publish_interval = 1;    //time between publishes
+const float heartbeat_publish_interval = 2; //time between heartbeat publishes
+const float waypointTolerance = 0.1;        //10 cm tolerance.
 
 // used for calling code once but not in main
-bool initilized = false;	//switched to true after running through state machine the first time, initializes base values
+bool initilized = false; //switched to true after running through state machine the first time, initializes base values
 
-float linearVelocity = 0;	//forward speed, POSITIVE = forward, NEGATIVE = backward
-float angularVelocity = 0;	//turning speed, POSITIVE = left, NEGATIVE = right
+float linearVelocity = 0;  //forward speed, POSITIVE = forward, NEGATIVE = backward
+float angularVelocity = 0; //turning speed, POSITIVE = left, NEGATIVE = right
 
-float prevWrist = 0;	//last wrist angle
-float prevFinger = 0;	//last finger angle
-long int startTime = 0;	//stores time when robot is swtiched on
-float minutesTime = 0;	//time in minutes
-float hoursTime = 0;	//time in hours
+float prevWrist = 0;    //last wrist angle
+float prevFinger = 0;   //last finger angle
+long int startTime = 0; //stores time when robot is swtiched on
+float minutesTime = 0;  //time in minutes
+float hoursTime = 0;    //time in hours
 
 float drift_tolerance = 0.5; // the perceived difference between ODOM and GPS values before shifting the values up or down, in meters
 
-Result result;		//result struct for passing and storing values to drive robot
+Result result; //result struct for passing and storing values to drive robot
 
-std_msgs::String msg;	//used for passing messages to the GUI
-
+std_msgs::String msg; //used for passing messages to the GUI
 
 geometry_msgs::Twist velocity;
-char host[128];		//rovers hostname
-string publishedName;	//published hostname
+char host[128];       //rovers hostname
+string publishedName; //published hostname
 char prev_state_machine[128];
 
 // Publishers
-ros::Publisher stateMachinePublish;		//publishes state machine status
-ros::Publisher status_publisher;		//publishes rover status
-ros::Publisher fingerAnglePublish;		//publishes gripper angle to move gripper fingers
-ros::Publisher wristAnglePublish;		//publishes wrist angle to move wrist
-ros::Publisher infoLogPublisher;		//publishes a message to the infolog box on GUI
-ros::Publisher driveControlPublish;		//publishes motor commands to the motors
-ros::Publisher heartbeatPublisher;		//publishes ROSAdapters status via its "heartbeat"
+ros::Publisher stateMachinePublish; //publishes state machine status
+ros::Publisher status_publisher;    //publishes rover status
+ros::Publisher fingerAnglePublish;  //publishes gripper angle to move gripper fingers
+ros::Publisher wristAnglePublish;   //publishes wrist angle to move wrist
+ros::Publisher infoLogPublisher;    //publishes a message to the infolog box on GUI
+ros::Publisher driveControlPublish; //publishes motor commands to the motors
+ros::Publisher heartbeatPublisher;  //publishes ROSAdapters status via its "heartbeat"
 // Publishes swarmie_msgs::Waypoint messages on "/<robot>/waypooints"
 // to indicate when waypoints have been reached.
-ros::Publisher waypointFeedbackPublisher;	//publishes a waypoint to travel to if the rover is given a waypoint in manual mode
+ros::Publisher waypointFeedbackPublisher; //publishes a waypoint to travel to if the rover is given a waypoint in manual mode
 
 // Subscribers
 ros::Subscriber joySubscriber;
@@ -161,7 +158,7 @@ ros::Subscriber mapSubscriber;
 ros::Subscriber virtualFenceSubscriber;
 // manualWaypointSubscriber listens on "/<robot>/waypoints/cmd" for
 // swarmie_msgs::Waypoint messages.
-ros::Subscriber manualWaypointSubscriber; 	//receives manual waypoints given from GUI
+ros::Subscriber manualWaypointSubscriber; //receives manual waypoints given from GUI
 
 // Timers
 ros::Timer stateMachineTimer;
@@ -183,17 +180,17 @@ tf::TransformListener *tfListener;
 void sigintEventHandler(int signal);
 
 //Callback handlers
-void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message);				//for joystick control
-void modeHandler(const std_msgs::UInt8::ConstPtr& message);				//for detecting which mode the robot needs to be in
-void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& tagInfo);	//receives and stores April Tag Data using the TAG class
-void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);			//receives and stores ODOM information
-void mapHandler(const nav_msgs::Odometry::ConstPtr& message);				//receives and stores GPS information
-void virtualFenceHandler(const std_msgs::Float32MultiArray& message);			//Used to set an invisible boundary for robots to keep them from traveling outside specific bounds
-void manualWaypointHandler(const swarmie_msgs::Waypoint& message);			//Receives a waypoint (from GUI) and sets the coordinates
-void behaviourStateMachine(const ros::TimerEvent&);					//Upper most state machine, calls logic controller to perform all actions
-void publishStatusTimerEventHandler(const ros::TimerEvent& event);			//Publishes "ONLINE" when rover is successfully connected
-void publishHeartBeatTimerEventHandler(const ros::TimerEvent& event);			
-void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight);	//handles ultrasound data and stores data
+void joyCmdHandler(const sensor_msgs::Joy::ConstPtr &message);                      //for joystick control
+void modeHandler(const std_msgs::UInt8::ConstPtr &message);                         //for detecting which mode the robot needs to be in
+void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr &tagInfo); //receives and stores April Tag Data using the TAG class
+void odometryHandler(const nav_msgs::Odometry::ConstPtr &message);                  //receives and stores ODOM information
+void mapHandler(const nav_msgs::Odometry::ConstPtr &message);                       //receives and stores GPS information
+void virtualFenceHandler(const std_msgs::Float32MultiArray &message);               //Used to set an invisible boundary for robots to keep them from traveling outside specific bounds
+void manualWaypointHandler(const swarmie_msgs::Waypoint &message);                  //Receives a waypoint (from GUI) and sets the coordinates
+void behaviourStateMachine(const ros::TimerEvent &);                                //Upper most state machine, calls logic controller to perform all actions
+void publishStatusTimerEventHandler(const ros::TimerEvent &event);                  //Publishes "ONLINE" when rover is successfully connected
+void publishHeartBeatTimerEventHandler(const ros::TimerEvent &event);
+void sonarHandler(const sensor_msgs::Range::ConstPtr &sonarLeft, const sensor_msgs::Range::ConstPtr &sonarCenter, const sensor_msgs::Range::ConstPtr &sonarRight); //handles ultrasound data and stores data
 
 //EDIT
 
@@ -218,12 +215,12 @@ std_msgs::Float64MultiArray coordArray;
 std_msgs::Float64MultiArray initLoc;
 std_msgs::Int64MultiArray newIds;
 
-void idHandler(const std_msgs::UInt8::ConstPtr& message);
-void idFlagHandler(const std_msgs::Bool::ConstPtr& message);
-void leadFlagHandler(const std_msgs::Bool::ConstPtr& message);
-void coordHandler(const std_msgs::Float64MultiArray& message);
-void initialCoord(const std_msgs::Float64MultiArray& message);
-void localIDHandler(const std_msgs::Int64MultiArray& message);
+void idHandler(const std_msgs::UInt8::ConstPtr &message);
+void idFlagHandler(const std_msgs::Bool::ConstPtr &message);
+void leadFlagHandler(const std_msgs::Bool::ConstPtr &message);
+void coordHandler(const std_msgs::Float64MultiArray &message);
+void initialCoord(const std_msgs::Float64MultiArray &message);
+void localIDHandler(const std_msgs::Int64MultiArray &message);
 
 bool idGlobalFlag;
 bool leadRobotFlag;
@@ -238,7 +235,7 @@ auto end_time = chrono::high_resolution_clock::now();
 auto timeWaited = chrono::duration_cast<chrono::microseconds>(end_time - start_time).count();
 Point baseLocation;
 bool clusterClose = false;
-
+int idCounter = 0;
 vector<Point> startPoints;
 vector<float> startPointsDistance;
 vector<int> startPointRearranged;
@@ -254,12 +251,12 @@ void setStartPoints();
 bool totalIDsChanged(int);
 Point pointBuilder(float, float);
 
-int tempTotal;
+int tempTotal = 0;
 int counterForRobots;
 bool localIDFlag = true;
 int recenterCounter = 0;
 bool firstOffSet = true;
-
+bool enoughIDs = false;
 //**
 
 //
@@ -267,16 +264,20 @@ bool firstOffSet = true;
 // Converts the time passed as reported by ROS (which takes Gazebo simulation rate into account) into milliseconds as an integer.
 long int getROSTimeInMilliSecs();
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 
-  gethostname(host, sizeof (host));
+  gethostname(host, sizeof(host));
   string hostname(host);
 
-  if (argc >= 2) {
+  if (argc >= 2)
+  {
     publishedName = argv[1];
     cout << "Welcome to the world of tomorrow " << publishedName
          << "!  Behaviour turnDirectionule started." << endl;
-  } else {
+  }
+  else
+  {
     publishedName = hostname;
     cout << "No Name Selected. Default is: " << publishedName << endl;
   }
@@ -300,33 +301,33 @@ int main(int argc, char **argv) {
   message_filters::Subscriber<sensor_msgs::Range> sonarRightSubscriber(mNH, (publishedName + "/sonarRight"), 10);
 
   // Edit
-    idSubscriber = mNH.subscribe(("global/id"), 1, idHandler);
-    idPublish = mNH.advertise<std_msgs::UInt8>(("global/id"), 1);
+  idSubscriber = mNH.subscribe(("global/id"), 1, idHandler);
+  idPublish = mNH.advertise<std_msgs::UInt8>(("global/id"), 1);
 
-    idFlagSubscriber = mNH.subscribe(("global/idFlag"), 1, idFlagHandler);
-    idFlagPublisher = mNH.advertise<std_msgs::Bool>(("global/idFlag"), 1);
+  idFlagSubscriber = mNH.subscribe(("global/idFlag"), 1, idFlagHandler);
+  idFlagPublisher = mNH.advertise<std_msgs::Bool>(("global/idFlag"), 1);
 
-    coordSub = mNH.subscribe(("/coordenates"), 10, coordHandler);
-    coordPub = mNH.advertise<std_msgs::Float64MultiArray>("/coordenates", 50);
+  coordSub = mNH.subscribe(("/coordenates"), 10, coordHandler);
+  coordPub = mNH.advertise<std_msgs::Float64MultiArray>("/coordenates", 50);
 
-    initLocSub = mNH.subscribe(("/initialLocations"), 10, initialCoord);
-    initLocPub = mNH.advertise<std_msgs::Float64MultiArray>("/initialLocations", 50);
+  initLocSub = mNH.subscribe(("/initialLocations"), 10, initialCoord);
+  initLocPub = mNH.advertise<std_msgs::Float64MultiArray>("/initialLocations", 50);
 
-    localIDSubscriber = mNH.subscribe(("/localIDs"), 10, localIDHandler);
-    localIDPublisher = mNH.advertise<std_msgs::Int64MultiArray>("/localIDs", 50);
+  localIDSubscriber = mNH.subscribe(("/localIDs"), 10, localIDHandler);
+  localIDPublisher = mNH.advertise<std_msgs::Int64MultiArray>("/localIDs", 50);
 
-    leadRobotSubscriber = mNH.subscribe(("/leadFlag"), 1, leadFlagHandler);
-    leadRobotPublisher = mNH.advertise<std_msgs::Bool>(("/leadFlag"), 1);
-    
+  leadRobotSubscriber = mNH.subscribe(("/leadFlag"), 1, leadFlagHandler);
+  leadRobotPublisher = mNH.advertise<std_msgs::Bool>(("/leadFlag"), 1);
+
   //
 
   //=========Cluster Public and subscribe initialization=========||
 
-    clusterPointSubs = mNH.subscribe(("/clusterCoord"), 50, clusterHandler);
-    clusterPointPub = mNH.advertise<std_msgs::Float64MultiArray>("/clusterCoord", 50);
+  clusterPointSubs = mNH.subscribe(("/clusterCoord"), 50, clusterHandler);
+  clusterPointPub = mNH.advertise<std_msgs::Float64MultiArray>("/clusterCoord", 50);
 
   //=============================================================||
-//
+  //
 
   status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
   stateMachinePublish = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
@@ -338,14 +339,14 @@ int main(int argc, char **argv) {
   waypointFeedbackPublisher = mNH.advertise<swarmie_msgs::Waypoint>((publishedName + "/waypoints"), 1, true);
 
   //publishers
-  status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);				//publishes rover status
-  stateMachinePublish = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);			//publishes state machine status
-  fingerAnglePublish = mNH.advertise<std_msgs::Float32>((publishedName + "/fingerAngle/cmd"), 1, true);			//publishes gripper angle to move gripper finger
-  wristAnglePublish = mNH.advertise<std_msgs::Float32>((publishedName + "/wristAngle/cmd"), 1, true);			//publishes wrist angle to move wrist
-  infoLogPublisher = mNH.advertise<std_msgs::String>("/infoLog", 1, true);						//publishes a message to the infolog box on GUI
-  driveControlPublish = mNH.advertise<geometry_msgs::Twist>((publishedName + "/driveControl"), 10);			//publishes motor commands to the motors
-  heartbeatPublisher = mNH.advertise<std_msgs::String>((publishedName + "/behaviour/heartbeat"), 1, true);		//publishes ROSAdapters status via its "heartbeat"
-  waypointFeedbackPublisher = mNH.advertise<swarmie_msgs::Waypoint>((publishedName + "/waypoints"), 1, true);		//publishes a waypoint to travel to if the rover is given a waypoint in manual mode
+  status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);                   //publishes rover status
+  stateMachinePublish = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);         //publishes state machine status
+  fingerAnglePublish = mNH.advertise<std_msgs::Float32>((publishedName + "/fingerAngle/cmd"), 1, true);       //publishes gripper angle to move gripper finger
+  wristAnglePublish = mNH.advertise<std_msgs::Float32>((publishedName + "/wristAngle/cmd"), 1, true);         //publishes wrist angle to move wrist
+  infoLogPublisher = mNH.advertise<std_msgs::String>("/infoLog", 1, true);                                    //publishes a message to the infolog box on GUI
+  driveControlPublish = mNH.advertise<geometry_msgs::Twist>((publishedName + "/driveControl"), 10);           //publishes motor commands to the motors
+  heartbeatPublisher = mNH.advertise<std_msgs::String>((publishedName + "/behaviour/heartbeat"), 1, true);    //publishes ROSAdapters status via its "heartbeat"
+  waypointFeedbackPublisher = mNH.advertise<swarmie_msgs::Waypoint>((publishedName + "/waypoints"), 1, true); //publishes a waypoint to travel to if the rover is given a waypoint in manual mode
 
   //timers
   publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
@@ -368,7 +369,7 @@ int main(int argc, char **argv) {
   msg.data = ss.str();
   infoLogPublisher.publish(msg);
 
-  if(currentMode != 2 && currentMode != 3)
+  if (currentMode != 2 && currentMode != 3)
   {
     // ensure the logic controller starts in the correct mode.
     logicController.SetModeManual();
@@ -381,12 +382,11 @@ int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 }
 
-
 // This is the top-most logic control block organised as a state machine.
 // This function calls the dropOff, pickUp, and search controllers.
 // This block passes the goal location to the proportional-integral-derivative
 // controllers in the abridge package.
-void behaviourStateMachine(const ros::TimerEvent&)
+void behaviourStateMachine(const ros::TimerEvent &)
 {
 
   std_msgs::String stateMachineMsg;
@@ -402,7 +402,9 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
     if (timerTimeElapsed > startDelayInSeconds)
     {
-
+      cout << "Initializing Robots....." << endl;
+      cout << "Please ensure that all rovers are deployed at the same time." << endl;
+      cout << "This will ensure a sucessful communication and rover ID distribution." << endl;
       // initialization has run
       initilized = true;
       //TODO: this just sets center to 0 over and over and needs to change
@@ -431,10 +433,10 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
       idcount.data = 0;
       ifUseFlag.data = false;
-      waitTime = 5;//rng->uniformReal(1, 100); // Save random number from 1 to 100
+      waitTime = 5;   //rng->uniformReal(1, 100); // Save random number from 1 to 100
       waitTime *= 10; // multiply random number by 10 to get how much time in milliseconds will be spent wating for turn
       start_time = chrono::high_resolution_clock::now();
-      while(!doIHaveID)
+      while (!doIHaveID)
       {
         end_time = chrono::high_resolution_clock::now();
         timeWaited = chrono::duration_cast<chrono::microseconds>(end_time - start_time).count();
@@ -443,9 +445,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
         {
           // try taking ID from master
 
-          if(!idGlobalFlag)
+          if (!idGlobalFlag)
           {
-            cout << "Gonna get ID" << endl;
             // Turn semaphore ON
             ifUseFlag.data = true;
             idFlagPublisher.publish(ifUseFlag);
@@ -467,26 +468,24 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
             initialLocations.push_back(temp);
 
-            
-
             // Turn semaphore OFF
             ifUseFlag.data = false;
             idFlagPublisher.publish(ifUseFlag);
 
-            if (logicController.myIdPub == 1){
+            if (logicController.myIdPub == 1)
+            {
               leadRobotFlagPub.data = true;
               leadRobotPublisher.publish(leadRobotFlagPub);
-              
-              counterForRobots = 0; 
+
+              counterForRobots = 0;
             }
-            else{
+            else
+            {
               initLocPub.publish(initLoc);
             }
 
             // Rover has ID
-            doIHaveID = true;   
-
-            cout << "My public ID is: " << logicController.myIdPub << endl;
+            doIHaveID = true;
           }
         }
 
@@ -495,137 +494,114 @@ void behaviourStateMachine(const ros::TimerEvent&)
           //reset time counter
           start_time = chrono::high_resolution_clock::now();
         }
-
       }
-      
-      cout << "Done with ID" << endl;
-
+      tempTotal = logicController.totalIds;
     }
 
     else
     {
       return;
     }
-
   }
 
-  
-  if (localIDFlag) 
-  { 
-   
-      //Set starting points on vector
-      setStartPoints();
-      
-      cout << "Total IDs: " << logicController.totalIds << endl;
-      // Set robot task by where their staring location
-      if(logicController.myIdPub == 1 && (logicController.totalIds == 3 || logicController.totalIds == 6))
+
+  if (localIDFlag)
+  {
+
+    //Set starting points on vector
+    setStartPoints();
+
+    // Set robot task by where their staring location
+    if (logicController.myIdPub == 1 && (logicController.totalIds == 3 || logicController.totalIds == 6))
+    {
+      cout << "ROS Verify" << endl;
+      counterForRobots++;
+      float distance;
+      // Just in case a new robot connects too late
+      // Reason: If a new rover connects then finished vectors
+      // will be missing one or more distances
+      if (counterForRobots >= 1) // Init
       {
-        counterForRobots++;
-        cout << "Counter: " << counterForRobots <<endl;
-        float distance;
-        // Just in case a new robot connects too late
-        // Reason: If a new rover connects then finished vectors
-        // will be missing one or more distances
-        if (counterForRobots >= 1)                // Init
+        tempTotal = logicController.totalIds;
+        newIds.data.resize(tempTotal, 0);
+
+        //localIDPublisher.publish(newIds);
+
+        vector<float> tempVector;
+        distancesFromPoints.resize(tempTotal, tempVector);
+
+        idTaken.resize(tempTotal, false);
+      }
+
+      // Reset Counter if a new robot connects to ROS
+      if (totalIDsChanged(tempTotal))
+      {
+        counterForRobots = 0;
+      }
+
+      if (counterForRobots >= 100 || (logicController.totalIds == 6 && counterForRobots != 0)) // After 1 second
+      {
+        // Create 2D vector for each ID with all distances to all points
+        // Iterate through IDs
+
+        vector<float> pointDistances;
+        //vector<int> idByDistances;
+        //Iterate through start Points with amount of IDs available
+        for (int i = 0; i < tempTotal; i++)
         {
-          tempTotal = logicController.totalIds;
-
-          cout << "Starting as leader" << endl;
-          newIds.data.resize(tempTotal, 0);
-
-          //localIDPublisher.publish(newIds);
-
-          vector<float> tempVector;
-          distancesFromPoints.resize(tempTotal, tempVector);
-
-          idTaken.resize(tempTotal, false);
-        }
-
-        // Reset Counter if a new robot connects to ROS
-        if (totalIDsChanged(tempTotal))
-        {
-          cout << "First reset" << endl;
-          counterForRobots = 0;
-        }
-
-        if (counterForRobots >= 90 || (logicController.totalIds == 6 &&  counterForRobots != 0))            // After 1 second
-        {
-          cout << "Reached 90" << endl;
-          // Create 2D vector for each ID with all distances to all points
-          // Iterate through IDs
-          cout << "SP Size: " << startPoints.size() << endl;
-          
-          vector<float> pointDistances;
-          //vector<int> idByDistances;
-          //Iterate through start Points with amount of IDs available
-          for (int i = 0; i < tempTotal; i++) 
+          // Iterate through ID init Locations
+          for (int j = 0; j < tempTotal; j++)
           {
-            cout << "SP: " << startPoints.at(i).x << "," << startPoints.at(i).y << endl;
-            cout << "IL: " << initialLocations.at(i).x << "," << initialLocations.at(i).y << endl;
-            // Iterate through ID init Locations
-            for(int j = 0; j < tempTotal; j++)
-            {              
-              distance = hypot(startPoints.at(i).x - initialLocations.at(j).x, startPoints.at(i).y - initialLocations.at(j).y);
-              //distancesFromPoints.at(i).push_back(distance);
-              pointDistances.push_back(distance);
-              cout << "Distance: " << distance << endl;
-            }
+            distance = hypot(startPoints.at(i).x - initialLocations.at(j).x, startPoints.at(i).y - initialLocations.at(j).y);
+            pointDistances.push_back(distance);
+          }
 
-            float closestDistance = 1000000;
-            int closestID = -1; // -1 means no ID has taken point
+          float closestDistance = 1000000;
+          int closestID = -1; // -1 means no ID has taken point
 
-            //Assign ID to closest Point 
-            for (int j = 0; j < tempTotal; j++)
+          //Assign ID to closest Point
+          for (int j = 0; j < tempTotal; j++)
+          {
+            if (pointDistances.at(j) < closestDistance)
             {
-              if (pointDistances.at(j) < closestDistance)
+              if (!idTaken.at(j))
               {
-                cout << "Compared: " << pointDistances.at(j) << " | " << closestDistance << endl;
-                if (!idTaken.at(j))
-                {     
-                  cout << "ID taking: " << j << endl;             
-                  // If point is taken
-                  if (closestID != -1)
-                  {
-                    // Reset previous ID to not taken
-                    idTaken.at(closestID) = false; // This is old ID             
-                    
-                  }
-                  //else {
-                    cout << "Taking Point" << endl;
-                    // Save all values to new ID and set it as taken
-                    closestDistance = pointDistances.at(j);
-                    closestID = j;
-                    idTaken.at(closestID) = true; // This is new ID
-                  //}
+                // If point is taken
+                if (closestID != -1)
+                {
+                  // Reset previous ID to not taken
+                  idTaken.at(closestID) = false; // This is old ID
                 }
+
+                // Save all values to new ID and set it as taken
+                closestDistance = pointDistances.at(j);
+                closestID = j;
+                idTaken.at(closestID) = true; // This is new ID
+                //}
               }
             }
-            
-            cout << "Selected: " << closestID << endl;
-            //idByDistances.push_back(idByDistances);
-            newIds.data.at(i) = closestID;
-
-            pointDistances.clear();
           }
-          
-          cout << "All IDs in reverse" << endl;
-          reverse(newIds.data.begin(), newIds.data.end());
+          newIds.data.at(i) = closestID;
 
-          // Add 1 to match public IDs
-          for (int i = 0; i < newIds.data.size(); i++)
-          {
-            newIds.data.at(i) = newIds.data.at(i) + 1;
-            cout << "ID: " << newIds.data.at(i) << endl;
-          }
-          
-          localIDPublisher.publish(newIds);
+          pointDistances.clear();
+        }
+        reverse(newIds.data.begin(), newIds.data.end());
 
-          leadRobotFlagPub.data = false;
-          leadRobotPublisher.publish(leadRobotFlagPub);
-          localIDFlag = false;
+        // Add 1 to match public IDs
+        for (int i = 0; i < newIds.data.size(); i++)
+        {
+          newIds.data.at(i) = newIds.data.at(i) + 1;
         }
 
+        localIDPublisher.publish(newIds);
+
+        leadRobotFlagPub.data = false;
+        leadRobotPublisher.publish(leadRobotFlagPub);
+        localIDFlag = false;
       }
+    
+    }
+      
       else if (logicController.myIdPub == 1)
       {
         // Wait for more robots
@@ -651,35 +627,32 @@ void behaviourStateMachine(const ros::TimerEvent&)
       startPoints.clear();
       cout << "Rover Local ID = " << logicController.myIdLoc << endl;
 
-      
   }
-  
 
   // Robot is in automode
   else if (currentMode == 2 || currentMode == 3)
   {
     //cout << "Started Auto Mode" << endl;
-
+  cout << "Total Ids" << logicController.totalIds << endl;
     humanTime();
 
     // EDIT
     // Update communication data on Controllers
     logicController.UpdateData();
 
-
     //
 
     //update the time used by all the controllers
-    logicController.SetCurrentTimeInMilliSecs( getROSTimeInMilliSecs() );
+    logicController.SetCurrentTimeInMilliSecs(getROSTimeInMilliSecs());
 
     //update center location
-    logicController.SetCenterLocationOdom( updateCenterLocation() );
+    logicController.SetCenterLocationOdom(updateCenterLocation());
 
     //ask logic controller for the next set of actuator commands
     result = logicController.DoWork();
 
     // EDIT
-    if(logicController.getVisitedFlag())
+    if (logicController.getVisitedFlag())
     {
       // Do not publish visited point until search controller sets a new point
       logicController.setVisitedFlag(false);
@@ -707,7 +680,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
     //do this when wait behaviour happens
     if (wait)
     {
-      sendDriveCommand(0.0,0.0);
+      sendDriveCommand(0.0, 0.0);
       std_msgs::Float32 angle;
 
       angle.data = prevFinger;
@@ -720,37 +693,34 @@ void behaviourStateMachine(const ros::TimerEvent&)
     else
     {
 
-      sendDriveCommand(result.pd.left,result.pd.right);
-
+      sendDriveCommand(result.pd.left, result.pd.right);
 
       //Alter finger and wrist angle is told to reset with last stored value if currently has -1 value
       std_msgs::Float32 angle;
       if (result.fingerAngle != -1)
       {
-        angle.data = result.fingerAngle;	//uses results struct with data sent back from logic controller to get angle data
-        fingerAnglePublish.publish(angle);	//publish angle data to the gripper fingers
-        prevFinger = result.fingerAngle;	//store the last known gripper finger angle
+        angle.data = result.fingerAngle;   //uses results struct with data sent back from logic controller to get angle data
+        fingerAnglePublish.publish(angle); //publish angle data to the gripper fingers
+        prevFinger = result.fingerAngle;   //store the last known gripper finger angle
       }
 
       if (result.wristAngle != -1)
       {
-        angle.data = result.wristAngle;		//uses results struct with data sent back from logic controller to get angle data
-        wristAnglePublish.publish(angle);	//publish angle data to the gripper wrist
-        prevWrist = result.wristAngle;		//store the last known gripper wrist angle
+        angle.data = result.wristAngle;   //uses results struct with data sent back from logic controller to get angle data
+        wristAnglePublish.publish(angle); //publish angle data to the gripper wrist
+        prevWrist = result.wristAngle;    //store the last known gripper wrist angle
       }
     }
 
     //publishHandeling here
     //logicController.getPublishData(); suggested
 
-
     //adds a blank space between sets of debugging data to easily tell one tick from the next
     cout << endl;
-
   }
 
   // mode is NOT auto
-  else	//manual mode
+  else //manual mode
   {
     humanTime();
 
@@ -760,7 +730,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
     //cout << "Current Location Odom (" << currentLocation.x - baseLocation.x << ", " << currentLocation.y - baseLocation.y << ")" << endl;
     //cout << "Current Location Map (" << currentLocation.x - 1.51278 << ", " << currentLocation.y - -0.362635 << ")" << endl;
 
-    logicController.SetCurrentTimeInMilliSecs( getROSTimeInMilliSecs() );
+    logicController.SetCurrentTimeInMilliSecs(getROSTimeInMilliSecs());
 
     // publish current state for the operator to see
     stateMachineMsg.data = "WAITING";
@@ -769,22 +739,22 @@ void behaviourStateMachine(const ros::TimerEvent&)
     // reached.
     std::vector<int> cleared_waypoints = logicController.GetClearedWaypoints();
 
-    for(std::vector<int>::iterator it = cleared_waypoints.begin();
-        it != cleared_waypoints.end(); it++)
+    for (std::vector<int>::iterator it = cleared_waypoints.begin();
+         it != cleared_waypoints.end(); it++)
     {
       swarmie_msgs::Waypoint wpt;
       wpt.action = swarmie_msgs::Waypoint::ACTION_REACHED;
       wpt.id = *it;
       waypointFeedbackPublisher.publish(wpt);
     }
-    result = logicController.DoWork();	//ask logic controller to run
-    if(result.type != behavior || result.b != wait)
+    result = logicController.DoWork(); //ask logic controller to run
+    if (result.type != behavior || result.b != wait)
     {
       // if the logic controller requested that the robot drive, then
       // drive. Otherwise there are no manual waypoints and the robot
       // should sit idle. (ie. only drive according to joystick
       // input).
-      sendDriveCommand(result.pd.left,result.pd.right);
+      sendDriveCommand(result.pd.left, result.pd.right);
     }
   }
 
@@ -799,7 +769,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
 void sendDriveCommand(double left, double right)
 {
   velocity.linear.x = left,
-      velocity.angular.z = right;
+  velocity.angular.z = right;
 
   // publish the drive commands
   driveControlPublish.publish(velocity);
@@ -807,83 +777,58 @@ void sendDriveCommand(double left, double right)
 
 bool totalIDsChanged(int previousTotal)
 {
-  bool sameAmount;
+  bool diffAmount;
 
-  if (previousTotal != logicController.totalIds){
-    sameAmount = true;  
+  if (previousTotal != logicController.totalIds)
+  {
+    diffAmount = true;
   }
-  else{
-    sameAmount = false;
+  else
+  {
+    diffAmount = false;
   }
-  cout << "Checking Total" << endl;
-  return sameAmount;
+  return diffAmount;
 }
 
 void setStartPoints()
 {
-  if(logicController.totalIds <=3)
-    {
-      cout << "Map Size: 15x15mts" << endl;
-      mapSize = 15; //15mts by 15mts map size.
-    }
-    else{
-      cout << "Map Size: 22x22mts" << endl;
-      mapSize = 22; //22mts by 22mts map size. 
-    }
+  if (logicController.totalIds <= 3)
+  {
+    mapSize = 14; //15mts by 15mts map size.
+  }
+  else
+  {
+    mapSize = 21; //22mts by 22mts map size.
+  }
 
   ghostWall = .8; //Variable to evade walls.
 
-  if(mapSize == 15) 
-    {
-      triangleSquare = 10; // 10x10mts area for triangle square.(5mts each side)
-    }
-    else // Semi/Finals
-    {
-      // Set area    
-    }
+  if (mapSize == 14)
+  {
+    triangleSquare = 8.5; // 10x10mts area for triangle square.(5mts each side)
+  }
+  else // Semi/Finals
+  {
+    // Set area
+    triangleSquare = 16;
+  }
 
-    if (logicController.totalIds <=3){
-      startPoints.push_back(pointBuilder(1.0, 0.5));
-      startPoints.push_back(pointBuilder(-1.0, -0.5));
-      startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, mapSize/2 - ghostWall));
-      //startPointRearranged = {1, 2, 3};
-    }
-    if (logicController.totalIds >= 4){
-      startPoints.push_back(pointBuilder(1.0, 0.5));
-      startPoints.push_back(pointBuilder(-1.0, -0.5));
-      startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, mapSize/2 - ghostWall));
-      startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, triangleSquare/2));
-      startPoints.push_back(pointBuilder((mapSize/2 - ghostWall) * -1, (mapSize/2 - ghostWall) * -1));
-      startPoints.push_back(pointBuilder(mapSize/2 - ghostWall, (mapSize/2 - ghostWall) * -1));
-      //startPointRearranged = {1, 2, 3, 4, 5, 6};
-    }
-
-    // for (int i = 0; i < startPoints.size(); i++)
-    // {
-    //   startPointsDistance.push_back(hypot(startPoints.at(i).x, startPoints.at(i).y));
-    // }
-
-
-    
-    // float distance;
-    // vector<float> tempSPD;
-
-    // for (int i = 0; i < startPointsDistance.size(); i++)
-    // {
-      
-    //   for(int j = 0; j < startPointsDistance.size(); j++)
-    //   {
-    //     if(startPointsDistance.at(j) )
-    //     {
-          
-    //     }
-    //   }
-      
-    // }
-    // //sort(startPointsDistance.begin(), startPointsDistance.end(), greater<float>());
-
-    reverse(startPoints.begin(), startPoints.end());
-
+  if (logicController.totalIds <= 3)
+  {
+    startPoints.push_back(pointBuilder(1.0, 0.5));
+    startPoints.push_back(pointBuilder(-1.0, -0.5));
+    startPoints.push_back(pointBuilder(mapSize / 2 - ghostWall, mapSize / 2 - ghostWall));
+  }
+  if (logicController.totalIds >= 4)
+  {
+    startPoints.push_back(pointBuilder(1.0, 0.5));
+    startPoints.push_back(pointBuilder(-1.0, -0.5));
+    startPoints.push_back(pointBuilder(mapSize / 2 - ghostWall, mapSize / 2 - ghostWall));
+    startPoints.push_back(pointBuilder((mapSize / 2 - ghostWall) * -1, triangleSquare / 2));
+    startPoints.push_back(pointBuilder((mapSize / 2 - ghostWall) * -1, (mapSize / 2 - ghostWall) * -1));
+    startPoints.push_back(pointBuilder(mapSize / 2 - ghostWall, (mapSize / 2 - ghostWall) * -1));
+  }
+  reverse(startPoints.begin(), startPoints.end());
 }
 
 Point pointBuilder(float x, float y)
@@ -900,69 +845,72 @@ Point pointBuilder(float x, float y)
  * ROS CALLBACK HANDLERS *
  *************************/
 
-void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
+void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr &message)
+{
 
   // Don't pass April tag data to the logic controller if the robot is not in autonomous mode.
   // This is to make sure autonomous behaviours are not triggered while the rover is in manual mode.
-  if(currentMode == 0 || currentMode == 1)
+  if (currentMode == 0 || currentMode == 1)
   {
     return;
   }
 
-  if (message->detections.size() > 0) {
+  if (message->detections.size() > 0)
+  {
     vector<Tag> tags;
 
-
-    if (message->detections.size() > 2){
+    if (message->detections.size() > 2)
+    {
       //std::cout << "There is a cluster. tag.size: " << message->detections.size() << '\n';
       //realCluster == true;
     }
-    else{
+    else
+    {
       //std::cout << "Simple Tag" << '\n';
     }
 
-
-
-    for (int i = 0; i < message->detections.size(); i++) {
+    for (int i = 0; i < message->detections.size(); i++)
+    {
 
       // Package up the ROS AprilTag data into our own type that does not rely on ROS.
       Tag loc;
-      loc.setID( message->detections[i].id );
+      loc.setID(message->detections[i].id);
 
       // Pass the position of the AprilTag
       geometry_msgs::PoseStamped tagPose = message->detections[i].pose;
 
-      loc.setPosition( make_tuple( tagPose.pose.position.x,
-				   tagPose.pose.position.y,
-				   tagPose.pose.position.z ) );
+      loc.setPosition(make_tuple(tagPose.pose.position.x,
+                                 tagPose.pose.position.y,
+                                 tagPose.pose.position.z));
 
       // Pass the orientation of the AprilTag
-      loc.setOrientation( ::boost::math::quaternion<float>( tagPose.pose.orientation.x,
-							    tagPose.pose.orientation.y,
-							    tagPose.pose.orientation.z,
-							    tagPose.pose.orientation.w ) );
+      loc.setOrientation(::boost::math::quaternion<float>(tagPose.pose.orientation.x,
+                                                          tagPose.pose.orientation.y,
+                                                          tagPose.pose.orientation.z,
+                                                          tagPose.pose.orientation.w));
       tags.push_back(loc);
     }
 
-    if (message->detections.size() > 5) {
+    if (message->detections.size() > 5)
+    {
       bool anyBaseTags = false;
 
       // Verify if any tag detected is a Base tag, if so don't publish point
-      for (int i = 0; i < tags.size(); i++){
-        if(tags.at(i).getID() == 256){
+      for (int i = 0; i < tags.size(); i++)
+      {
+        if (tags.at(i).getID() == 256)
+        {
           anyBaseTags = true;
           break;
         }
-        else{
+        else
+        {
           anyBaseTags = false;
         }
       }
-      
-      if (!anyBaseTags){ // If no base tags then publish location
-           
-       if (!logicController.clusterPoints.empty()){
-          cout << "Cluster Point: (" << logicController.clusterPoints.at(0).x << "," << logicController.clusterPoints.at(0).y << ")" << endl;
-        }
+
+      if (!anyBaseTags)
+      { // If no base tags then publish location
 
         clusterCoordArray.data.push_back((0.5 * cos(currentLocation.theta) + currentLocation.x - baseLocation.x));
         clusterCoordArray.data.push_back((0.5 * sin(currentLocation.theta) + currentLocation.y - baseLocation.y));
@@ -972,27 +920,30 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
     logicController.SetAprilTags(tags);
   }
-
 }
 
-void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
+void modeHandler(const std_msgs::UInt8::ConstPtr &message)
+{
   currentMode = message->data;
-  if(currentMode == 2 || currentMode == 3) {
+  if (currentMode == 2 || currentMode == 3)
+  {
     logicController.SetModeAuto();
   }
-  else {
+  else
+  {
     logicController.SetModeManual();
   }
   sendDriveCommand(0.0, 0.0);
 }
 
-void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight) {
+void sonarHandler(const sensor_msgs::Range::ConstPtr &sonarLeft, const sensor_msgs::Range::ConstPtr &sonarCenter, const sensor_msgs::Range::ConstPtr &sonarRight)
+{
 
   logicController.SetSonarData(sonarLeft->range, sonarCenter->range, sonarRight->range);
-
 }
 
-void odometryHandler(const nav_msgs::Odometry::ConstPtr& message) {
+void odometryHandler(const nav_msgs::Odometry::ConstPtr &message)
+{
   //Get (x,y) location directly from pose
   currentLocation.x = message->pose.pose.position.x;
   currentLocation.y = message->pose.pose.position.y;
@@ -1018,7 +969,7 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr& message) {
 }
 
 // Allows a virtual fence to be defined and enabled or disabled through ROS
-void virtualFenceHandler(const std_msgs::Float32MultiArray& message)
+void virtualFenceHandler(const std_msgs::Float32MultiArray &message)
 {
   // Read data from the message array
   // The first element is an integer indicating the shape type
@@ -1039,21 +990,23 @@ void virtualFenceHandler(const std_msgs::Float32MultiArray& message)
     center.y = message.data[2]; // Range center y
 
     // If the shape type is "circle" then element 4 is the radius, if rectangle then width
-    switch ( shape_type )
+    switch (shape_type)
     {
     case 1: // Circle
     {
-      if ( message.data.size() != 4 ) throw ROSAdapterRangeShapeInvalidTypeException("Wrong number of parameters for circle shape type in ROSAdapter.cpp:virtualFenceHandler()");
+      if (message.data.size() != 4)
+        throw ROSAdapterRangeShapeInvalidTypeException("Wrong number of parameters for circle shape type in ROSAdapter.cpp:virtualFenceHandler()");
       float radius = message.data[3];
-      logicController.setVirtualFenceOn( new RangeCircle(center, radius) );
+      logicController.setVirtualFenceOn(new RangeCircle(center, radius));
       break;
     }
     case 2: // Rectangle
     {
-      if ( message.data.size() != 5 ) throw ROSAdapterRangeShapeInvalidTypeException("Wrong number of parameters for rectangle shape type in ROSAdapter.cpp:virtualFenceHandler()");
+      if (message.data.size() != 5)
+        throw ROSAdapterRangeShapeInvalidTypeException("Wrong number of parameters for rectangle shape type in ROSAdapter.cpp:virtualFenceHandler()");
       float width = message.data[3];
       float height = message.data[4];
-      logicController.setVirtualFenceOn( new RangeRectangle(center, width, height) );
+      logicController.setVirtualFenceOn(new RangeRectangle(center, width, height));
       break;
     }
     default:
@@ -1064,7 +1017,8 @@ void virtualFenceHandler(const std_msgs::Float32MultiArray& message)
   }
 }
 
-void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
+void mapHandler(const nav_msgs::Odometry::ConstPtr &message)
+{
   //Get (x,y) location directly from pose
   currentLocationMap.x = message->pose.pose.position.x;
   currentLocationMap.y = message->pose.pose.position.y;
@@ -1087,26 +1041,32 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
   logicController.SetMapVelocityData(linearVelocity, angularVelocity);
 }
 
-void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
+void joyCmdHandler(const sensor_msgs::Joy::ConstPtr &message)
+{
   const int max_motor_cmd = 255;
-  if (currentMode == 0 || currentMode == 1) {	//takes data coming from joystick and stores into linear and angular variables
-    float linear  = abs(message->axes[4]) >= 0.1 ? message->axes[4]*max_motor_cmd : 0.0;
-    float angular = abs(message->axes[3]) >= 0.1 ? message->axes[3]*max_motor_cmd : 0.0;
+  if (currentMode == 0 || currentMode == 1)
+  { //takes data coming from joystick and stores into linear and angular variables
+    float linear = abs(message->axes[4]) >= 0.1 ? message->axes[4] * max_motor_cmd : 0.0;
+    float angular = abs(message->axes[3]) >= 0.1 ? message->axes[3] * max_motor_cmd : 0.0;
 
     float left = linear - angular;
     float right = linear + angular;
     //check to see if commands exceed MAX values, and if so set them to hard coded MAX value
-    if(left > max_motor_cmd) {	
+    if (left > max_motor_cmd)
+    {
       left = max_motor_cmd;
     }
-    else if(left < -max_motor_cmd) {
+    else if (left < -max_motor_cmd)
+    {
       left = -max_motor_cmd;
     }
 
-    if(right > max_motor_cmd) {
+    if (right > max_motor_cmd)
+    {
       right = max_motor_cmd;
     }
-    else if(right < -max_motor_cmd) {
+    else if (right < -max_motor_cmd)
+    {
       right = -max_motor_cmd;
     }
 
@@ -1114,19 +1074,21 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
   }
 }
 
-
-void publishStatusTimerEventHandler(const ros::TimerEvent&) {
+void publishStatusTimerEventHandler(const ros::TimerEvent &)
+{
   std_msgs::String msg;
-  msg.data = "UIPR - Bayamón";
+  msg.data = "UIPR-Bayamón";
   status_publisher.publish(msg);
 }
 
-void manualWaypointHandler(const swarmie_msgs::Waypoint& message) {
+void manualWaypointHandler(const swarmie_msgs::Waypoint &message)
+{
   Point wp;
   wp.x = message.x;
   wp.y = message.y;
   wp.theta = 0.0;
-  switch(message.action) {
+  switch (message.action)
+  {
   case swarmie_msgs::Waypoint::ACTION_ADD:
     logicController.AddManualWaypoint(wp, message.id);
     break;
@@ -1136,12 +1098,14 @@ void manualWaypointHandler(const swarmie_msgs::Waypoint& message) {
   }
 }
 
-void sigintEventHandler(int sig) {
+void sigintEventHandler(int sig)
+{
   // All the default sigint handler does is call shutdown()
   ros::shutdown();
 }
 
-void publishHeartBeatTimerEventHandler(const ros::TimerEvent&) {
+void publishHeartBeatTimerEventHandler(const ros::TimerEvent &)
+{
   std_msgs::String msg;
   msg.data = "";
   heartbeatPublisher.publish(msg);
@@ -1153,10 +1117,8 @@ long int getROSTimeInMilliSecs()
   ros::Time t = ros::Time::now();
 
   // Convert from seconds and nanoseconds to milliseconds.
-  return t.sec*1e3 + t.nsec/1e6;
-
+  return t.sec * 1e3 + t.nsec / 1e6;
 }
-
 
 Point updateCenterLocation()
 {
@@ -1175,7 +1137,6 @@ Point updateCenterLocation()
     recenterCounter = 0;
     baseLocation.x = centerLocationOdom.x;
     baseLocation.y = centerLocationOdom.y;
-
   }
   return tmp;
 }
@@ -1202,7 +1163,8 @@ void transformMapCentertoOdom()
     tfListener->transformPose(publishedName + "/odom", mapPose, odomPose);
   }
 
-  catch(tf::TransformException& ex) {
+  catch (tf::TransformException &ex)
+  {
     ROS_INFO("Received an exception trying to transform a point from \"map\" to \"odom\": %s", ex.what());
     x = "Exception thrown " + (string)ex.what();
     std_msgs::String msg;
@@ -1217,7 +1179,7 @@ void transformMapCentertoOdom()
   centerLocationMapRef.x = odomPose.pose.position.x; //set centerLocation in odom frame
   centerLocationMapRef.y = odomPose.pose.position.y;
 
- // cout << "x ref : "<< centerLocationMapRef.x << " y ref : " << centerLocationMapRef.y << endl;
+  // cout << "x ref : "<< centerLocationMapRef.x << " y ref : " << centerLocationMapRef.y << endl;
 
   float xdiff = centerLocationMapRef.x - centerLocationOdom.x;
   float ydiff = centerLocationMapRef.y - centerLocationOdom.y;
@@ -1226,33 +1188,36 @@ void transformMapCentertoOdom()
 
   if (diff > drift_tolerance)
   {
-    centerLocationOdom.x += xdiff/diff;	//adjust X
-    centerLocationOdom.y += ydiff/diff;	//adjust Y
+    centerLocationOdom.x += xdiff / diff; //adjust X
+    centerLocationOdom.y += ydiff / diff; //adjust Y
   }
 
   //cout << "center x diff : " << centerLocationMapRef.x - centerLocationOdom.x << " center y diff : " << centerLocationMapRef.y - centerLocationOdom.y << endl;
   //cout << hypot(centerLocationMapRef.x - centerLocationOdom.x, centerLocationMapRef.y - centerLocationOdom.y) << endl;
-
 }
 
-void humanTime() {
+void humanTime()
+{
 
-  float timeDiff = (getROSTimeInMilliSecs()-startTime)/1e3;
-  if (timeDiff >= 60) {
+  float timeDiff = (getROSTimeInMilliSecs() - startTime) / 1e3;
+  if (timeDiff >= 60)
+  {
     minutesTime++;
-    startTime += 60  * 1e3;
-    if (minutesTime >= 60) {
+    startTime += 60 * 1e3;
+    if (minutesTime >= 60)
+    {
       hoursTime++;
       minutesTime -= 60;
     }
   }
-  timeDiff = floor(timeDiff*10)/10;
+  timeDiff = floor(timeDiff * 10) / 10;
 
   double intP, frac;
   frac = modf(timeDiff, &intP);
   timeDiff -= frac;
-  frac = round(frac*10);
-  if (frac > 9) {
+  frac = round(frac * 10);
+  if (frac > 9)
+  {
     frac = 0;
   }
 
@@ -1260,108 +1225,102 @@ void humanTime() {
 }
 
 // EDIT
-void idHandler(const std_msgs::UInt8::ConstPtr& message){
-	logicController.totalIds = message->data;
+void idHandler(const std_msgs::UInt8::ConstPtr &message)
+{
+  logicController.totalIds = message->data;
 }
 
-void idFlagHandler(const std_msgs::Bool::ConstPtr& message){
-	idGlobalFlag = message->data;
+void idFlagHandler(const std_msgs::Bool::ConstPtr &message)
+{
+  idGlobalFlag = message->data;
 }
 
-void coordHandler(const std_msgs::Float64MultiArray& message){
+void coordHandler(const std_msgs::Float64MultiArray &message)
+{
   Point tempPoint;
   tempPoint.x = message.data[0];
   tempPoint.y = message.data[1];
 
   logicController.visitedPoints.push_back(tempPoint);
 
-
   //printf("%d\n",element1 );
 }
 
-void clusterHandler(const std_msgs::Float64MultiArray& message){
-  
+void clusterHandler(const std_msgs::Float64MultiArray &message)
+{
+
   bool samePoint;
   float distanceToCluster = 0;
   Point clusterPoint;
   clusterPoint.x = message.data[0];
-  clusterPoint.y = message.data[1];  
+  clusterPoint.y = message.data[1];
 
+  for (int i = 0; i < logicController.clusterPoints.size(); i++)
+  {
 
-  for (int i = 0; i < logicController.clusterPoints.size(); i++) {
-
-    if (!logicController.clusterPoints.empty()){
+    if (!logicController.clusterPoints.empty())
+    {
       //cout << "Cluster Point: (" << logicController.clusterPoints.at(i).x << "," << logicController.clusterPoints.at(i).y << ")" << endl;
       distanceToCluster = hypot(logicController.clusterPoints.at(i).x - currentLocation.x, logicController.clusterPoints.at(i).y - currentLocation.y);
       //cout << "Distance to Cluster is: " << distanceToCluster << endl;
     }
-    if (distanceToCluster < 3) {
+    if (distanceToCluster < 3)
+    {
       //std::cout << "It's close to the same cluster." << '\n';
       clusterClose = true;
       break;
     }
 
-    else{
+    else
+    {
       //std::cout << "Not close" << '\n';
       clusterClose = false;
     }
   }
 
-    
-  if(clusterClose){
+  if (clusterClose)
+  {
     //Only add if vector is empty
-    if (logicController.clusterPoints.empty()){
-      cout << "Vector is empty" << endl;
+    if (logicController.clusterPoints.empty())
+    {
       logicController.clusterPoints.push_back(clusterPoint);
     }
-    else {
-      cout << "Point already exists" << endl;
-    }
-  } 
-  else{
-    cout << "Point does NOT exist in vector" << endl;
+  }
+  else
+  {
     logicController.clusterPoints.push_back(clusterPoint);
   }
 }
-  
-  //logicController.itsACluster = true;
-void initialCoord(const std_msgs::Float64MultiArray& message)
+
+//logicController.itsACluster = true;
+void initialCoord(const std_msgs::Float64MultiArray &message)
 {
   Point tempPoint;
-  
+
   tempPoint.x = message.data[0];
   tempPoint.y = message.data[1];
-  cout << "initCoord (" << tempPoint.x << "," << tempPoint.y << ")" << endl;
   initialLocations.push_back(tempPoint);
 }
 
-void localIDHandler(const std_msgs::Int64MultiArray& message)
+void localIDHandler(const std_msgs::Int64MultiArray &message)
 {
-  cout << "ID Handler" << endl;
-  // cout << "Size: " << message.data.size() << endl;
 
-  // for (int i = 0; i < message.data.size(); i++)
-  // {
-  //   cout << "ID: " << message.data.at(i) << endl;
-  // }
-
-  if (message.data.at(0) != 0) 
+  if (message.data.at(0) != 0)
   {
-    for (int i = 0; i < message.data.size(); i++){
-      cout << "This ID is: " << message.data.at(i) << endl;
-      if((message.data.at(i)) == logicController.myIdPub)
+    for (int i = 0; i < message.data.size(); i++)
+    {
+
+      if ((message.data.at(i)) == logicController.myIdPub)
       {
         logicController.myIdLoc = i + 1;
         break;
       }
     }
-    
-    cout << "My local ID is: " << logicController.myIdLoc << endl;
   }
-  cout << "Exiting Handler" << endl;
 }
 
-void leadFlagHandler(const std_msgs::Bool::ConstPtr& message){
-	leadRobotFlag = message->data;
+void leadFlagHandler(const std_msgs::Bool::ConstPtr &message)
+{
+  leadRobotFlag = message->data;
 }
 //

@@ -14,10 +14,6 @@
 #include <queue>
 
 using namespace std;
-// /////////////////////////////////////////ANGEL////////////////////////////////
-// float lefta = 0,righta = 0,centera = 0,average = 0, sumc = 0, sumr = 0, suml = 0, x = 0;
-// //////////////////////////////////////////////////////////////////////////////
-
 // This struct contains a controller object and ties it to a priority value as
 // well as providing functionality to compare priorities with the < operator.
 struct PrioritizedController {
@@ -105,7 +101,7 @@ public:
 
   //IDs
   int myIdPub = 0;  //Public
-  int myIdLoc = 0;  //Local --Hector
+  int myIdLoc = 0;  //Local 
   int totalIds = 0; //Total
   
   bool publishVisitedPointFlag = true;
@@ -126,16 +122,6 @@ protected:
 
 private:
 
-  ////////////////////////////////////////////ANGEL FILTRO////////////////////////////////////////
-  float LPF_BETA;
-  vector<float> SumLeftSensor;
-  vector<float> SumRightSensor;
-  vector<float> SumCenterSensor;
-  float AveSensor;
-  float lefta,righta,centera;
-  float filterSonars(vector<float> &v, float nSD, float &s);;
-
-  ///////////////////////////////////////////////////////////////////////////////
   enum LogicState {
     LOGIC_STATE_INTERRUPT = 0,
     LOGIC_STATE_WAITING,
